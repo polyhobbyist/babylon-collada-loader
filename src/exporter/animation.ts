@@ -1,0 +1,27 @@
+/// <reference path="context.ts" />
+/// <reference path="animation_track.ts" />
+/// <reference path="format.ts" />
+
+module COLLADA.Exporter {
+
+    export class Animation {
+
+        static toJSON(animation: COLLADA.Converter.AnimationData, context: COLLADA.Exporter.Context): COLLADA.Exporter.AnimationJSON {
+            if (animation === null) {
+                return {
+                    name: "",
+                    frames: 0,
+                    fps: 0,
+                    tracks: undefined
+                }
+            }
+
+            return {
+                name: animation.name,
+                frames: animation.keyframes,
+                fps: animation.fps,
+                tracks: animation.tracks.map((e, i) => AnimationTrack.toJSON(e, i, context))
+            };
+        }
+    }
+}
