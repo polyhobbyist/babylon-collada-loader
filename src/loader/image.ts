@@ -1,10 +1,13 @@
-/// <reference path="context.ts" />
-/// <reference path="element.ts" />
-/// <reference path="utils.ts" />
+import {Context} from "../context"
+import {LogLevel} from "../log"
+import * as Loader from "./loader"
+import * as Converter from "../converter/converter"
+import * as Exporter from "../exporter/exporter"
+import * as Utils from "./utils"
+import * as MathUtils from "../math"
 
-module COLLADA.Loader {
 
-    export class Image extends COLLADA.Loader.EElement {
+    export class Image extends Loader.EElement {
         initFrom: string | undefined;
 
         constructor() {
@@ -12,15 +15,15 @@ module COLLADA.Loader {
             this._className += "Image|";
         }
 
-        static fromLink(link: Link, context: COLLADA.Context): COLLADA.Loader.Image  | undefined{
-            return COLLADA.Loader.EElement._fromLink<COLLADA.Loader.Image>(link, "Image", context);
+        static fromLink(link: Loader.Link, context: Context): Loader.Image  | undefined{
+            return Loader.EElement._fromLink<Loader.Image>(link, "Image", context);
         }
 
         /**
         *   Parses an <image> element.
         */
-        static parse(node: Node, context: COLLADA.Loader.Context): COLLADA.Loader.Image {
-            var result: COLLADA.Loader.Image = new COLLADA.Loader.Image();
+        static parse(node: Node, context: Loader.Context): Loader.Image {
+            var result: Loader.Image = new Loader.Image();
 
             result.id = context.getAttributeAsString(node, "id", undefined, true);
             context.registerUrlTarget(result, true);
@@ -39,4 +42,3 @@ module COLLADA.Loader {
         }
 
     }
-}

@@ -1,6 +1,6 @@
-module COLLADA.Converter {
+import * as Converter from "./converter"
 
-    export interface Option {
+export interface Option {
         type: string;
         title: string;
         value: any;
@@ -77,7 +77,7 @@ module COLLADA.Converter {
         useAnimationLabels: OptionBool;
         enableExtractGeometry: OptionBool;
         enableResampledAnimations: OptionBool;
-        animationLabels: OptionArray<COLLADA.Converter.AnimationLabel>;
+        animationLabels: OptionArray<Converter.AnimationLabel>;
         animationFps: OptionFloat;
         removeConstAnimationTracks: OptionBool;
         applyBindShape: OptionBool;
@@ -114,7 +114,7 @@ module COLLADA.Converter {
             this.useAnimationLabels = new OptionBool("Animation labels", false,
                 "Enabled: animations labels are used to split the global animation into separete animations.<br/>" +
                 "Disabled: only one global animation is exported.");
-            this.animationLabels = new OptionArray<COLLADA.Converter.AnimationLabel>("Animation labels", [],
+            this.animationLabels = new OptionArray<Converter.AnimationLabel>("Animation labels", [],
                 "An array of animation labels ({name, begin, end, fps)} that describes how the global animation is split.<br/>" +
                 "Only has an effect if 'useAnimationLabels' is enabled.");
             this.animationFps = new OptionFloat("Animation samples per second", 10, 0, 100,
@@ -155,4 +155,3 @@ module COLLADA.Converter {
         }
 
     }
-}

@@ -1,16 +1,17 @@
-/// <reference path="context.ts" />
-/// <reference path="element.ts" />
-/// <reference path="utils.ts" />
-
-
-module COLLADA.Loader {
+import {Context} from "../context"
+import {LogLevel} from "../log"
+import * as Loader from "./loader"
+import * as Converter from "../converter/converter"
+import * as Exporter from "../exporter/exporter"
+import * as Utils from "./utils"
+import * as MathUtils from "../math"
 
     /**
     *   An <newparam> element.
     */
-    export class EffectSampler extends COLLADA.Loader.EElement {
-        surface: Link | undefined;
-        image: Link | undefined;
+    export class EffectSampler extends Loader.EElement {
+        surface: Loader.Link | undefined;
+        image: Loader.Link | undefined;
         wrapS: string = "";
         wrapT: string = "";
         minFilter: string = "";
@@ -24,15 +25,15 @@ module COLLADA.Loader {
             this._className += "EffectSampler|";
         }
 
-        static fromLink(link: Link, context: COLLADA.Context): COLLADA.Loader.EffectSampler | undefined {
-            return COLLADA.Loader.EElement._fromLink<COLLADA.Loader.EffectSampler>(link, "EffectSampler", context);
+        static fromLink(link: Loader.Link, context: Context): Loader.EffectSampler | undefined {
+            return Loader.EElement._fromLink<Loader.EffectSampler>(link, "EffectSampler", context);
         }
 
         /**
         *   Parses a <newparam> element.
         */
-        static parse(node: Node, parent: COLLADA.Loader.EElement, context: COLLADA.Loader.Context): COLLADA.Loader.EffectSampler {
-            var result: COLLADA.Loader.EffectSampler = new COLLADA.Loader.EffectSampler();
+        static parse(node: Node, parent: Loader.EElement, context: Loader.Context): Loader.EffectSampler {
+            var result: Loader.EffectSampler = new Loader.EffectSampler();
 
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
@@ -71,4 +72,3 @@ module COLLADA.Loader {
             return result;
         }
     }
-}

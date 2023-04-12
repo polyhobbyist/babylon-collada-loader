@@ -1,7 +1,12 @@
-/// <reference path="./model.ts" />
+import {Context} from "./context"
+import {LogLevel} from "./log"
+import * as Loader from "./loader/loader"
+import * as Converter from "./converter/converter"
+import * as Exporter from "./exporter/exporter"
+import * as Model from "./model"
+import * as ModelAnimation from "./model-animation"
 
-module COLLADA {
-    /**
+/**
 * Loads our custom file format
 */
 export class RMXModelLoader {
@@ -9,7 +14,7 @@ export class RMXModelLoader {
     constructor() {
     }
 
-    private loadFloatData(json: COLLADA.Exporter.DataChunkJSON, data: ArrayBuffer): Float32Array  | undefined{
+    private loadFloatData(json: Exporter.DataChunkJSON, data: ArrayBuffer): Float32Array  | undefined{
         if (json) {
             return new Float32Array(data, json.byte_offset, json.count * json.stride);
         } else {
@@ -17,7 +22,7 @@ export class RMXModelLoader {
         }
     }
 
-    private loadUint8Data(json: COLLADA.Exporter.DataChunkJSON, data: ArrayBuffer): Uint8Array | undefined{
+    private loadUint8Data(json: Exporter.DataChunkJSON, data: ArrayBuffer): Uint8Array | undefined{
         if (json) {
             return new Uint8Array(data, json.byte_offset, json.count * json.stride);
         } else {
@@ -25,7 +30,7 @@ export class RMXModelLoader {
         }
     }
 
-    private loadUint32Data(json: COLLADA.Exporter.DataChunkJSON, data: ArrayBuffer): Uint32Array {
+    private loadUint32Data(json: Exporter.DataChunkJSON, data: ArrayBuffer): Uint32Array {
         if (json) {
             return new Uint32Array(data, json.byte_offset, json.count * json.stride);
         } else {
@@ -33,8 +38,8 @@ export class RMXModelLoader {
         }
     }
 
-    private loadModelChunk(json: COLLADA.Exporter.GeometryJSON, data: ArrayBuffer): RMXModelChunk {
-        var result = new RMXModelChunk;
+    private loadModelChunk(json: Exporter.GeometryJSON, data: ArrayBuffer): Model.RMXModelChunk {
+        var result = new Model.RMXModelChunk;
 
         result.name = json.name;
         result.triangle_count = json.triangle_count;
@@ -49,14 +54,14 @@ export class RMXModelLoader {
 
         // Three.js wants float data
         if (result.data_boneindex) {
-            result.data_boneindex = new Float32Array(result.data_boneindex);
+            result.data_boneindex = new Uint8Array(result.data_boneindex);
         }
 
         return result;
     }
 
-    loadModel(json: COLLADA.Exporter.DocumentJSON, data: ArrayBuffer): RMXModel {
-        var result = new RMXModel;
+    loadModel(json: Exporter.DocumentJSON, data: ArrayBuffer): Model.RMXModel {
+        var result = new Model.RMXModel;
 
         // Load geometry
         result.chunks = json.chunks.map((chunk) => { return this.loadModelChunk(chunk, data) });
@@ -73,42 +78,42 @@ export class RMXModelLoader {
         return result;
     }
 
-    private loadBone(json: COLLADA.Exporter.BoneJSON, data: ArrayBuffer): RMXBone {
+    private loadBone(json: Exporter.BoneJSON, data: ArrayBuffer): Model.RMXBone {
         if (json == null) {
             return null;
         }
 
-        var result: RMXBone = new COLLADA.RMXBone;
+        var result: Model.RMXBone = new Model.RMXBone;
 
         result.name = json.name;
         result.parent = json.parent;
         result.skinned = json.skinned;
         result.inv_bind_mat = new Float32Array(json.inv_bind_mat);
-        result.pos = new BABYLON.Vector3(json.pos.x, json.pos.y, json.pos.z);
-        result.rot = new BABYLON.Quaternion(json.rot.x, json.rot.y, json.rot.z, json.rot.w);
-        result.scl = new BABYLON.Vector3(json.scl.x, json.scl.y, json.scl.z);
+        result.pos.set(json.pos[0], json.pos[1], json.pos[2]);
+        result.rot.set(json.rot[0], json.rot[1], json.rot[2], json.rot[3]);
+        result.scl.set(json.scl[0], json.scl[1], json.scl[2]);
 
         return result;
     }
 
-    private loadSkeleton(json: COLLADA.Exporter.DocumentJSON, data: ArrayBuffer): RMXSkeleton {
+    private loadSkeleton(json: Exporter.DocumentJSON, data: ArrayBuffer): Model.RMXSkeleton {
         if (json.bones == null || json.bones.length == 0) {
             return null;
         }
 
-        var result = new RMXSkeleton;
+        var result = new Model.RMXSkeleton;
 
         result.bones = json.bones.map((bone) => { return this.loadBone(bone, data) });
 
         return result;
     }
 
-    private loadAnimationTrack(json: COLLADA.Exporter.AnimationTrackJSON, data: ArrayBuffer): RMXAnimationTrack {
+    private loadAnimationTrack(json: Exporter.AnimationTrackJSON, data: ArrayBuffer): Model.RMXAnimationTrack {
         if (json == null) {
             return null;
         }
 
-        var result = new RMXAnimationTrack;
+        var result = new Model.RMXAnimationTrack;
         result.bone = json.bone;
         result.pos = this.loadFloatData(json.pos, data);
         result.rot = this.loadFloatData(json.rot, data);
@@ -116,12 +121,12 @@ export class RMXModelLoader {
         return result;
     }
 
-    private loadAnimation(json: COLLADA.Exporter.AnimationJSON, data: ArrayBuffer): RMXAnimation {
+    private loadAnimation(json: Exporter.AnimationJSON, data: ArrayBuffer): Model.RMXAnimation {
         if (json == null) {
             return null;
         }
 
-        var result = new RMXAnimation;
+        var result = new Model.RMXAnimation;
         result.name = json.name;
         result.fps = json.fps;
         result.frames = json.frames;
@@ -130,13 +135,12 @@ export class RMXModelLoader {
         return result;
     }
 
-    private loadMaterial(json: COLLADA.Exporter.MaterialJSON, data: ArrayBuffer): RMXMaterial {
-        var result = new RMXMaterial;
+    private loadMaterial(json: Exporter.MaterialJSON, data: ArrayBuffer): Model.RMXMaterial {
+        var result = new Model.RMXMaterial;
         result.diffuse = json.diffuse;
         result.specular = json.specular;
         result.normal = json.normal;
 
         return result;
     }
-}
 }

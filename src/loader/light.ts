@@ -1,14 +1,15 @@
-/// <reference path="context.ts" />
-/// <reference path="element.ts" />
-/// <reference path="light_param.ts" />
-/// <reference path="utils.ts" />
+import {Context} from "../context"
+import {LogLevel} from "../log"
+import * as Loader from "./loader"
+import * as Converter from "../converter/converter"
+import * as Exporter from "../exporter/exporter"
+import * as Utils from "./utils"
+import * as MathUtils from "../math"
 
-module COLLADA.Loader {
-
-    export class Light extends COLLADA.Loader.EElement {
+export class Light extends Loader.EElement {
         type: string | undefined;
         color: Float32Array | undefined;
-        params: { [s: string]: COLLADA.Loader.LightParam; }
+        params: { [s: string]: Loader.LightParam; }
 
         constructor() {
             super();
@@ -19,8 +20,8 @@ module COLLADA.Loader {
         /**
         *   Parses a <light> element.
         */
-        static parse(node: Node, context: COLLADA.Loader.Context): COLLADA.Loader.Light {
-            var result: COLLADA.Loader.Light = new COLLADA.Loader.Light();
+        static parse(node: Node, context: Loader.Context): Loader.Light {
+            var result: Loader.Light = new Loader.Light();
 
             result.id = context.getAttributeAsString(node, "id", undefined, true);
             result.name = context.getAttributeAsString(node, "name", undefined, false);
@@ -29,7 +30,7 @@ module COLLADA.Loader {
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
                     case "technique_common":
-                        COLLADA.Loader.Light.parseTechniqueCommon(child, result, context);
+                        Loader.Light.parseTechniqueCommon(child, result, context);
                         break;
                     case "extra":
                         context.reportUnhandledChild(child);
@@ -45,7 +46,7 @@ module COLLADA.Loader {
         /**
         *   Parses a <light>/<technique_common> element.
         */
-        static parseTechniqueCommon(node: Node, light: COLLADA.Loader.Light, context: COLLADA.Loader.Context) {
+        static parseTechniqueCommon(node: Node, light: Loader.Light, context: Loader.Context) {
 
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
@@ -53,7 +54,7 @@ module COLLADA.Loader {
                     case "directional":
                     case "point":
                     case "spot":
-                        COLLADA.Loader.Light.parseParams(child, light, "COMMON", context);
+                        Loader.Light.parseParams(child, light, "COMMON", context);
                         break;
                     default:
                         context.reportUnexpectedChild(child);
@@ -65,7 +66,7 @@ module COLLADA.Loader {
         /**
         *   Parses a <light>/<technique_common>/(<ambient>|<directional>|<point>|<spot>) element.
         */
-        static parseParams(node: Node, light: COLLADA.Loader.Light, profile: string, context: COLLADA.Loader.Context) {
+        static parseParams(node: Node, light: Loader.Light, profile: string, context: Loader.Context) {
 
             light.type = node.nodeName;
 
@@ -79,7 +80,7 @@ module COLLADA.Loader {
                     case "quadratic_attenuation":
                     case "falloff_angle":
                     case "falloff_exponent":
-                        var param: COLLADA.Loader.LightParam = COLLADA.Loader.LightParam.parse(child, context);
+                        var param: Loader.LightParam = Loader.LightParam.parse(child, context);
                         context.registerSidTarget(param, light);
                         light.params[param.name] = param;
                         break;
@@ -91,4 +92,3 @@ module COLLADA.Loader {
         }
 
     }
-}

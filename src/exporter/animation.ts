@@ -1,12 +1,15 @@
-/// <reference path="context.ts" />
-/// <reference path="animation_track.ts" />
-/// <reference path="format.ts" />
-
-module COLLADA.Exporter {
+import {Context} from "../context"
+import {LogLevel} from "../log"
+import * as Loader from "../loader/loader"
+import * as Converter from "../converter/converter"
+import * as Exporter from "./exporter"
+import * as Utils from "./utils"
+import * as MathUtils from "../math"
+import {AnimationTrack} from "./animation_track"
 
     export class Animation {
 
-        static toJSON(animation: COLLADA.Converter.AnimationData, context: COLLADA.Exporter.Context): COLLADA.Exporter.AnimationJSON {
+        static toJSON(animation: Converter.AnimationData, context: Exporter.Context): Exporter.AnimationJSON {
             if (animation === null) {
                 return {
                     name: "",
@@ -24,4 +27,3 @@ module COLLADA.Exporter {
             };
         }
     }
-}

@@ -1,13 +1,15 @@
-/// <reference path="context.ts" />
-/// <reference path="element.ts" />
-/// <reference path="utils.ts" />
-
-module COLLADA.Loader {
+import {Context} from "../context"
+import {LogLevel} from "../log"
+import * as Loader from "./loader"
+import * as Converter from "../converter/converter"
+import * as Exporter from "../exporter/exporter"
+import * as Utils from "./utils"
+import * as MathUtils from "../math"
 
     /**
     *   A template for a COLLADA element class. No actual use.
     */
-    export class ElementTemplate extends COLLADA.Loader.EElement {
+    export class ElementTemplate extends Loader.EElement {
         member: any;
 
         constructor() {
@@ -19,8 +21,8 @@ module COLLADA.Loader {
         /**
         *   Parses a <...> element.
         */
-        static parse(node: Node, context: COLLADA.Loader.Context): COLLADA.Loader.ElementTemplate {
-            var result: COLLADA.Loader.ElementTemplate = new COLLADA.Loader.ElementTemplate();
+        static parse(node: Node, context: Loader.Context): Loader.ElementTemplate {
+            var result: Loader.ElementTemplate = new Loader.ElementTemplate();
 
             result.id = context.getAttributeAsString(node, "id", undefined, true);
 
@@ -37,4 +39,3 @@ module COLLADA.Loader {
         }
 
     }
-}

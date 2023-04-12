@@ -1,4 +1,5 @@
-module COLLADA {
+
+import {Log, LogLevel} from "./log"
 
     export class Context {
         log: Log;
@@ -10,4 +11,3 @@ module COLLADA {
             return el._className.indexOf("|" + typeName + "|") > -1;
         }
     }
-}

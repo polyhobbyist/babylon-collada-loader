@@ -1,11 +1,15 @@
-/// <reference path="context.ts" />
-/// <reference path="utils.ts" />
-/// <reference path="material.ts" />
-/// <reference path="bone.ts" />
-/// <reference path="bounding_box.ts" />
-/// <reference path="../math.ts" />
-
-module COLLADA.Converter {
+import {Log, LogLevel} from "../log"
+import * as Loader from "../loader/loader"
+import * as Converter from "./converter"
+import * as Utils from "./utils"
+import * as MathUtils from "../math"
+import {Material} from "./material"
+import {Texture} from "./texture"
+import {AnimationTarget} from "./animation"
+import * as COLLADAContext from "../context"
+import {Options} from "./options"
+import {BoundingBox} from "./bounding_box"
+import * as BABYLON from 'babylonjs';
 
     export class GeometryData {
         indices: Uint32Array = new Uint32Array();
@@ -18,7 +22,7 @@ module COLLADA.Converter {
 
     export class GeometryChunkSourceIndices {
         /** Original indices, contained in <triangles>/<p> */
-        indices: Int32Array = new Int32Array();
+        indices: Uint32Array = new Uint32Array();
         /** The stride of the original indices (number of independent indices per vertex) */
         indexStride: number = 0;
         /** The offset of the main (position) index in the original vertices */
@@ -37,7 +41,7 @@ module COLLADA.Converter {
         public indexBufferOffset: number = 0;
         /** Geometry data buffer */
         public data: GeometryData = new GeometryData();
-        public material: COLLADA.Converter.Material = new COLLADA.Converter.Material();
+        public material: Converter.Material = new Converter.Material();
         public boundingBox: BoundingBox= new BoundingBox();;
         /** Bind shape matrix (skinned geometry only) */
         public bindShapeMatrix: BABYLON.Matrix = new BABYLON.Matrix();
@@ -49,18 +53,18 @@ module COLLADA.Converter {
         *
         * This de-indexes the COLLADA data, so that it is usable by GPUs.
         */
-        static createChunk(geometry: COLLADA.Loader.Geometry, triangles: COLLADA.Loader.Triangles, context: COLLADA.Converter.Context): COLLADA.Converter.GeometryChunk | undefined{
+        static createChunk(geometry: Loader.Geometry, triangles: Loader.Triangles, context: Converter.Context): Converter.GeometryChunk | undefined{
             if (!triangles?.inputs) {
                 return undefined;
             }
 
             // Per-triangle data input
-            var inputTriVertices: COLLADA.Loader.Input | undefined;
-            var inputTriNormal: COLLADA.Loader.Input | undefined;
-            var inputTriColor: COLLADA.Loader.Input | undefined;
-            var inputTriTexcoord: COLLADA.Loader.Input[] = [];
+            var inputTriVertices: Loader.Input | undefined;
+            var inputTriNormal: Loader.Input | undefined;
+            var inputTriColor: Loader.Input | undefined;
+            var inputTriTexcoord: Loader.Input[] = [];
             for (var i: number = 0; i < triangles.inputs.length; i++) {
-                var input: COLLADA.Loader.Input = triangles.inputs[i];
+                var input: Loader.Input = triangles.inputs[i];
                 switch (input.semantic) {
                     case "VERTEX":
                         inputTriVertices = input;
@@ -84,22 +88,22 @@ module COLLADA.Converter {
             }
 
             // Per-triangle data source
-            var srcTriVertices = COLLADA.Loader.Vertices.fromLink(inputTriVertices.source, context);
+            var srcTriVertices = Loader.Vertices.fromLink(inputTriVertices.source, context);
             if (!srcTriVertices) {
                 context.log.write("Geometry " + geometry.id + " has no vertices, geometry ignored", LogLevel.Warning);
                 return undefined;
             }
-            var srcTriNormal = COLLADA.Loader.Source.fromLink(inputTriNormal != null ? inputTriNormal.source : undefined, context);
-            var srcTriColor = COLLADA.Loader.Source.fromLink(inputTriColor != null ? inputTriColor.source : undefined, context);
-            var srcTriTexcoord = inputTriTexcoord.map((x: COLLADA.Loader.Input) => COLLADA.Loader.Source.fromLink(x != null ? x.source : undefined, context));
+            var srcTriNormal = Loader.Source.fromLink(inputTriNormal != null ? inputTriNormal.source : undefined, context);
+            var srcTriColor = Loader.Source.fromLink(inputTriColor != null ? inputTriColor.source : undefined, context);
+            var srcTriTexcoord = inputTriTexcoord.map((x: Loader.Input) => Loader.Source.fromLink(x != null ? x.source : undefined, context));
 
             // Per-vertex data input
             var inputVertPos = null;
             var inputVertNormal = null;
             var inputVertColor = null;
-            var inputVertTexcoord: COLLADA.Loader.Input[] = [];
+            var inputVertTexcoord: Loader.Input[] = [];
             for (var i: number = 0; i < srcTriVertices.inputs.length; i++) {
-                var input: COLLADA.Loader.Input = srcTriVertices.inputs[i];
+                var input: Loader.Input = srcTriVertices.inputs[i];
                 switch (input.semantic) {
                     case "POSITION":
                         inputVertPos = input;
@@ -123,23 +127,23 @@ module COLLADA.Converter {
             }
 
             // Per-vertex data source
-            var srcVertPos = COLLADA.Loader.Source.fromLink(inputVertPos.source, context);
+            var srcVertPos = Loader.Source.fromLink(inputVertPos.source, context);
             if (!srcVertPos) {
                 context.log.write("Geometry " + geometry.id + " has no vertex positions, geometry ignored", LogLevel.Warning);
                 return undefined;
             }
-            var srcVertNormal = COLLADA.Loader.Source.fromLink(inputVertNormal != null ? inputVertNormal.source : undefined, context);
-            var srcVertColor = COLLADA.Loader.Source.fromLink(inputVertColor != null ? inputVertColor.source : undefined, context);
-            var srcVertTexcoord = inputVertTexcoord.map((x: COLLADA.Loader.Input) => COLLADA.Loader.Source.fromLink(x != null ? x.source : undefined, context));
+            var srcVertNormal = Loader.Source.fromLink(inputVertNormal != null ? inputVertNormal.source : undefined, context);
+            var srcVertColor = Loader.Source.fromLink(inputVertColor != null ? inputVertColor.source : undefined, context);
+            var srcVertTexcoord = inputVertTexcoord.map((x: Loader.Input) => Loader.Source.fromLink(x != null ? x.source : undefined, context));
 
             // Raw data
-            var dataVertPos: Float32Array = COLLADA.Converter.Utils.createFloatArray(srcVertPos, "vertex position", 3, context);
-            var dataVertNormal: Float32Array = COLLADA.Converter.Utils.createFloatArray(srcVertNormal, "vertex normal", 3, context);
-            var dataTriNormal: Float32Array = COLLADA.Converter.Utils.createFloatArray(srcTriNormal, "vertex normal (indexed)", 3, context);
-            var dataVertColor: Float32Array = COLLADA.Converter.Utils.createFloatArray(srcVertColor, "vertex color", 4, context);
-            var dataTriColor: Float32Array = COLLADA.Converter.Utils.createFloatArray(srcTriColor, "vertex color (indexed)", 4, context);
-            var dataVertTexcoord: Float32Array[] = srcVertTexcoord.map((x) => COLLADA.Converter.Utils.createFloatArray(x, "texture coordinate", 2, context));
-            var dataTriTexcoord: Float32Array[] = srcTriTexcoord.map((x) => COLLADA.Converter.Utils.createFloatArray(x, "texture coordinate (indexed)", 2, context));
+            var dataVertPos: Float32Array = Utils.createFloatArray(srcVertPos, "vertex position", 3, context);
+            var dataVertNormal: Float32Array = Utils.createFloatArray(srcVertNormal, "vertex normal", 3, context);
+            var dataTriNormal: Float32Array = Utils.createFloatArray(srcTriNormal, "vertex normal (indexed)", 3, context);
+            var dataVertColor: Float32Array = Utils.createFloatArray(srcVertColor, "vertex color", 4, context);
+            var dataTriColor: Float32Array = Utils.createFloatArray(srcTriColor, "vertex color (indexed)", 4, context);
+            var dataVertTexcoord: Float32Array[] = srcVertTexcoord.map((x) => Utils.createFloatArray(x, "texture coordinate", 2, context));
+            var dataTriTexcoord: Float32Array[] = srcTriTexcoord.map((x) => Utils.createFloatArray(x, "texture coordinate (indexed)", 2, context));
 
             // Make sure the geometry only contains triangles
             if (triangles.type !== "triangles") {
@@ -168,7 +172,7 @@ module COLLADA.Converter {
             var trianglesCount = triangles.count;
             var triangleStride = colladaIndices.length / triangles.count;
             var triangleVertexStride = triangleStride / 3;
-            var indices = COLLADA.Converter.Utils.compactIndices(colladaIndices, triangleVertexStride, inputTriVertices.offset);
+            var indices = Utils.compactIndices(colladaIndices, triangleVertexStride, inputTriVertices.offset);
 
             if ((indices === null) || (indices.length === 0)) {
                 context.log.write("Geometry " + geometry.id + " does not contain any indices, geometry ignored", LogLevel.Error);
@@ -176,7 +180,7 @@ module COLLADA.Converter {
             }
 
             // The vertex count (size of the vertex buffer) is the number of unique indices in the index buffer
-            var vertexCount: number = COLLADA.Converter.Utils.maxIndex(indices) + 1;
+            var vertexCount: number = Utils.maxIndex(indices) + 1;
             var triangleCount: number = indices.length / 3;
 
             if (triangleCount !== trianglesCount) {
@@ -187,15 +191,15 @@ module COLLADA.Converter {
             // Position buffer
             var position = new Float32Array(vertexCount * 3);
             var indexOffsetPosition: number = inputTriVertices.offset;
-            COLLADA.Converter.Utils.reIndex(dataVertPos, colladaIndices, triangleVertexStride, indexOffsetPosition, 3, position, indices, 1, 0, 3);
+            Utils.reIndex(dataVertPos, colladaIndices, triangleVertexStride, indexOffsetPosition, 3, position, indices, 1, 0, 3);
 
             // Normal buffer
             var normal = new Float32Array(vertexCount * 3);
             var indexOffsetNormal = inputTriNormal !== null ? inputTriNormal?.offset : null;
             if (dataVertNormal !== null) {
-                COLLADA.Converter.Utils.reIndex(dataVertNormal, colladaIndices, triangleVertexStride, indexOffsetPosition, 3, normal, indices, 1, 0, 3);
+                Utils.reIndex(dataVertNormal, colladaIndices, triangleVertexStride, indexOffsetPosition, 3, normal, indices, 1, 0, 3);
             } else if (dataTriNormal !== null) {
-                COLLADA.Converter.Utils.reIndex(dataTriNormal, colladaIndices, triangleVertexStride, indexOffsetNormal, 3, normal, indices, 1, 0, 3);
+                Utils.reIndex(dataTriNormal, colladaIndices, triangleVertexStride, indexOffsetNormal, 3, normal, indices, 1, 0, 3);
             } else {
                 context.log.write("Geometry " + geometry.id + " has no normal data, using zero vectors", LogLevel.Warning);
             }
@@ -204,9 +208,9 @@ module COLLADA.Converter {
             var texcoord = new Float32Array(vertexCount * 2);
             var indexOffsetTexcoord = inputTriTexcoord.length > 0 ? inputTriTexcoord[0].offset : null;
             if (dataVertTexcoord.length > 0) {
-                COLLADA.Converter.Utils.reIndex(dataVertTexcoord[0], colladaIndices, triangleVertexStride, indexOffsetPosition, 2, texcoord, indices, 1, 0, 2);
+                Utils.reIndex(dataVertTexcoord[0], colladaIndices, triangleVertexStride, indexOffsetPosition, 2, texcoord, indices, 1, 0, 2);
             } else if (dataTriTexcoord.length > 0) {
-                COLLADA.Converter.Utils.reIndex(dataTriTexcoord[0], colladaIndices, triangleVertexStride, indexOffsetTexcoord, 2, texcoord, indices, 1, 0, 2);
+                Utils.reIndex(dataTriTexcoord[0], colladaIndices, triangleVertexStride, indexOffsetTexcoord, 2, texcoord, indices, 1, 0, 2);
             } else {
                 context.log.write("Geometry " + geometry.id + " has no texture coordinate data, using zero vectors", LogLevel.Warning);
             }
@@ -225,7 +229,7 @@ module COLLADA.Converter {
             sourceIndices.indexOffset = indexOffsetPosition;
 
             // Geometry chunk
-            var result: COLLADA.Converter.GeometryChunk = new COLLADA.Converter.GeometryChunk();
+            var result: Converter.GeometryChunk = new Converter.GeometryChunk();
             result.vertexCount = vertexCount;
             result.vertexBufferOffset = 0;
             result.triangleCount = triangleCount;
@@ -239,7 +243,7 @@ module COLLADA.Converter {
         /**
         * Computes the bounding box of the static (unskinned) geometry
         */
-        static computeBoundingBox(chunk: COLLADA.Converter.GeometryChunk, context: COLLADA.Converter.Context) {
+        static computeBoundingBox(chunk: Converter.GeometryChunk, context: Converter.Context) {
             chunk.boundingBox.fromPositions(chunk.data.position, chunk.vertexBufferOffset, chunk.vertexCount);
         }
 
@@ -260,7 +264,7 @@ module COLLADA.Converter {
         /**
         * Transforms the positions and normals of the given Chunk by the given matrices
         */
-        static transformChunk(chunk: COLLADA.Converter.GeometryChunk, positionMatrix: BABYLON.Matrix, normalMatrix: BABYLON.Matrix, context: COLLADA.Converter.Context) {
+        static transformChunk(chunk: Converter.GeometryChunk, positionMatrix: BABYLON.Matrix, normalMatrix: BABYLON.Matrix, context: Converter.Context) {
             var position: Float32Array = chunk.data.position;
             if (position !== null) {
                 GeometryChunk.transformEachVector(position, positionMatrix);
@@ -275,7 +279,7 @@ module COLLADA.Converter {
         /**
         * Scales the positions of the given Chunk
         */
-        static scaleChunk(chunk: COLLADA.Converter.GeometryChunk, scale: number, context: COLLADA.Converter.Context) {
+        static scaleChunk(chunk: Converter.GeometryChunk, scale: number, context: Converter.Context) {
             var position: Float32Array = chunk.data.position;
             if (position !== null) {
                 for (var i = 0; i < position.length; ++i) {
@@ -291,7 +295,7 @@ module COLLADA.Converter {
         * Each chunk then uses the same buffers, but uses a different portion of the buffers, according to the triangleCount and triangleOffset.
         * A single new chunk containing all the geometry is returned.
         */
-        static mergeChunkData(chunks: COLLADA.Converter.GeometryChunk[], context: COLLADA.Converter.Context) {
+        static mergeChunkData(chunks: Converter.GeometryChunk[], context: Converter.Context) {
 
             if (chunks.length < 2) {
                 return;
@@ -387,6 +391,3 @@ module COLLADA.Converter {
 
     }
 
-
-
-}

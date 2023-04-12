@@ -1,16 +1,17 @@
-/// <reference path="context.ts" />
-/// <reference path="element.ts" />
-/// <reference path="input.ts" />
-/// <reference path="utils.ts" />
+import {Context} from "../context"
+import {LogLevel} from "../log"
+import * as Loader from "./loader"
+import * as Converter from "../converter/converter"
+import * as Exporter from "../exporter/exporter"
+import * as Utils from "./utils"
+import * as MathUtils from "../math"
 
-module COLLADA.Loader {
-
-    export class Sampler extends COLLADA.Loader.EElement {
-        input: COLLADA.Loader.Input | undefined;
-        outputs: COLLADA.Loader.Input[];
-        inTangents: COLLADA.Loader.Input[];
-        outTangents: COLLADA.Loader.Input[];
-        interpolation: COLLADA.Loader.Input | undefined;
+    export class Sampler extends Loader.EElement {
+        input: Loader.Input | undefined;
+        outputs: Loader.Input[];
+        inTangents: Loader.Input[];
+        outTangents: Loader.Input[];
+        interpolation: Loader.Input | undefined;
 
         constructor() {
             super();
@@ -20,15 +21,15 @@ module COLLADA.Loader {
             this.outTangents = [];
         }
 
-        static fromLink(link: Link, context: COLLADA.Context): COLLADA.Loader.Sampler | undefined{
-            return COLLADA.Loader.EElement._fromLink<COLLADA.Loader.Sampler>(link, "Sampler", context);
+        static fromLink(link: Loader.Link, context: Context): Loader.Sampler | undefined{
+            return Loader.EElement._fromLink<Loader.Sampler>(link, "Sampler", context);
         }
 
         /**
         *   Parses a <sampler> element.
         */
-        static parse(node: Node, context: COLLADA.Loader.Context): COLLADA.Loader.Sampler {
-            var result: COLLADA.Loader.Sampler = new COLLADA.Loader.Sampler();
+        static parse(node: Node, context: Loader.Context): Loader.Sampler {
+            var result: Loader.Sampler = new Loader.Sampler();
 
             result.id = context.getAttributeAsString(node, "id", undefined, false);
             context.registerUrlTarget(result, false);
@@ -36,8 +37,8 @@ module COLLADA.Loader {
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
                     case "input":
-                        var input: COLLADA.Loader.Input = COLLADA.Loader.Input.parse(child, false, context);
-                        COLLADA.Loader.Sampler?.addInput(result, input, context);
+                        var input: Loader.Input = Loader.Input.parse(child, false, context);
+                        Loader.Sampler?.addInput(result, input, context);
                         break;
                     default:
                         context.reportUnexpectedChild(child);
@@ -47,7 +48,7 @@ module COLLADA.Loader {
             return result;
         }
 
-        static addInput(sampler: COLLADA.Loader.Sampler, input: COLLADA.Loader.Input, context: COLLADA.Loader.Context) {
+        static addInput(sampler: Loader.Sampler, input: Loader.Input, context: Loader.Context) {
             switch (input.semantic) {
                 case "INPUT":
                     sampler.input = input;
@@ -70,4 +71,3 @@ module COLLADA.Loader {
         }
 
     }
-}

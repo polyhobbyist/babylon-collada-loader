@@ -1,4 +1,11 @@
-/// <reference path="model-loader.ts" />
+import {Context} from "./context"
+import {LogLevel} from "./log"
+import * as Loader from "./loader/loader"
+import * as Converter from "./converter/converter"
+import * as Exporter from "./exporter/exporter"
+import * as Model from "./model"
+import * as ModelAnimation from "./model-animation"
+
 
 import * as BABYLON from 'babylonjs';
 
@@ -14,7 +21,7 @@ export class BabylonModelLoader {
         this.materialCache = {};
     }
 
-    private createGeometry(chunk: COLLADA.RMXModelChunk, scene : BABYLON.Scene): BABYLON.VertexData {
+    private createGeometry(chunk: Model.RMXModelChunk, scene : BABYLON.Scene): BABYLON.VertexData {
         var vertexData = new BABYLON.VertexData();
 
         if (chunk.data_position) {
@@ -47,7 +54,7 @@ export class BabylonModelLoader {
         return new BABYLON.Texture("url", scene);
     }
 
-    private createMaterial(material: COLLADA.RMXMaterial, skinned: boolean, scene : BABYLON.Scene): BABYLON.Material {
+    private createMaterial(material: Model.RMXMaterial, skinned: boolean, scene : BABYLON.Scene): BABYLON.Material {
         var prefix = skinned ? "skinned-" : "static-";
         var hash = prefix + material.hash();
         var cached_material = this.materialCache[hash];
@@ -64,7 +71,7 @@ export class BabylonModelLoader {
         }
     }
 
-    createModel(model: COLLADA.RMXModel, scene : BABYLON.Scene): BabylonModel {
+    createModel(model: Model.RMXModel, scene : BABYLON.Scene): BabylonModel {
         var result = new BabylonModel();
         var skinned = model.skeleton != null;
 
@@ -92,20 +99,20 @@ export class BabylonModelLoader {
 * A custom class that replaces THREE.Skeleton
 */
 export class BabylonSkeleton {
-    boneTexture: COLLADA.RMXBoneMatrixTexture;
-    skeleton: COLLADA.RMXSkeleton;
-    pose: COLLADA.RMXPose;
+    boneTexture: ModelAnimation.RMXBoneMatrixTexture;
+    skeleton: Model.RMXSkeleton;
+    pose: ModelAnimation.RMXPose;
 
-    constructor(skeleton: COLLADA.RMXSkeleton) {
+    constructor(skeleton: Model.RMXSkeleton) {
         // The skeleton stores information about the hiearchy of the bones
         this.skeleton = skeleton;
 
         // The pose stores information about the current bone transformations
-        this.pose = new COLLADA.RMXPose(skeleton.bones.length);
-        COLLADA.RMXSkeletalAnimation.resetPose(this.skeleton, this.pose);
+        this.pose = new ModelAnimation.RMXPose(skeleton.bones.length);
+        ModelAnimation.RMXSkeletalAnimation.resetPose(this.skeleton, this.pose);
 
         // The bone texture stores the bone matrices for the use on the GPU
-        this.boneTexture = new COLLADA.RMXBoneMatrixTexture(skeleton.bones.length);
+        this.boneTexture = new ModelAnimation.RMXBoneMatrixTexture(skeleton.bones.length);
 
         /* 
         // Trick three.js into thinking this is a THREE.Skeleton object
@@ -123,7 +130,7 @@ export class BabylonSkeleton {
 
     update(gl: WebGLRenderingContext) {
         // Compute the bone matrices
-        COLLADA.RMXSkeletalAnimation.exportPose(this.skeleton, this.pose, this.boneTexture.data);
+        ModelAnimation.RMXSkeletalAnimation.exportPose(this.skeleton, this.pose, this.boneTexture.data);
 
         // Upload the bone matrices to the bone texture
         this.boneTexture.update(gl);
@@ -156,8 +163,8 @@ export class BabylonModelInstance {
 */
 export class BabylonModel {
     chunks: BabylonModelChunk[];
-    skeleton: COLLADA.RMXSkeleton | undefined;
-    animations: COLLADA.RMXAnimation[];
+    skeleton: Model.RMXSkeleton | undefined;
+    animations: Model.RMXAnimation[];
     static identityMatrix: BABYLON.Matrix = new BABYLON.Matrix();
 
     constructor() {

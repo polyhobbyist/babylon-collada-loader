@@ -1,5 +1,3 @@
-module COLLADA.Converter {
-
     export class ColladaConverterData {
         data: Uint8Array;
         offset: number = 0;
@@ -10,4 +8,3 @@ module COLLADA.Converter {
         }
 
     }
-}

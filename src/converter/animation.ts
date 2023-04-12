@@ -1,13 +1,13 @@
-/// <reference path="../math.ts" />
-/// <reference path="context.ts" />
-/// <reference path="utils.ts" />
-/// <reference path="animation_channel.ts" />
-
-module COLLADA.Converter {
+import {Context} from "../context"
+import {LogLevel} from "../log"
+import * as Loader from "../loader/loader"
+import * as Converter from "./converter"
+import * as Utils from "./utils"
+import * as MathUtils from "../math"
 
     export interface AnimationTarget {
-        applyAnimation(channel: COLLADA.Converter.AnimationChannel, time: number, context: COLLADA.Context): void;
-        registerAnimation(channel: COLLADA.Converter.AnimationChannel): void;
+        applyAnimation(channel: Converter.AnimationChannel, time: number, context: Context): void;
+        registerAnimation(channel: Converter.AnimationChannel): void;
         getTargetDataRows(): number;
         getTargetDataColumns(): number;
     }
@@ -105,7 +105,7 @@ module COLLADA.Converter {
     export class Animation {
         id: string;
         name: string;
-        channels: COLLADA.Converter.AnimationChannel[];
+        channels: Converter.AnimationChannel[];
 
         constructor() {
             this.id = null;
@@ -113,37 +113,37 @@ module COLLADA.Converter {
             this.channels = [];
         }
 
-        static create(animation: COLLADA.Loader.Animation, context: COLLADA.Converter.Context): COLLADA.Converter.Animation {
-            var result: COLLADA.Converter.Animation = new COLLADA.Converter.Animation();
+        static create(animation: Loader.Animation, context: Converter.Context): Converter.Animation {
+            var result: Converter.Animation = new Converter.Animation();
             result.id = animation.id;
             result.name = animation.name;
 
-            COLLADA.Converter.Animation.addChannelsToAnimation(animation, result, context);
+            Converter.Animation.addChannelsToAnimation(animation, result, context);
 
             return result;
         }
 
-        static addChannelsToAnimation(collada_animation: COLLADA.Loader.Animation, converter_animation: COLLADA.Converter.Animation, context: COLLADA.Converter.Context) {
+        static addChannelsToAnimation(collada_animation: Loader.Animation, converter_animation: Converter.Animation, context: Converter.Context) {
             // Channels
             for (var i: number = 0; i < collada_animation.channels.length; ++i) {
-                var channel: COLLADA.Converter.AnimationChannel = COLLADA.Converter.AnimationChannel.create(collada_animation.channels[i], context);
+                var channel: Converter.AnimationChannel = Converter.AnimationChannel.create(collada_animation.channels[i], context);
                 converter_animation.channels.push(channel);
             }
 
             // Children
             for (var i: number = 0; i < collada_animation.children.length; ++i) {
-                var child: COLLADA.Loader.Animation = collada_animation.children[i];
-                COLLADA.Converter.Animation.addChannelsToAnimation(child, converter_animation, context);
+                var child: Loader.Animation = collada_animation.children[i];
+                Converter.Animation.addChannelsToAnimation(child, converter_animation, context);
             }
         }
 
         /**
         * Returns the time and fps statistics of this animation
         */
-        static getTimeStatistics(animation: COLLADA.Converter.Animation, index_begin: number, index_end: number, result: COLLADA.Converter.AnimationTimeStatistics, context: COLLADA.Converter.Context) {
+        static getTimeStatistics(animation: Converter.Animation, index_begin: number, index_end: number, result: Converter.AnimationTimeStatistics, context: Converter.Context) {
             // Channels
             for (var i: number = 0; i < animation.channels.length; ++i) {
-                var channel: COLLADA.Converter.AnimationChannel = animation.channels[i];
+                var channel: Converter.AnimationChannel = animation.channels[i];
 
                 if (channel) {
                     var begin = (index_begin !== null) ? index_begin : -Infinity;
@@ -160,4 +160,3 @@ module COLLADA.Converter {
             }
         }
     }
-}

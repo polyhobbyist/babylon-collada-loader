@@ -1,29 +1,31 @@
-/// <reference path="context.ts" />
-/// <reference path="element.ts" />
-/// <reference path="skin.ts" />
-/// <reference path="morph.ts" />
-/// <reference path="utils.ts" />
+import {Context} from "../context"
+import {LogLevel} from "../log"
+import * as Loader from "./loader"
+import * as Converter from "../converter/converter"
+import * as Exporter from "../exporter/exporter"
+import * as Utils from "./utils"
+import * as MathUtils from "../math"
 
-module COLLADA.Loader {
 
-    export class Controller extends COLLADA.Loader.EElement {
-        skin: COLLADA.Loader.Skin | undefined;
-        morph: COLLADA.Loader.Morph | undefined;
+
+    export class Controller extends Loader.EElement {
+        skin: Loader.Skin | undefined;
+        morph: Loader.Morph | undefined;
 
         constructor() {
             super();
             this._className += "Controller|";
         }
 
-        static fromLink(link: Link, context: COLLADA.Context): COLLADA.Loader.Controller | undefined {
-            return COLLADA.Loader.EElement._fromLink<COLLADA.Loader.Controller>(link, "Controller", context);
+        static fromLink(link: Loader.Link, context: Context): Loader.Controller | undefined {
+            return Loader.EElement._fromLink<Loader.Controller>(link, "Controller", context);
         }
 
         /**
         *   Parses a <controller> element.
         */
-        static parse(node: Node, context: COLLADA.Loader.Context): COLLADA.Loader.Controller {
-            var result: COLLADA.Loader.Controller = new COLLADA.Loader.Controller();
+        static parse(node: Node, context: Loader.Context): Loader.Controller {
+            var result: Loader.Controller = new Loader.Controller();
 
             result.id = context.getAttributeAsString(node, "id", undefined, true);
             result.name = context.getAttributeAsString(node, "name", undefined, false);
@@ -35,13 +37,13 @@ module COLLADA.Loader {
                         if (result.skin != null) {
                             context.log.write("Controller " + result.id + " has multiple skins", LogLevel.Error);
                         }
-                        result.skin = COLLADA.Loader.Skin.parse(child, context);
+                        result.skin = Loader.Skin.parse(child, context);
                         break;
                     case "morph":
                         if (result.morph != null) {
                             context.log.write("Controller " + result.id + " has multiple morphs", LogLevel.Error);
                         }
-                        result.morph = COLLADA.Loader.Morph.parse(child, context);
+                        result.morph = Loader.Morph.parse(child, context);
                         break;
                     default:
                         context.reportUnexpectedChild(child);
@@ -52,4 +54,3 @@ module COLLADA.Loader {
         }
 
     }
-}

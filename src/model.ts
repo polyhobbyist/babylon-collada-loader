@@ -1,6 +1,6 @@
 import * as BABYLON from 'babylonjs';
 
-module COLLADA {
+
 
 /**
 * A skinned mesh with an animation
@@ -123,5 +123,4 @@ export class RMXAnimationTrack {
     constructor() {
         this.bone = 0;
     }
-}
 }

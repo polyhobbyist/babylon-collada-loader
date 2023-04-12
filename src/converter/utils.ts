@@ -1,9 +1,9 @@
+import {Log, LogLevel} from "../log"
 import * as BABYLON from 'babylonjs';
 import * as LoaderSource from '../loader/source'
-
-module COLLADA.Converter {
-
-    export class Utils {
+import * as Converter from './converter'
+import * as Loader from "../loader/loader"
+import {Context} from "../context"
 
         /**
         * Re-indexes data.
@@ -13,9 +13,9 @@ module COLLADA.Converter {
         * whereas for GPU rendering, there is only one index buffer for the whole geometry.
         *
         */
-        static reIndex(
-            srcData: Float32Array, srcIndices: Uint32Array, srcStride: number, srcOffset: number, srcDim: number,
-            destData: Float32Array, destIndices: Uint32Array, destStride: number, destOffset: number, destDim: number) {
+        export function reIndex<T>(
+            srcData: T, srcIndices: Uint32Array, srcStride: number, srcOffset: number, srcDim: number,
+            destData: T, destIndices: Uint32Array, destStride: number, destOffset: number, destDim: number) {
 
             var dim: number = Math.min(srcDim, destDim);
             var srcIndexCount: number = srcIndices.length;
@@ -43,7 +43,7 @@ module COLLADA.Converter {
         * Given a list of indices stored as indices[i*stride + offset],
         * returns a similar list of indices stored as an array of consecutive numbers.
         */
-        static compactIndices(indices: Uint32Array, stride: number, offset: number): Uint32Array {
+        export function compactIndices(indices: Uint32Array, stride: number, offset: number): Uint32Array {
             var uniqueCount: number = 0;
             var indexCount = indices.length / stride;
             var uniqueMap: Uint32Array = new Uint32Array(indexCount);
@@ -86,7 +86,7 @@ module COLLADA.Converter {
         /**
         * Returns the maximum element of a list of non-negative integers
         */
-        static maxIndex(indices: Uint32Array): number {
+        export function maxIndex(indices: Uint32Array): number {
             if (indices === null) {
                 return 0;
             }
@@ -98,28 +98,28 @@ module COLLADA.Converter {
             return result;
         }
 
-        static createFloatArray(source: COLLADA.Loader.Source, name: string, outDim: number, context: COLLADA.Context): Float32Array {
+        export function createFloatArray(source: Loader.Source, name: string, outDim: number, context: Context): Float32Array {
             if (source === null) {
                 return new Float32Array();
             }
 
             if (source.stride > outDim) {
-                context.log.write("Source data for " + name + " contains too many dimensions, " + (source.stride - outDim) + " dimensions will be ignored", COLLADA.LogLevel.Warning);
+                context.log.write("Source data for " + name + " contains too many dimensions, " + (source.stride - outDim) + " dimensions will be ignored", LogLevel.Warning);
             } else if (source.stride < outDim) {
-                context.log.write("Source data for " + name + " does not contain enough dimensions, " + (outDim - source.stride) + " dimensions will be zero", COLLADA.LogLevel.Warning);
+                context.log.write("Source data for " + name + " does not contain enough dimensions, " + (outDim - source.stride) + " dimensions will be zero", LogLevel.Warning);
             }
 
             // Start and end index
             var iBegin: number = source.offset;
             var iEnd: number = source.offset + source.count * source.stride;
             if (iEnd > source.data.length) {
-                context.log.write("Source for " + name + " tries to access too many elements, data ignored", COLLADA.LogLevel.Warning);
+                context.log.write("Source for " + name + " tries to access too many elements, data ignored", LogLevel.Warning);
                 return new Float32Array();
             }
 
             // Get source raw data
             if (!(source.data instanceof Float32Array)) {
-                context.log.write("Source for " + name + " does not contain floating point data, data ignored", COLLADA.LogLevel.Warning);
+                context.log.write("Source for " + name + " does not contain floating point data, data ignored", LogLevel.Warning);
                 return new Float32Array();
             }
             var srcData: Float32Array = <Float32Array>source.data;
@@ -138,7 +138,7 @@ module COLLADA.Converter {
             return result;
         }
 
-        static createStringArray(source: COLLADA.Loader.Source, name: string, outDim: number, context: COLLADA.Context): string[] {
+        export function createStringArray(source: Loader.Source, name: string, outDim: number, context: Context): string[] {
             if (source === null) {
                 return [];
             }
@@ -177,13 +177,13 @@ module COLLADA.Converter {
             return result;
         }
 
-        static spawElements(array: Float32Array, i1: number, i2: number): void {
+        export function spawElements<T>(array: T, i1: number, i2: number): void {
             var temp = array[i1];
             array[i1] = array[i2];
             array[i2] = temp;
         }
 
-        static insertBone(indices: Float32Array, weights: Float32Array, index: number, weight: number, offsetBegin: number, offsetEnd: number) {
+        export function insertBone<T>(indices: T, weights: Float32Array, index: number, weight: number, offsetBegin: number, offsetEnd: number) {
 
             if (weights[offsetEnd] < weight) {
 
@@ -194,51 +194,51 @@ module COLLADA.Converter {
                 // Bubble towards the front
                 for (var i = offsetEnd; i > offsetBegin; --i) {
                     if (weights[i] > weights[i - 1]) {
-                        Utils.spawElements(weights, i, i - 1);
-                        Utils.spawElements(indices, i, i - 1);
+                        spawElements(weights, i, i - 1);
+                        spawElements(indices, i, i - 1);
                     }
                 }
             }
         }
 
-        private static worldTransform: BABYLON.Matrix = new BABYLON.Matrix();
-        static getWorldTransform(context: COLLADA.Converter.Context): BABYLON.Matrix {
-            var mat: BABYLON.Matrix = Utils.worldTransform;
-            mat.copyFrom(Utils.getWorldRotation(context));
-            var s = Utils.getWorldScale(context);
+        var worldTransform: BABYLON.Matrix = new BABYLON.Matrix();
+        export function getWorldTransform(context: Converter.Context): BABYLON.Matrix {
+            var mat: BABYLON.Matrix = worldTransform;
+            mat.copyFrom(getWorldRotation(context));
+            var s = getWorldScale(context);
             var matScale = BABYLON.Matrix.Scaling(s.x, s.y, s.z);
             mat = mat.multiply(mat, );
             return mat;
         }
 
-        private static worldInvTransform: BABYLON.Matrix = new BABYLON.Matrix();
-        static getWorldInvTransform(context: COLLADA.Converter.Context): BABYLON.Matrix {
-            var mat: BABYLON.Matrix = Utils.getWorldTransform(context);
-            mat.copyFrom(Utils.getWorldRotation(context));
+        var worldInvTransform: BABYLON.Matrix = new BABYLON.Matrix();
+        export function getWorldInvTransform(context: Converter.Context): BABYLON.Matrix {
+            var mat: BABYLON.Matrix = getWorldTransform(context);
+            mat.copyFrom(getWorldRotation(context));
             mat.invert();
-            return Utils.worldInvTransform;
+            return worldInvTransform;
         }
 
-        private static worldScale: BABYLON.Vector3 = new BABYLON.Vector3();
-        static getWorldScale(context: COLLADA.Converter.Context): BABYLON.Vector3 {
+        var worldScale: BABYLON.Vector3 = new BABYLON.Vector3();
+        export function getWorldScale(context: Converter.Context): BABYLON.Vector3 {
             var scale: number = context.options.worldTransformScale.value;
-            Utils.worldScale = new BABYLON.Vector3(scale, scale, scale);
-            return Utils.worldScale;
+            worldScale = new BABYLON.Vector3(scale, scale, scale);
+            return worldScale;
         }
 
-        private static worldInvScale: BABYLON.Vector3 = new BABYLON.Vector3();
-        static getWorldInvScale(context: COLLADA.Converter.Context): BABYLON.Vector3 {
+        var worldInvScale: BABYLON.Vector3 = new BABYLON.Vector3();
+        export function getWorldInvScale(context: Converter.Context): BABYLON.Vector3 {
             var invScale: number = 1 / context.options.worldTransformScale.value;
-            Utils.worldInvScale = new BABYLON.Vector3(invScale, invScale, invScale);
-            return Utils.worldInvScale;
+            worldInvScale = new BABYLON.Vector3(invScale, invScale, invScale);
+            return worldInvScale;
         }
 
-        private static worldRotation: BABYLON.Matrix = new BABYLON.Matrix();
-        static getWorldRotation(context: COLLADA.Converter.Context): BABYLON.Matrix {
+        var worldRotation: BABYLON.Matrix = new BABYLON.Matrix();
+        export function getWorldRotation(context: Converter.Context): BABYLON.Matrix {
             var rotationAxis: string = context.options.worldTransformRotationAxis.value;
             var rotationAngle: number = context.options.worldTransformRotationAngle.value * Math.PI / 180;
 
-            var mat: BABYLON.Matrix = Utils.worldRotation;
+            var mat: BABYLON.Matrix = worldRotation;
 
             switch (rotationAxis) {
                 case "none": break;
@@ -250,5 +250,3 @@ module COLLADA.Converter {
 
             return mat;
         }
-    }
-}

@@ -1,12 +1,15 @@
-/// <reference path="../context.ts" />
-/// <reference path="material.ts" />
-/// <reference path="node.ts" />
-/// <reference path="texture.ts" />
-/// <reference path="animation.ts" />
+import {Log, LogLevel} from "../log"
+import * as Loader from "../loader/loader"
+import * as Converter from "./converter"
+import * as Utils from "./utils"
+import * as MathUtils from "../math"
+import {Material} from "./material"
+import {Texture} from "./texture"
+import {AnimationTarget} from "./animation"
+import * as COLLADAContext from "../context"
+import {Options} from "./options"
 
-module COLLADA.Converter {
-
-    /**
+/**
     * A map that maps various COLLADA objects to converter objects
     * 
     * The converter does not store direct references to COLLADA objects,
@@ -41,24 +44,23 @@ module COLLADA.Converter {
         }
     }
 
-    export class Context extends COLLADA.Context {
-        materials: COLLADA.Converter.ObjectMap<COLLADA.Loader.Material, COLLADA.Converter.Material>;
-        textures: COLLADA.Converter.ObjectMap<COLLADA.Loader.Image, COLLADA.Converter.Texture>;
-        nodes: COLLADA.Converter.ObjectMap<COLLADA.Loader.VisualSceneNode, COLLADA.Converter.Node>;
-        animationTargets: COLLADA.Converter.ObjectMap<COLLADA.Loader.EElement, COLLADA.Converter.AnimationTarget>;
+    export class Context extends COLLADAContext.Context {
+        materials: ObjectMap<Loader.Material, Material>;
+        textures: ObjectMap<Loader.Image, Texture>;
+        nodes: ObjectMap<Loader.VisualSceneNode, Converter.Node>;
+        animationTargets: ObjectMap<Loader.EElement, AnimationTarget>;
         log: Log;
-        options: COLLADA.Converter.Options;
+        options: Options;
         messageCount: { [name: string]: number };
 
-        constructor(log: Log, options: COLLADA.Converter.Options) {
-            super();
+        constructor(log: Log, options: Options) {
+            super(log);
             this.log = log;
             this.options = options;
-            this.materials = new COLLADA.Converter.ObjectMap<COLLADA.Loader.Material, COLLADA.Converter.Material>();
-            this.textures = new COLLADA.Converter.ObjectMap<COLLADA.Loader.Image, COLLADA.Converter.Texture>();
-            this.nodes = new COLLADA.Converter.ObjectMap<COLLADA.Loader.VisualSceneNode, COLLADA.Converter.Node>();
-            this.animationTargets = new COLLADA.Converter.ObjectMap<COLLADA.Loader.EElement, COLLADA.Converter.AnimationTarget>();
+            this.materials = new ObjectMap<Loader.Material, Material>();
+            this.textures = new ObjectMap<Loader.Image, Texture>();
+            this.nodes = new ObjectMap<Loader.VisualSceneNode, Converter.Node>();
+            this.animationTargets = new ObjectMap<Loader.EElement, AnimationTarget>();
             this.messageCount = {};
         }
     }
-}

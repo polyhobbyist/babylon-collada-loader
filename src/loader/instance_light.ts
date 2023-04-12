@@ -1,11 +1,13 @@
-/// <reference path="context.ts" />
-/// <reference path="element.ts" />
-/// <reference path="utils.ts" />
+import {Context} from "../context"
+import {LogLevel} from "../log"
+import * as Loader from "./loader"
+import * as Converter from "../converter/converter"
+import * as Exporter from "../exporter/exporter"
+import * as Utils from "./utils"
+import * as MathUtils from "../math"
 
-module COLLADA.Loader {
-
-    export class InstanceLight extends COLLADA.Loader.EElement {
-        light: Link | undefined;
+    export class InstanceLight extends Loader.EElement {
+        light: Loader.Link | undefined;
 
         constructor() {
             super();
@@ -15,8 +17,8 @@ module COLLADA.Loader {
         /**
         *   Parses a <instance_light> element.
         */
-        static parse(node: Node, parent: COLLADA.Loader.VisualSceneNode, context: COLLADA.Loader.Context): COLLADA.Loader.InstanceLight {
-            var result: COLLADA.Loader.InstanceLight = new COLLADA.Loader.InstanceLight();
+        static parse(node: Node, parent: Loader.VisualSceneNode, context: Loader.Context): Loader.InstanceLight {
+            var result: Loader.InstanceLight = new Loader.InstanceLight();
 
             result.light = context.getAttributeAsUrlLink(node, "url", true);
             result.sid = context.getAttributeAsString(node, "sid", undefined, false);
@@ -36,4 +38,3 @@ module COLLADA.Loader {
             return result;
         }
     };
-}

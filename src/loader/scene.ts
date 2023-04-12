@@ -1,23 +1,24 @@
-/// <reference path="context.ts" />
-/// <reference path="element.ts" />
-/// <reference path="utils.ts" />
-
-
-module COLLADA.Loader {
+import {Context} from "../context"
+import {LogLevel} from "../log"
+import * as Loader from "./loader"
+import * as Converter from "../converter/converter"
+import * as Exporter from "../exporter/exporter"
+import * as Utils from "./utils"
+import * as MathUtils from "../math"
 
     /**
     *   A <scene> element.
     */
-    export class Scene extends COLLADA.Loader.EElement {
-        instance: Link | undefined = undefined;
+    export class Scene extends Loader.EElement {
+        instance: Loader.Link | undefined = undefined;
 
         constructor() {
             super();
             this._className += "Scene|";
         }
 
-        static parse(node: Node, context: COLLADA.Loader.Context): COLLADA.Loader.Scene {
-            var result: COLLADA.Loader.Scene = new COLLADA.Loader.Scene();
+        static parse(node: Node, context: Loader.Context): Loader.Scene {
+            var result: Loader.Scene = new Loader.Scene();
 
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
@@ -33,4 +34,3 @@ module COLLADA.Loader {
             return result;
         }
     };
-}

@@ -1,5 +1,6 @@
+import * as Exporter from "./exporter"
 
-module COLLADA.Exporter {
+
 
     export class Utils {
 
@@ -27,7 +28,7 @@ module COLLADA.Exporter {
         }
 
         static bufferToDataURI(buf: Uint8Array, mime?: string): string {
-            var base64: string = COLLADA.Exporter.Utils.bufferToString(buf);
+            var base64: string = Exporter.Utils.bufferToString(buf);
 
             if (!mime) {
                 mime = "application/octet-stream";
@@ -62,4 +63,3 @@ module COLLADA.Exporter {
             return URL.createObjectURL(blob);
         }
     }
-}

@@ -1,8 +1,10 @@
-/// <reference path="link.ts" />
-/// <reference path="context.ts" />
-
-
-module COLLADA.Loader {
+import {Context} from "../context"
+import {LogLevel} from "../log"
+import * as Loader from "./loader"
+import * as Converter from "../converter/converter"
+import * as Exporter from "../exporter/exporter"
+import * as Utils from "./utils"
+import * as MathUtils from "../math"
 
     /**
     *   Base class for any collada element.
@@ -18,11 +20,11 @@ module COLLADA.Loader {
         /** Collada SID/FX adressing: identifier */
         sid: string = "";
         /** Collada FX adressing: parent element */
-        fxParent: COLLADA.Loader.EElement | undefined;
+        fxParent: Loader.EElement | undefined;
         /** Collada FX adressing: child elements */
-        fxChildren: { [sid: string]: COLLADA.Loader.EElement; };
+        fxChildren: { [sid: string]: Loader.EElement; };
         /** Collada SID adressing: child elements */
-        sidChildren: COLLADA.Loader.EElement[];
+        sidChildren: Loader.EElement[];
         /** Name of the element. Not used for any adressing. */
         name: string = "";
 
@@ -33,11 +35,11 @@ module COLLADA.Loader {
             this._className = "|Element|";
         }
 
-        static fromLink(link: Link, context: COLLADA.Context): COLLADA.Loader.EElement | undefined{
-            return COLLADA.Loader.EElement._fromLink<COLLADA.Loader.EElement>(link, "Element", context);
+        static fromLink(link: Loader.Link, context: Context): Loader.EElement | undefined{
+            return Loader.EElement._fromLink<Loader.EElement>(link, "Element", context);
         }
 
-        static _fromLink<T extends COLLADA.Loader.EElement>(link: Link, typeName: string, context: COLLADA.Context): T | undefined{
+        static _fromLink<T extends Loader.EElement>(link: Loader.Link, typeName: string, context: Context): T | undefined{
             if (!link) {
                 return undefined;
             } else if (!link.target) {
@@ -50,4 +52,3 @@ module COLLADA.Loader {
             }
         }
     };
-}

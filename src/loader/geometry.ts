@@ -1,16 +1,15 @@
-/// <reference path="context.ts" />
-/// <reference path="element.ts" />
-/// <reference path="source.ts" />
-/// <reference path="triangles.ts" />
-/// <reference path="vertices.ts" />
-/// <reference path="utils.ts" />
+import {Context} from "../context"
+import {LogLevel} from "../log"
+import * as Loader from "./loader"
+import * as Converter from "../converter/converter"
+import * as Exporter from "../exporter/exporter"
+import * as Utils from "./utils"
+import * as MathUtils from "../math"
 
-module COLLADA.Loader {
-
-    export class Geometry extends COLLADA.Loader.EElement {
-        sources: COLLADA.Loader.Source[];
-        vertices: COLLADA.Loader.Vertices[];
-        triangles: COLLADA.Loader.Triangles[];
+    export class Geometry extends Loader.EElement {
+        sources: Loader.Source[];
+        vertices: Loader.Vertices[];
+        triangles: Loader.Triangles[];
 
         constructor() {
             super();
@@ -20,15 +19,15 @@ module COLLADA.Loader {
             this.triangles = [];
         }
 
-        static fromLink(link: Link, context: COLLADA.Context): COLLADA.Loader.Geometry | undefined{
-            return COLLADA.Loader.EElement._fromLink<COLLADA.Loader.Geometry>(link, "Geometry", context);
+        static fromLink(link: Loader.Link, context: Context): Loader.Geometry | undefined{
+            return Loader.EElement._fromLink<Loader.Geometry>(link, "Geometry", context);
         }
 
         /**
         *   Parses a <geometry> element
         */
-        static parse(node: Node, context: COLLADA.Loader.Context): COLLADA.Loader.Geometry {
-            var result: COLLADA.Loader.Geometry = new COLLADA.Loader.Geometry();
+        static parse(node: Node, context: Loader.Context): Loader.Geometry {
+            var result: Loader.Geometry = new Loader.Geometry();
 
             result.id = context.getAttributeAsString(node, "id", undefined, true);
             result.name = context.getAttributeAsString(node, "name", undefined, false);
@@ -37,14 +36,14 @@ module COLLADA.Loader {
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
                     case "mesh":
-                        COLLADA.Loader.Geometry.parseMesh(child, result, context);
+                        Loader.Geometry.parseMesh(child, result, context);
                         break;
                     case "convex_mesh":
                     case "spline":
                         context.log.write("Geometry type " + child.nodeName + " not supported.", LogLevel.Error);
                         break;
                     case "extra":
-                        COLLADA.Loader.Geometry.parseGeometryExtra(child, result, context);
+                        Loader.Geometry.parseGeometryExtra(child, result, context);
                         break;
                     default:
                         context.reportUnexpectedChild(child);
@@ -57,19 +56,19 @@ module COLLADA.Loader {
         /**
         *   Parses a <geometry>/<mesh> element
         */
-        static parseMesh(node: Node, geometry: COLLADA.Loader.Geometry, context: COLLADA.Loader.Context) {
+        static parseMesh(node: Node, geometry: Loader.Geometry, context: Loader.Context) {
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
                     case "source":
-                        geometry.sources.push(COLLADA.Loader.Source.parse(child, context));
+                        geometry.sources.push(Loader.Source.parse(child, context));
                         break;
                     case "vertices":
-                        geometry.vertices.push(COLLADA.Loader.Vertices.parse(child, context));
+                        geometry.vertices.push(Loader.Vertices.parse(child, context));
                         break;
                     case "triangles":
                     case "polylist":
                     case "polygons":
-                        geometry.triangles.push(COLLADA.Loader.Triangles.parse(child, context));
+                        geometry.triangles.push(Loader.Triangles.parse(child, context));
                         break;
                     case "lines":
                     case "linestrips":
@@ -86,12 +85,12 @@ module COLLADA.Loader {
         /**
         *   Parses a <geometry>/<extra> element
         */
-        static parseGeometryExtra(node: Node, geometry: COLLADA.Loader.Geometry, context: COLLADA.Loader.Context) {
+        static parseGeometryExtra(node: Node, geometry: Loader.Geometry, context: Loader.Context) {
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
                     case "technique":
                         var profile: string = context.getAttributeAsString(child, "profile", undefined, true);
-                        COLLADA.Loader.Geometry.parseGeometryExtraTechnique(child, geometry, profile, context);
+                        Loader.Geometry.parseGeometryExtraTechnique(child, geometry, profile, context);
                         break;
                     default:
                         context.reportUnexpectedChild(child);
@@ -102,7 +101,7 @@ module COLLADA.Loader {
         /**
         *   Parses a <geometry>/<extra>/<technique> element
         */
-        static parseGeometryExtraTechnique(node: Node, geometry: COLLADA.Loader.Geometry, profile: string, context: COLLADA.Loader.Context) {
+        static parseGeometryExtraTechnique(node: Node, geometry: Loader.Geometry, profile: string, context: Loader.Context) {
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
                     default:
@@ -111,4 +110,3 @@ module COLLADA.Loader {
             });
         }
     };
-}

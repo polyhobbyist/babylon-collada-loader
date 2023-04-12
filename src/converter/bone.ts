@@ -1,18 +1,19 @@
-/// <reference path="../math.ts" />
-/// <reference path="context.ts" />
-/// <reference path="utils.ts" />
-/// <reference path="node.ts" />
-
-module COLLADA.Converter {
+import {Context} from "../context"
+import {LogLevel} from "../log"
+import * as Loader from "../loader/loader"
+import * as Converter from "./converter"
+import * as Utils from "./utils"
+import * as MathUtils from "../math"
+import * as BABYLON from 'babylonjs';
 
     export class Bone {
-        node: COLLADA.Converter.Node;
+        node: Converter.Node;
         name: string;
-        parent: COLLADA.Converter.Bone | undefined;
+        parent: Converter.Bone | undefined;
         invBindMatrix: BABYLON.Matrix = BABYLON.Matrix.Identity();
         attachedToSkin: boolean;
 
-        constructor(node: COLLADA.Converter.Node) {
+        constructor(node: Converter.Node) {
             this.node = node;
             this.name = node.name;
             this.attachedToSkin = false;
@@ -31,25 +32,25 @@ module COLLADA.Converter {
             return !this.parent ? 0 : (this.parent.depth() + 1);
         }
 
-        static create(node: COLLADA.Converter.Node): COLLADA.Converter.Bone {
-            return new COLLADA.Converter.Bone(node);
+        static create(node: Converter.Node): Converter.Bone {
+            return new Converter.Bone(node);
         }
 
         /**
         * Finds the visual scene node that is referenced by the joint SID.
         * The skin element contains the skeleton root nodes.
         */
-        static findBoneNode(boneSid: string, skeletonRootNodes: COLLADA.Loader.VisualSceneNode[], context: COLLADA.Converter.Context): COLLADA.Loader.VisualSceneNode | undefined {
+        static findBoneNode(boneSid: string, skeletonRootNodes: Loader.VisualSceneNode[], context: Converter.Context): Loader.VisualSceneNode | undefined {
             // The spec is inconsistent here.
             // The joint ids do not seem to be real scoped identifiers(chapter 3.3, "COLLADA Target Addressing"), since they lack the first part (the anchor id)
             // The skin element(chapter 5, "skin" element) *implies* that the joint ids are scoped identifiers relative to the skeleton root node,
             // so perform a SID-like breadth-first search.
-            var boneNode: COLLADA.Loader.EElement | undefined = undefined;
+            var boneNode: Loader.EElement | undefined = undefined;
             var warnings: string[] = [];
             for (var i: number = 0; i < skeletonRootNodes.length; i++) {
-                var skeletonRoot: COLLADA.Loader.VisualSceneNode = skeletonRootNodes[i];
+                var skeletonRoot: Loader.VisualSceneNode = skeletonRootNodes[i];
                 var sids: string[] = boneSid.split("/");
-                var result = COLLADA.Loader.SidLink.findSidTarget(boneSid, skeletonRoot, sids, context);
+                var result = Loader.SidLink.findSidTarget(boneSid, skeletonRoot, sids, context);
                 if (result.result != null) {
                     boneNode = result.result;
                     break;
@@ -61,14 +62,14 @@ module COLLADA.Converter {
                 context.log.write("Joint with SID " + boneSid + " not found, joint ignored. Related warnings:\n" + warnings.join("\n"), LogLevel.Warning);
                 return undefined;
             } else if (context.isInstanceOf(boneNode, "VisualSceneNode")) {
-                return <COLLADA.Loader.VisualSceneNode> boneNode;
+                return <Loader.VisualSceneNode> boneNode;
             } else {
                 context.log.write("Joint " + boneSid + " does not point to a visual scene node, joint ignored", LogLevel.Warning);
                 return undefined;
             }
         }
 
-        static sameInvBindMatrix(a: COLLADA.Converter.Bone, b: COLLADA.Converter.Bone, tolerance: number): boolean {
+        static sameInvBindMatrix(a: Converter.Bone, b: Converter.Bone, tolerance: number): boolean {
             if (a === null || b === null) {
                 return false;
             }
@@ -87,7 +88,7 @@ module COLLADA.Converter {
         * Returns true if the two bones can safely be merged, i.e.,
         * they reference the same scene graph node and have the same inverse bind matrix
         */
-        static safeToMerge(a: COLLADA.Converter.Bone, b: COLLADA.Converter.Bone): boolean {
+        static safeToMerge(a: Converter.Bone, b: Converter.Bone): boolean {
             if (a === b) {
                 return true;
             }
@@ -106,7 +107,7 @@ module COLLADA.Converter {
         /**
         * Merges the two given bones. Returns null if they cannot be merged.
         */
-        static mergeBone(a: COLLADA.Converter.Bone, b: COLLADA.Converter.Bone): COLLADA.Converter.Bone | undefined {
+        static mergeBone(a: Converter.Bone, b: Converter.Bone): Converter.Bone | undefined {
             if (!Bone.safeToMerge(a, b)) {
                 return undefined;
             }
@@ -120,4 +121,3 @@ module COLLADA.Converter {
         }
 
     }
-}

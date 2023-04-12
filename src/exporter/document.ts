@@ -1,10 +1,7 @@
-/// <reference path="format.ts" />
-/// <reference path="utils.ts" />
-
-module COLLADA.Exporter {
+import * as Exporter from "./exporter"
 
     export class Document {
-        json: COLLADA.Exporter.DocumentJSON;
+        json: Exporter.DocumentJSON;
         data: Uint8Array;
 
         constructor() {
@@ -12,4 +9,3 @@ module COLLADA.Exporter {
             this.data = null;
         }
     }
-}

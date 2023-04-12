@@ -1,18 +1,17 @@
-/// <reference path="context.ts" />
-/// <reference path="element.ts" />
-/// <reference path="source.ts" />
-/// <reference path="joints.ts" />
-/// <reference path="vertex_weights.ts" />
-/// <reference path="utils.ts" />
+import {Context} from "../context"
+import {LogLevel} from "../log"
+import * as Loader from "./loader"
+import * as Converter from "../converter/converter"
+import * as Exporter from "../exporter/exporter"
+import * as Utils from "./utils"
+import * as MathUtils from "../math"
 
-module COLLADA.Loader {
-
-    export class Skin extends COLLADA.Loader.EElement {
-        source: UrlLink | undefined;
+    export class Skin extends Loader.EElement {
+        source: Loader.UrlLink | undefined;
         bindShapeMatrix: Float32Array = new Float32Array();
-        sources: COLLADA.Loader.Source[] | undefined;
-        joints: COLLADA.Loader.Joints | undefined;
-        vertexWeights: COLLADA.Loader.VertexWeights | undefined;
+        sources: Loader.Source[] | undefined;
+        joints: Loader.Joints | undefined;
+        vertexWeights: Loader.VertexWeights | undefined;
 
         constructor() {
             super();
@@ -22,8 +21,8 @@ module COLLADA.Loader {
         /**
         *   Parses a <skin> element.
         */
-        static parse(node: Node, context: COLLADA.Loader.Context): COLLADA.Loader.Skin {
-            var result: COLLADA.Loader.Skin = new COLLADA.Loader.Skin();
+        static parse(node: Node, context: Loader.Context): Loader.Skin {
+            var result: Loader.Skin = new Loader.Skin();
 
             result.source = context.getAttributeAsUrlLink(node, "source", true);
 
@@ -33,13 +32,13 @@ module COLLADA.Loader {
                         result.bindShapeMatrix = context.getFloatsContent(child);
                         break;
                     case "source":
-                        result.sources?.push(COLLADA.Loader.Source.parse(child, context));
+                        result.sources?.push(Loader.Source.parse(child, context));
                         break;
                     case "joints":
-                        result.joints = COLLADA.Loader.Joints.parse(child, context);
+                        result.joints = Loader.Joints.parse(child, context);
                         break;
                     case "vertex_weights":
-                        result.vertexWeights = COLLADA.Loader.VertexWeights.parse(child, context);
+                        result.vertexWeights = Loader.VertexWeights.parse(child, context);
                         break;
                     default:
                         context.reportUnexpectedChild(child);
@@ -50,4 +49,3 @@ module COLLADA.Loader {
         }
 
     }
-}

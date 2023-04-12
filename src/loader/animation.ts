@@ -1,18 +1,17 @@
-/// <reference path="context.ts" />
-/// <reference path="element.ts" />
-/// <reference path="sampler.ts" />
-/// <reference path="source.ts" />
-/// <reference path="channel.ts" />
-/// <reference path="utils.ts" />
+import {Context} from "../context"
+import {LogLevel} from "../log"
+import * as Loader from "./loader"
+import * as Utils from "./utils"
+import * as MathUtils from "../math"
 
-module COLLADA.Loader {
 
-    export class Animation extends COLLADA.Loader.EElement {
-        parent: COLLADA.Loader.Animation | undefined;
-        children: COLLADA.Loader.Animation[];
-        sources: COLLADA.Loader.Source[];
-        samplers: COLLADA.Loader.Sampler[];
-        channels: COLLADA.Loader.Channel[];
+
+    export class Animation extends Loader.EElement {
+        parent: Loader.Animation | undefined;
+        children: Loader.Animation[];
+        sources: Loader.Source[];
+        samplers: Loader.Sampler[];
+        channels: Loader.Channel[];
 
         constructor() {
             super();
@@ -23,7 +22,7 @@ module COLLADA.Loader {
             this.channels = [];
         }
 
-        root(): COLLADA.Loader.Animation {
+        root(): Loader.Animation {
             if (this.parent != null) {
                 return this.parent.root();
             } else {
@@ -34,8 +33,8 @@ module COLLADA.Loader {
         /**
         *   Parses an <animation> element.
         */
-        static parse(node: Node, context: COLLADA.Loader.Context): COLLADA.Loader.Animation {
-            var result: COLLADA.Loader.Animation = new COLLADA.Loader.Animation();
+        static parse(node: Node, context: Loader.Context): Loader.Animation {
+            var result: Loader.Animation = new Loader.Animation();
 
             result.id = context.getAttributeAsString(node, "id", undefined, false);
             result.name = context.getAttributeAsString(node, "name", undefined, false);
@@ -45,18 +44,18 @@ module COLLADA.Loader {
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
                     case "animation":
-                        var animation: COLLADA.Loader.Animation = COLLADA.Loader.Animation.parse(child, context);
+                        var animation: Loader.Animation = Loader.Animation.parse(child, context);
                         animation.parent = result;
                         result.children.push(animation);
                         break;
                     case "source":
-                        result.sources.push(COLLADA.Loader.Source.parse(child, context));
+                        result.sources.push(Loader.Source.parse(child, context));
                         break;
                     case "sampler":
-                        result.samplers.push(COLLADA.Loader.Sampler.parse(child, context));
+                        result.samplers.push(Loader.Sampler.parse(child, context));
                         break;
                     case "channel":
-                        result.channels.push(COLLADA.Loader.Channel.parse(child, result, context));
+                        result.channels.push(Loader.Channel.parse(child, result, context));
                         break;
                     default:
                         context.reportUnexpectedChild(child);
@@ -67,4 +66,3 @@ module COLLADA.Loader {
         }
 
     };
-}

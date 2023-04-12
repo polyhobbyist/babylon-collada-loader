@@ -1,16 +1,16 @@
-/// <reference path="context.ts" />
-/// <reference path="element.ts" />
-/// <reference path="visual_scene_node.ts" />
-/// <reference path="utils.ts" />
-
-
-module COLLADA.Loader {
+import {Context} from "../context"
+import {LogLevel} from "../log"
+import * as Loader from "./loader"
+import * as Converter from "../converter/converter"
+import * as Exporter from "../exporter/exporter"
+import * as Utils from "./utils"
+import * as MathUtils from "../math"
 
     /**
     *   An <visual_scene> element.
     */
-    export class VisualScene extends COLLADA.Loader.EElement {
-        children: COLLADA.Loader.VisualSceneNode[];
+    export class VisualScene extends Loader.EElement {
+        children: Loader.VisualSceneNode[];
 
         constructor() {
             super();
@@ -18,12 +18,12 @@ module COLLADA.Loader {
             this.children = [];
         }
 
-        static fromLink(link: Link, context: COLLADA.Context): COLLADA.Loader.VisualScene | undefined {
-            return COLLADA.Loader.EElement._fromLink<COLLADA.Loader.VisualScene>(link, "VisualScene", context);
+        static fromLink(link: Loader.Link, context: Context): Loader.VisualScene | undefined {
+            return Loader.EElement._fromLink<Loader.VisualScene>(link, "VisualScene", context);
         }
 
-        static parse(node: Node, context: COLLADA.Loader.Context): COLLADA.Loader.VisualScene {
-            var result: COLLADA.Loader.VisualScene = new COLLADA.Loader.VisualScene();
+        static parse(node: Node, context: Loader.Context): Loader.VisualScene {
+            var result: Loader.VisualScene = new Loader.VisualScene();
 
             result.id = context.getAttributeAsString(node, "id", "", false);
 
@@ -32,8 +32,8 @@ module COLLADA.Loader {
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
                     case "node":
-                        var childNode: COLLADA.Loader.VisualSceneNode = COLLADA.Loader.VisualSceneNode.parse(child, context);
-                        COLLADA.Loader.VisualSceneNode.registerParent(childNode, result, context);
+                        var childNode: Loader.VisualSceneNode = Loader.VisualSceneNode.parse(child, context);
+                        Loader.VisualSceneNode.registerParent(childNode, result, context);
                         result.children.push(childNode);
                         break;
                     default:
@@ -45,4 +45,3 @@ module COLLADA.Loader {
             return result;
         }
     };
-}

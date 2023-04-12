@@ -1,10 +1,12 @@
-/// <reference path="context.ts" />
-/// <reference path="element.ts" />
-/// <reference path="utils.ts" />
+import {Context} from "../context"
+import {LogLevel} from "../log"
+import * as Loader from "./loader"
+import * as Converter from "../converter/converter"
+import * as Exporter from "../exporter/exporter"
+import * as Utils from "./utils"
+import * as MathUtils from "../math"
 
-module COLLADA.Loader {
-
-    export class LightParam extends COLLADA.Loader.EElement {
+    export class LightParam extends Loader.EElement {
         value: number| undefined;
 
         constructor() {
@@ -15,8 +17,8 @@ module COLLADA.Loader {
         /**
         *   Parses a light parameter element.
         */
-        static parse(node: Node, context: COLLADA.Loader.Context): COLLADA.Loader.LightParam {
-            var result: COLLADA.Loader.LightParam = new COLLADA.Loader.LightParam();
+        static parse(node: Node, context: Loader.Context): Loader.LightParam {
+            var result: Loader.LightParam = new Loader.LightParam();
 
             result.sid = context.getAttributeAsString(node, "sid", undefined, false);
             result.name = node.nodeName;
@@ -26,4 +28,3 @@ module COLLADA.Loader {
         }
 
     }
-}

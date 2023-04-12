@@ -1,12 +1,9 @@
-/// <reference path="context.ts" />
-/// <reference path="element.ts" />
-/// <reference path="utils.ts" />
+import * as Loader from "./loader"
+import * as Utils from "./utils"
 
-module COLLADA.Loader {
-
-    export class ColorOrTexture extends COLLADA.Loader.EElement {
+    export class ColorOrTexture extends Loader.EElement {
         color: Float32Array | undefined;
-        textureSampler: Link | undefined;
+        textureSampler: Loader.Link | undefined;
         texcoord: string = "";
         opaque: string = "";
         bumptype: string = "";
@@ -19,8 +16,8 @@ module COLLADA.Loader {
         /**
         *   Parses a color or texture element  (<ambient>, <diffuse>, ...).
         */
-        static parse(node: Node, parent: COLLADA.Loader.EElement, context: COLLADA.Loader.Context): COLLADA.Loader.ColorOrTexture {
-            var result: COLLADA.Loader.ColorOrTexture = new COLLADA.Loader.ColorOrTexture();
+        static parse(node: Node, parent: Loader.EElement, context: Loader.Context): Loader.ColorOrTexture {
+            var result: Loader.ColorOrTexture = new Loader.ColorOrTexture();
 
             result.opaque = context.getAttributeAsString(node, "opaque", undefined, false);
             result.bumptype = context.getAttributeAsString(node, "bumptype", undefined, false);
@@ -42,4 +39,3 @@ module COLLADA.Loader {
             return result;
         }
     }
-}

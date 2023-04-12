@@ -1,9 +1,12 @@
-/// <reference path="context.ts" />
-/// <reference path="element.ts" />
+import {Context} from "../context"
+import {LogLevel} from "../log"
+import * as Loader from "./loader"
+import * as Converter from "../converter/converter"
+import * as Exporter from "../exporter/exporter"
+import * as Utils from "./utils"
+import * as MathUtils from "../math"
 
-module COLLADA.Loader {
-
-    export class NodeTransform extends COLLADA.Loader.EElement {
+    export class NodeTransform extends Loader.EElement {
         type: string | undefined;
         data: Float32Array | undefined;
 
@@ -15,8 +18,8 @@ module COLLADA.Loader {
         /**
         *   Parses a transformation element.
         */
-        static parse(node: Node, parent: COLLADA.Loader.VisualSceneNode, context: COLLADA.Loader.Context): COLLADA.Loader.NodeTransform {
-            var result: COLLADA.Loader.NodeTransform = new COLLADA.Loader.NodeTransform();
+        static parse(node: Node, parent: Loader.VisualSceneNode, context: Loader.Context): Loader.NodeTransform {
+            var result: Loader.NodeTransform = new Loader.NodeTransform();
 
             result.sid = context.getAttributeAsString(node, "sid", undefined, false);
             result.type = node.nodeName;
@@ -56,4 +59,3 @@ module COLLADA.Loader {
             return result;
         }
     }
-}

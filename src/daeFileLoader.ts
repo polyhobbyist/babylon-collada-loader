@@ -1,5 +1,7 @@
 import { promises as fs } from 'fs';
 import * as BABYLON from "babylonjs";
+import * as Loader from "./loader"
+import {LogLevel, LogCallback, LogFilter} from "./log"
 
 
 export class DAEFileLoader implements BABYLON.ISceneLoaderPluginAsync, BABYLON.ISceneLoaderPluginFactory {
@@ -71,10 +73,10 @@ export class DAEFileLoader implements BABYLON.ISceneLoaderPluginAsync, BABYLON.I
       const materialToUse = new Array<string>();
       const babylonMeshesArray: Array<BABYLON.Mesh> = []; //The mesh for babylon
 
-      var loader = new COLLADA.Loader.ColladaLoader();
-      var loaderlog = new COLLADA.LogCallback;
-      loaderlog.onmessage = (message: string, level: COLLADA.LogLevel) => { console.log(message); }      
-      loader.log = new COLLADA.LogFilter(loaderlog, COLLADA.LogLevel.Debug);
+      var loader = new Loader.ColladaLoader();
+      var loaderlog = new LogCallback;
+      loaderlog.onmessage = (message: string, level: LogLevel) => { console.log(message); }      
+      loader.log = new LogFilter(loaderlog, LogLevel.Debug);
       
       var parser = new DOMParser();
       var meshdata = await fs.readFile(fileToLoad).toString();

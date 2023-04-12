@@ -1,17 +1,20 @@
-/// <reference path="context.ts" />
-/// <reference path="element.ts" />
-/// <reference path="utils.ts" />
+import {Context} from "../context"
+import {LogLevel} from "../log"
+import * as Loader from "./loader"
+import * as Converter from "../converter/converter"
+import * as Exporter from "../exporter/exporter"
+import * as Utils from "./utils"
+import * as MathUtils from "../math"
 
 
-module COLLADA.Loader {
 
     /**
     *   A <surface> element.
     *
     */
-    export class EffectSurface extends COLLADA.Loader.EElement {
+    export class EffectSurface extends Loader.EElement {
         type: string = "";
-        initFrom: Link | undefined;
+        initFrom: Loader.Link | undefined;
         format: string = "";
         size: Float32Array = new Float32Array();
         viewportRatio: Float32Array = new Float32Array();
@@ -23,15 +26,15 @@ module COLLADA.Loader {
             this._className += "EffectSurface|";
         }
 
-        static fromLink(link: Link, context: COLLADA.Context): COLLADA.Loader.EffectSurface | undefined{
-            return COLLADA.Loader.EElement._fromLink<COLLADA.Loader.EffectSurface>(link, "EffectSurface", context);
+        static fromLink(link: Loader.Link, context: Context): Loader.EffectSurface | undefined{
+            return Loader.EElement._fromLink<Loader.EffectSurface>(link, "EffectSurface", context);
         }
 
         /**
         *   Parses a <surface> element.
         */
-        static parse(node: Node, parent: COLLADA.Loader.EElement, context: COLLADA.Loader.Context): COLLADA.Loader.EffectSurface {
-            var result: COLLADA.Loader.EffectSurface = new COLLADA.Loader.EffectSurface();
+        static parse(node: Node, parent: Loader.EElement, context: Loader.Context): Loader.EffectSurface {
+            var result: Loader.EffectSurface = new Loader.EffectSurface();
 
             result.type = context.getAttributeAsString(node, "type", undefined, true);
 
@@ -63,4 +66,3 @@ module COLLADA.Loader {
             return result;
         }
     }
-}

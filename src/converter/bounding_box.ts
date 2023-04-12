@@ -1,8 +1,6 @@
 import * as BABYLON from 'babylonjs';
 /// <reference path="../math.ts" />
 
-module COLLADA.Converter {
-
     export class BoundingBox {
         public min: BABYLON.Vector3 = new BABYLON.Vector3();
         public max: BABYLON.Vector3 = new BABYLON.Vector3();
@@ -49,4 +47,3 @@ module COLLADA.Converter {
             this.extend(b.min);
         }
     }
-}

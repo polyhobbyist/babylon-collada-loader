@@ -1,19 +1,20 @@
-/// <reference path="context.ts" />
-/// <reference path="element.ts" />
-/// <reference path="input.ts" />
-/// <reference path="utils.ts" />
+import {Context} from "../context"
+import {LogLevel} from "../log"
+import * as Loader from "./loader"
+import * as Converter from "../converter/converter"
+import * as Exporter from "../exporter/exporter"
+import * as Utils from "./utils"
+import * as MathUtils from "../math"
 
-module COLLADA.Loader {
-
-    export class Triangles extends COLLADA.Loader.EElement {
+    export class Triangles extends Loader.EElement {
         /** "triangles", "polylist", or "polygons" */
         type: string = "";
         count: number = 0;
         /** A material "symbol", bound by <bind_material> */
         material: string = "";
-        inputs: COLLADA.Loader.Input[] | undefined = undefined;
-        indices: Int32Array = new Int32Array();
-        vcount: Int32Array = new Int32Array();
+        inputs: Loader.Input[] | undefined = undefined;
+        indices: Uint32Array = new Uint32Array();
+        vcount: Uint32Array = new Uint32Array();
 
         constructor() {
             super();
@@ -23,8 +24,8 @@ module COLLADA.Loader {
         /**
         *   Parses a <triangles> element.
         */
-        static parse(node: Node, context: COLLADA.Loader.Context): COLLADA.Loader.Triangles {
-            var result: COLLADA.Loader.Triangles = new COLLADA.Loader.Triangles();
+        static parse(node: Node, context: Loader.Context): Loader.Triangles {
+            var result: Loader.Triangles = new Loader.Triangles();
 
             result.name = context.getAttributeAsString(node, "name", undefined, false);
             result.material = context.getAttributeAsString(node, "material", undefined, false);
@@ -34,13 +35,13 @@ module COLLADA.Loader {
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
                     case "input":
-                        result.inputs?.push(COLLADA.Loader.Input.parse(child, true, context));
+                        result.inputs?.push(Loader.Input.parse(child, true, context));
                         break;
                     case "vcount":
-                        result.vcount = context.getIntsContent(child);
+                        result.vcount = context.getUintsContent(child);
                         break;
                     case "p":
-                        result.indices = context.getIntsContent(child);
+                        result.indices = context.getUintsContent(child);
                         break;
                     default:
                         context.reportUnexpectedChild(child);
@@ -51,4 +52,3 @@ module COLLADA.Loader {
         }
 
     }
-}

@@ -1,13 +1,9 @@
-/// <reference path="context.ts" />
-/// <reference path="element.ts" />
-/// <reference path="camera_param.ts" />
-/// <reference path="utils.ts" />
+import * as Loader from "../loader/loader"
+import * as Utils from "./utils"
 
-module COLLADA.Loader {
-
-    export class Camera extends COLLADA.Loader.EElement {
+    export class Camera extends Loader.EElement {
         type: string = "";
-        params: { [s: string]: COLLADA.Loader.CameraParam; }
+        params: { [s: string]: Loader.CameraParam; }
 
         constructor() {
             super();
@@ -18,8 +14,8 @@ module COLLADA.Loader {
         /**
         *   Parses a <camera> element.
         */
-        static parse(node: Node, context: COLLADA.Loader.Context): COLLADA.Loader.Camera {
-            var result: COLLADA.Loader.Camera = new COLLADA.Loader.Camera();
+        static parse(node: Node, context: Loader.Context): Loader.Camera {
+            var result: Loader.Camera = new Loader.Camera();
 
             result.id = context.getAttributeAsString(node, "id", undefined, true);
             result.name = context.getAttributeAsString(node, "name", undefined, false);
@@ -31,7 +27,7 @@ module COLLADA.Loader {
                         context.reportUnhandledChild(child);
                         break;
                     case "optics":
-                        COLLADA.Loader.Camera.parseOptics(child, result, context);
+                        Loader.Camera.parseOptics(child, result, context);
                         break;
                     case "imager":
                         context.reportUnhandledChild(child);
@@ -50,12 +46,12 @@ module COLLADA.Loader {
         /**
         *   Parses a <camera>/<optics> element.
         */
-        static parseOptics(node: Node, camera: COLLADA.Loader.Camera, context: COLLADA.Loader.Context) {
+        static parseOptics(node: Node, camera: Loader.Camera, context: Loader.Context) {
 
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
                     case "technique_common":
-                        COLLADA.Loader.Camera.parseTechniqueCommon(child, camera, context);
+                        Loader.Camera.parseTechniqueCommon(child, camera, context);
                         break;
                     case "technique":
                         context.reportUnhandledChild(child);
@@ -73,15 +69,15 @@ module COLLADA.Loader {
         /**
         *   Parses a <camera>/<optics>/<technique_common> element.
         */
-        static parseTechniqueCommon(node: Node, camera: COLLADA.Loader.Camera, context: COLLADA.Loader.Context) {
+        static parseTechniqueCommon(node: Node, camera: Loader.Camera, context: Loader.Context) {
 
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
                     case "orthographic":
-                        COLLADA.Loader.Camera.parseParams(child, camera, context);
+                        Loader.Camera.parseParams(child, camera, context);
                         break;
                     case "perspective":
-                        COLLADA.Loader.Camera.parseParams(child, camera, context);
+                        Loader.Camera.parseParams(child, camera, context);
                         break;
                     default:
                         context.reportUnexpectedChild(child);
@@ -93,7 +89,7 @@ module COLLADA.Loader {
         /**
         *   Parses a <camera>/<optics>/<technique_common>/(<orthographic>|<perspective>) element.
         */
-        static parseParams(node: Node, camera: COLLADA.Loader.Camera, context: COLLADA.Loader.Context) {
+        static parseParams(node: Node, camera: Loader.Camera, context: Loader.Context) {
 
             camera.type = node.nodeName;
 
@@ -106,7 +102,7 @@ module COLLADA.Loader {
                     case "aspect_ratio":
                     case "znear":
                     case "zfar":
-                        var param: COLLADA.Loader.CameraParam = COLLADA.Loader.CameraParam.parse(child, context);
+                        var param: Loader.CameraParam = Loader.CameraParam.parse(child, context);
                         context.registerSidTarget(param, camera);
                         camera.params[param.name] = param;
                         break;
@@ -120,4 +116,3 @@ module COLLADA.Loader {
 
         }
     }
-}

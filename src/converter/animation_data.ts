@@ -1,12 +1,11 @@
-/// <reference path="../math.ts" />
-/// <reference path="context.ts" />
-/// <reference path="utils.ts" />
-/// <reference path="bone.ts" />
-/// <reference path="skeleton.ts" />
-/// <reference path="animation.ts" />
-/// <reference path="animation_channel.ts" />
-
-module COLLADA.Converter {
+import {Context} from "../context"
+import {LogLevel} from "../log"
+import {AnimationTarget, Statistics} from "./animation"
+import * as Loader from "../loader/loader"
+import * as Converter from "./converter"
+import * as Utils from "./utils"
+import * as MathUtils from "../math"
+import * as BABYLON from "babylonjs";
 
     export interface AnimationLabel {
         name: string;
@@ -52,22 +51,22 @@ module COLLADA.Converter {
         keyframes: number = 0;
         fps: number = 0;
         original_fps: number = 0;
-        tracks: COLLADA.Converter.AnimationDataTrack[];
+        tracks: Converter.AnimationDataTrack[];
 
         constructor() {
             this.name = "";
             this.tracks = [];
         }
 
-        static create(skeleton: COLLADA.Converter.Skeleton, animation: COLLADA.Converter.Animation, index_begin: number, index_end: number, fps: number, context: COLLADA.Converter.Context): COLLADA.Converter.AnimationData {
-            var result: COLLADA.Converter.AnimationData = new COLLADA.Converter.AnimationData();
+        static create(skeleton: Converter.Skeleton, animation: Converter.Animation, index_begin: number, index_end: number, fps: number, context: Converter.Context): Converter.AnimationData {
+            var result: Converter.AnimationData = new Converter.AnimationData();
             result.name = animation.name;
 
-            var src_channels: COLLADA.Converter.AnimationChannel[] = animation.channels;
+            var src_channels: Converter.AnimationChannel[] = animation.channels;
 
             // Get timeline statistics
-            var stat: COLLADA.Converter.AnimationTimeStatistics = new COLLADA.Converter.AnimationTimeStatistics();
-            COLLADA.Converter.Animation.getTimeStatistics(animation, index_begin, index_end, stat, context);
+            var stat: Converter.AnimationTimeStatistics = new Converter.AnimationTimeStatistics();
+            Converter.Animation.getTimeStatistics(animation, index_begin, index_end, stat, context);
 
 
             logStatistics("Original Duration", stat.duration, 3, context);
@@ -126,8 +125,8 @@ module COLLADA.Converter {
 
             // Init result
             for (var i: number = 0; i < skeleton.bones.length; ++i) {
-                var bone: COLLADA.Converter.Bone = skeleton.bones[i];
-                var track: COLLADA.Converter.AnimationDataTrack = new COLLADA.Converter.AnimationDataTrack();
+                var bone: Converter.Bone = skeleton.bones[i];
+                var track: Converter.AnimationDataTrack = new Converter.AnimationDataTrack();
 
                 track.pos = new Float32Array(keyframes * 3);
                 track.rot = new Float32Array(keyframes * 4);
@@ -139,11 +138,11 @@ module COLLADA.Converter {
 
                 result.tracks.push(track);
             }
-            var result_tracks: COLLADA.Converter.AnimationDataTrack[] = result.tracks;
+            var result_tracks: Converter.AnimationDataTrack[] = result.tracks;
 
             // Reset the bone poses
             for (var i: number = 0; i < skeleton.bones.length; ++i) {
-                var bone: COLLADA.Converter.Bone = skeleton.bones[i];
+                var bone: Converter.Bone = skeleton.bones[i];
                 bone.node.resetAnimation();
             }
 
@@ -157,7 +156,7 @@ module COLLADA.Converter {
                 // Apply all channels to the scene nodes
                 // This might be expensive as it resamples the animation
                 for (var c: number = 0; c < src_channels.length; ++c) {
-                    var channel: COLLADA.Converter.AnimationChannel = src_channels[c];
+                    var channel: Converter.AnimationChannel = src_channels[c];
                     if (channel) {
                         channel.target.applyAnimation(channel, time, context);
                     }
@@ -165,8 +164,8 @@ module COLLADA.Converter {
 
                 // Extract bone poses
                 for (var b: number = 0; b < skeleton.bones.length; ++b) {
-                    var bone: COLLADA.Converter.Bone = skeleton.bones[b];
-                    var track: COLLADA.Converter.AnimationDataTrack = result_tracks[b];
+                    var bone: Converter.Bone = skeleton.bones[b];
+                    var track: Converter.AnimationDataTrack = result_tracks[b];
 
                     var mat: BABYLON.Matrix = bone.node.getLocalMatrix(context);
                     mat.decompose(scl, rot, pos);
@@ -192,7 +191,7 @@ module COLLADA.Converter {
 
             // Reset the bone poses
             for (var i: number = 0; i < skeleton.bones.length; ++i) {
-                var bone: COLLADA.Converter.Bone = skeleton.bones[i];
+                var bone: Converter.Bone = skeleton.bones[i];
                 bone.node.resetAnimation();
             }
 
@@ -205,8 +204,8 @@ module COLLADA.Converter {
             var scl0 = new BABYLON.Vector3()
             var inv_scl0 = new BABYLON.Vector3()
             for (var b: number = 0; b < skeleton.bones.length; ++b) {
-                var bone: COLLADA.Converter.Bone = skeleton.bones[b];
-                var track: COLLADA.Converter.AnimationDataTrack = result_tracks[b];
+                var bone: Converter.Bone = skeleton.bones[b];
+                var track: Converter.AnimationDataTrack = result_tracks[b];
 
                 // Get rest pose transformation of the current bone
                 var mat0 = bone.node.getLocalMatrix(context);
@@ -294,19 +293,19 @@ module COLLADA.Converter {
             return result;
         }
 
-        static createFromLabels(skeleton: COLLADA.Converter.Skeleton, animation: COLLADA.Converter.Animation,
-            labels: COLLADA.Converter.AnimationLabel[], defaultFps: number, context: COLLADA.Converter.Context): COLLADA.Converter.AnimationData[]{
+        static createFromLabels(skeleton: Converter.Skeleton, animation: Converter.Animation,
+            labels: Converter.AnimationLabel[], defaultFps: number, context: Converter.Context): Converter.AnimationData[]{
 
             if (skeleton === null) {
                 context.log.write("No skeleton present, no animation data generated.", LogLevel.Warning);
                 return [];
             }
 
-            var result: COLLADA.Converter.AnimationData[] = [];
+            var result: Converter.AnimationData[] = [];
 
             for (var i: number = 0; i < labels.length; ++i) {
-                var label: COLLADA.Converter.AnimationLabel = labels[i];
-                var data: COLLADA.Converter.AnimationData = COLLADA.Converter.AnimationData.create(skeleton, animation, label.begin, label.end, label.fps || defaultFps, context);
+                var label: Converter.AnimationLabel = labels[i];
+                var data: Converter.AnimationData = Converter.AnimationData.create(skeleton, animation, label.begin, label.end, label.fps || defaultFps, context);
                 if (data !== null) {
                     data.name = label.name;
                     result.push(data);
@@ -316,4 +315,3 @@ module COLLADA.Converter {
             return result;
         }
     }
-}

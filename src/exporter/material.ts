@@ -1,11 +1,9 @@
-/// <reference path="context.ts" />
-/// <reference path="format.ts" />
-
-module COLLADA.Exporter {
+import * as Converter from "../converter/converter"
+import * as Exporter from "./exporter"
 
     export class Material {
 
-        static toJSON(material: COLLADA.Converter.Material, context: COLLADA.Exporter.Context): COLLADA.Exporter.MaterialJSON | undefined{
+        static toJSON(material: Converter.Material, context: Exporter.Context): Exporter.MaterialJSON | undefined{
             if (material === null) {
                 return null;
             }
@@ -18,4 +16,3 @@ module COLLADA.Exporter {
             };
         }
     };
-}

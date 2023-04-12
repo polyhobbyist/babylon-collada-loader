@@ -1,13 +1,10 @@
-/// <reference path="context.ts" />
-/// <reference path="element.ts" />
-/// <reference path="utils.ts" />
-
-module COLLADA.Loader {
+import * as Loader from "./loader"
+import * as Utils from "./utils"
 
     /**
     *   An <asset> element.
     */
-    export class Asset extends COLLADA.Loader.EElement {
+    export class Asset extends Loader.EElement {
         unit: number = 0;
         upAxis: string = "";
 
@@ -16,8 +13,8 @@ module COLLADA.Loader {
             this._className += "Asset|";
         }
 
-        static parse(node: Node, context: COLLADA.Loader.Context): COLLADA.Loader.Asset {
-            var result: COLLADA.Loader.Asset = new COLLADA.Loader.Asset();
+        static parse(node: Node, context: Loader.Context): Loader.Asset {
+            var result: Loader.Asset = new Loader.Asset();
 
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
@@ -45,4 +42,3 @@ module COLLADA.Loader {
             return result;
         }
     }
-}

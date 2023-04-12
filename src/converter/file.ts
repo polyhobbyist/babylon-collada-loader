@@ -1,19 +1,14 @@
-/// <reference path="node.ts" />
-/// <reference path="animation.ts" />
-/// <reference path="animation_data.ts" />
-/// <reference path="geometry.ts" />
+import * as Converter from "../converter/converter"
 
-module COLLADA.Converter {
-
-    export class Document {
+export class Document {
         /** The scene graph */
-        nodes: COLLADA.Converter.Node[];
+        nodes: Converter.Node[];
         /** Animations (all original animation curves) */
-        animations: COLLADA.Converter.Animation[];
+        animations: Converter.Animation[];
         /** Animations (resampled node animations) */
-        resampled_animations: COLLADA.Converter.AnimationData[];
+        resampled_animations: Converter.AnimationData[];
         /** Geometries (detached from the scene graph) */
-        geometries: COLLADA.Converter.Geometry[];
+        geometries: Converter.Geometry[];
 
         constructor() {
             this.nodes = [];
@@ -22,4 +17,3 @@ module COLLADA.Converter {
             this.resampled_animations = [];
         }
     }
-}

@@ -1,13 +1,14 @@
-/// <reference path="context.ts" />
-/// <reference path="element.ts" />
-/// <reference path="input.ts" />
-/// <reference path="utils.ts" />
+import {Context} from "../context"
+import {LogLevel} from "../log"
+import * as Loader from "./loader"
+import * as Converter from "../converter/converter"
+import * as Exporter from "../exporter/exporter"
+import * as Utils from "./utils"
+import * as MathUtils from "../math"
 
-module COLLADA.Loader {
-
-    export class Joints extends COLLADA.Loader.EElement {
-        joints: COLLADA.Loader.Input | undefined;
-        invBindMatrices: COLLADA.Loader.Input | undefined;
+    export class Joints extends Loader.EElement {
+        joints: Loader.Input | undefined;
+        invBindMatrices: Loader.Input | undefined;
 
         constructor() {
             super();
@@ -17,16 +18,16 @@ module COLLADA.Loader {
         /**
         *   Parses a <joints> element.
         */
-        static parse(node: Node, context: COLLADA.Loader.Context): COLLADA.Loader.Joints {
-            var result: COLLADA.Loader.Joints = new COLLADA.Loader.Joints();
+        static parse(node: Node, context: Loader.Context): Loader.Joints {
+            var result: Loader.Joints = new Loader.Joints();
 
-            var inputs: COLLADA.Loader.Input[] = [];
+            var inputs: Loader.Input[] = [];
 
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
                     case "input":
-                        var input: COLLADA.Loader.Input = COLLADA.Loader.Input.parse(child, false, context);
-                        COLLADA.Loader.Joints.addInput(result, input, context);
+                        var input: Loader.Input = Loader.Input.parse(child, false, context);
+                        Loader.Joints.addInput(result, input, context);
                         inputs.push(input);
                         break;
                     default:
@@ -37,7 +38,7 @@ module COLLADA.Loader {
             return result;
         }
 
-        static addInput(joints: COLLADA.Loader.Joints, input: COLLADA.Loader.Input, context: COLLADA.Loader.Context) {
+        static addInput(joints: Loader.Joints, input: Loader.Input, context: Loader.Context) {
             switch (input.semantic) {
                 case "JOINT":
                     joints.joints = input;
@@ -51,4 +52,3 @@ module COLLADA.Loader {
         }
 
     }
-}

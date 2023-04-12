@@ -1,7 +1,9 @@
-/// <reference path="context.ts" />
-/// <reference path="format.ts" />
+import {Log, LogLevel} from "../log"
+import * as Loader from "../loader/loader"
+import * as Converter from "../converter/converter"
+import * as Exporter from "./exporter"
 
-module COLLADA.Exporter {
+
 
     export class DataChunk {
         data: any;
@@ -24,12 +26,12 @@ module COLLADA.Exporter {
             return this.data.length * this.bytes_per_element;
         }
 
-        static toJSON(chunk: DataChunk): COLLADA.Exporter.DataChunkJSON {
+        static toJSON(chunk: DataChunk): Exporter.DataChunkJSON {
             if (chunk === null || !chunk.type) {
                 chunk.type = "";
             }
 
-            var result: COLLADA.Exporter.DataChunkJSON = {
+            var result: Exporter.DataChunkJSON = {
                 type: chunk.type,
                 byte_offset: chunk.byte_offset,
                 stride: chunk.stride,
@@ -39,8 +41,8 @@ module COLLADA.Exporter {
             return result;
         }
 
-        static create(data: any, stride: number, context: COLLADA.Exporter.Context): COLLADA.Exporter.DataChunk{
-            var result: COLLADA.Exporter.DataChunk = new COLLADA.Exporter.DataChunk();
+        static create(data: any, stride: number, context: Exporter.Context): Exporter.DataChunk{
+            var result: Exporter.DataChunk = new Exporter.DataChunk();
             if (data === null) {
                 return result;
             }
@@ -82,4 +84,3 @@ module COLLADA.Exporter {
             return result;
         }
     };
-}

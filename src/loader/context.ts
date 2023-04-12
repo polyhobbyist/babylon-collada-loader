@@ -1,8 +1,16 @@
-module COLLADA.Loader {
 
-    export class Context extends COLLADA.Context {
-        ids: { [s: string]: COLLADA.Loader.EElement; }
-        links: Link[] | undefined;
+import * as COLLADAContext from "../context"
+import {Log, LogLevel} from "../log"
+import * as Loader from "./loader"
+import * as Converter from "../converter/converter"
+import * as Exporter from "../exporter/exporter"
+import * as Utils from "./utils"
+import * as MathUtils from "../math"
+
+
+    export class Context extends COLLADAContext.Context {
+        ids: { [s: string]: Loader.EElement; }
+        links: Loader.Link[] | undefined;
         totalBytes: number = 0;
         loadedBytes: number = 0;
 
@@ -47,6 +55,10 @@ module COLLADA.Loader {
 
         getIntsContent(el: Node): Int32Array {
             return this.strToInts(this.getTextContent(el));
+        }
+
+        getUintsContent(el: Node): Uint32Array {
+            return this.strToUints(this.getTextContent(el));
         }
 
         getIntContent(el: Node): number {
@@ -97,25 +109,25 @@ module COLLADA.Loader {
             }
         }
 
-        createUrlLink(url: string): UrlLink {
-            var link: UrlLink = new UrlLink(url);
+        createUrlLink(url: string): Loader.UrlLink {
+            var link: Loader.UrlLink = new Loader.UrlLink(url);
             this.links?.push(link);
             return link;
         }
 
-        createSidLink(url: string, parentId: string): SidLink {
-            var link: SidLink = new SidLink(url, parentId);
+        createSidLink(url: string, parentId: string): Loader.SidLink {
+            var link: Loader.SidLink = new Loader.SidLink(url, parentId);
             this.links?.push(link);
             return link;
         }
 
-        createFxLink(url: string, scope: COLLADA.Loader.EElement): FxLink {
-            var link: FxLink = new FxLink(url, scope);
+        createFxLink(url: string, scope: Loader.EElement): Loader.FxLink {
+            var link: Loader.FxLink = new Loader.FxLink(url, scope);
             this.links?.push(link);
             return link;
         }
 
-        getAttributeAsUrlLink(el: Node, name: string, required: boolean): UrlLink | undefined{
+        getAttributeAsUrlLink(el: Node, name: string, required: boolean): Loader.UrlLink | undefined{
             var attr = this.getAttributeNamed(el, name);
             if (attr) {
                 return this.createUrlLink(attr.value);
@@ -127,7 +139,7 @@ module COLLADA.Loader {
             }
         }
 
-        getAttributeAsSidLink(el: Node, name: string, parentId: string, required: boolean): SidLink | undefined {
+        getAttributeAsSidLink(el: Node, name: string, parentId: string, required: boolean): Loader.SidLink | undefined {
             var attr = this.getAttributeNamed(el, name);
             if (attr) {
                 return this.createSidLink(attr.value, parentId);
@@ -139,7 +151,7 @@ module COLLADA.Loader {
             }
         }
 
-        getAttributeAsFxLink(el: Node, name: string, scope: COLLADA.Loader.EElement, required: boolean): FxLink | undefined{
+        getAttributeAsFxLink(el: Node, name: string, scope: Loader.EElement, required: boolean): Loader.FxLink | undefined{
             var attr = this.getAttributeNamed(el, name);
             if (attr) {
                 return this.createFxLink(attr.value, scope);
@@ -227,7 +239,7 @@ module COLLADA.Loader {
             }
         }
 
-        registerUrlTarget(object: COLLADA.Loader.EElement, needsId: boolean) {
+        registerUrlTarget(object: Loader.EElement, needsId: boolean) {
             var id: string = object.id;
             // Abort if the object has no ID
             if (id == null) {
@@ -245,7 +257,7 @@ module COLLADA.Loader {
             this.ids[id] = object;
         }
 
-        registerFxTarget(object: COLLADA.Loader.EElement, scope: COLLADA.Loader.EElement) {
+        registerFxTarget(object: Loader.EElement, scope: Loader.EElement) {
             var sid: string = object.sid;
             if (sid == null) {
                 this.log?.write("Cannot add a FX target: object has no SID.", LogLevel.Error);
@@ -260,7 +272,7 @@ module COLLADA.Loader {
             scope.fxChildren[sid] = object;
         }
 
-        registerSidTarget(object: COLLADA.Loader.EElement, parent: COLLADA.Loader.EElement) {
+        registerSidTarget(object: Loader.EElement, parent: Loader.EElement) {
             // SID links are registered within the parent scope
             parent.sidChildren.push(object);
         }
@@ -296,10 +308,9 @@ module COLLADA.Loader {
             if (this.links) {
                 var linksLen: number = this.links.length;
                 for (var i = 0; i < linksLen; ++i) {
-                    var link: Link = this.links[i];
+                    var link: Loader.Link = this.links[i];
                     link.resolve(this);
                 }
             }
         }
     };
-}

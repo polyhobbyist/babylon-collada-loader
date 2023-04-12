@@ -1,9 +1,6 @@
-/// <reference path="context.ts" />
-/// <reference path="element.ts" />
+import * as Loader from "../loader/loader"
 
-module COLLADA.Loader {
-
-    export class CameraParam extends COLLADA.Loader.EElement {
+    export class CameraParam extends Loader.EElement {
         value: number = 0;
 
         constructor() {
@@ -14,8 +11,8 @@ module COLLADA.Loader {
         /**
         *   Parses a camera parameter element.
         */
-        static parse(node: Node, context: COLLADA.Loader.Context): COLLADA.Loader.CameraParam {
-            var result: COLLADA.Loader.CameraParam = new COLLADA.Loader.CameraParam();
+        static parse(node: Node, context: Loader.Context): Loader.CameraParam {
+            var result: Loader.CameraParam = new Loader.CameraParam();
 
             result.sid = context.getAttributeAsString(node, "sid", undefined, false);
             result.name = node.nodeName;
@@ -25,4 +22,3 @@ module COLLADA.Loader {
         }
 
     }
-}

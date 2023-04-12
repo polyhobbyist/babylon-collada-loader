@@ -1,17 +1,21 @@
-/// <reference path="context.ts" />
-/// <reference path="utils.ts" />
-/// <reference path="material.ts" />
-/// <reference path="bone.ts" />
-/// <reference path="geometry_chunk.ts" />
-/// <reference path="bounding_box.ts" />
-/// <reference path="../math.ts" />
+import {Log, LogLevel} from "../log"
+import * as Loader from "../loader/loader"
+import * as Converter from "./converter"
+import * as Utils from "./utils"
+import * as MathUtils from "../math"
+import {Material} from "./material"
+import {Texture} from "./texture"
+import {AnimationTarget} from "./animation"
+import * as COLLADAContext from "../context"
+import {Options} from "./options"
+import {BoundingBox} from "./bounding_box"
+import * as BABYLON from 'babylonjs';
 
-module COLLADA.Converter {
 
     export class Geometry {
         name: string;
-        chunks: COLLADA.Converter.GeometryChunk[];
-        private skeleton: COLLADA.Converter.Skeleton | undefined ;
+        chunks: Converter.GeometryChunk[];
+        private skeleton: Converter.Skeleton | undefined ;
         boundingBox: BoundingBox;
 
         constructor() {
@@ -20,26 +24,26 @@ module COLLADA.Converter {
             this.boundingBox = new BoundingBox();
         }
 
-        getSkeleton(): Skeleton | undefined{
+        getSkeleton(): Converter.Skeleton | undefined{
             return this.skeleton;
         }
 
         /**
         * Creates a static (non-animated) geometry
         */
-        static createStatic(instanceGeometry: COLLADA.Loader.InstanceGeometry, node: COLLADA.Converter.Node, context: COLLADA.Converter.Context): COLLADA.Converter.Geometry | undefined{
+        static createStatic(instanceGeometry: Loader.InstanceGeometry, node: Converter.Node, context: Converter.Context): Converter.Geometry | undefined{
             if (!instanceGeometry || !instanceGeometry.geometry) {
                 return undefined;
             }
-            var geometry = COLLADA.Loader.Geometry.fromLink(instanceGeometry.geometry, context);
+            var geometry = Loader.Geometry.fromLink(instanceGeometry.geometry, context);
             if (!geometry) {
                 context.log.write("Geometry instance has no geometry, mesh ignored", LogLevel.Warning);
                 return undefined;
             }
 
-            var result = COLLADA.Converter.Geometry.createGeometry(geometry, instanceGeometry.materials, context);
+            var result = Converter.Geometry.createGeometry(geometry, instanceGeometry.materials, context);
             if (context.options.createSkeleton.value) {
-                COLLADA.Converter.Geometry.addSkeleton(result, node, context);
+                Converter.Geometry.addSkeleton(result, node, context);
             }
             return result;
         }
@@ -47,20 +51,20 @@ module COLLADA.Converter {
         /**
         * Creates an animated (skin or morph) geometry
         */
-        static createAnimated(instanceController: COLLADA.Loader.InstanceController, node: COLLADA.Converter.Node, context: COLLADA.Converter.Context): COLLADA.Converter.Geometry | undefined{
+        static createAnimated(instanceController: Loader.InstanceController, node: Converter.Node, context: Converter.Context): Converter.Geometry | undefined{
             if (!instanceController || !instanceController.controller) {
                 return undefined;
             }
-            var controller = COLLADA.Loader.Controller.fromLink(instanceController.controller, context);
+            var controller = Loader.Controller.fromLink(instanceController.controller, context);
             if (!controller) {
                 context.log.write("Controller instance has no controller, mesh ignored", LogLevel.Warning);
                 return undefined;
             }
 
             if (controller.skin !== null) {
-                return COLLADA.Converter.Geometry.createSkin(instanceController, controller, context);
+                return Converter.Geometry.createSkin(instanceController, controller, context);
             } else if (controller.morph !== null) {
-                return COLLADA.Converter.Geometry.createMorph(instanceController, controller, context);
+                return Converter.Geometry.createMorph(instanceController, controller, context);
             }
 
             return undefined;
@@ -69,12 +73,12 @@ module COLLADA.Converter {
         /**
         * Creates a skin-animated geometry
         */
-        static createSkin(instanceController: COLLADA.Loader.InstanceController, controller: COLLADA.Loader.Controller, context: COLLADA.Converter.Context): COLLADA.Converter.Geometry | undefined{
+        static createSkin(instanceController: Loader.InstanceController, controller: Loader.Controller, context: Converter.Context): Converter.Geometry | undefined{
             if (!instanceController || !instanceController.controller) {
                 return undefined;
             }
             // Controller element
-            var controller = COLLADA.Loader.Controller.fromLink(instanceController.controller, context) as COLLADA.Loader.Controller;
+            var controller = Loader.Controller.fromLink(instanceController.controller, context) as Loader.Controller;
             if (!controller) {
                 context.log.write("Controller instance has no controller, mesh ignored", LogLevel.Error);
                 return undefined;
@@ -88,14 +92,14 @@ module COLLADA.Converter {
             }
 
             // Geometry element
-            var loaderGeometry = COLLADA.Loader.Geometry.fromLink(skin.source, context);
+            var loaderGeometry = Loader.Geometry.fromLink(skin.source, context);
             if (!loaderGeometry) {
                 context.log.write("Controller has no geometry, mesh ignored", LogLevel.Error);
                 return undefined;
             }
 
             // Create skin geometry
-            var geometry: COLLADA.Converter.Geometry = COLLADA.Converter.Geometry.createGeometry(loaderGeometry, instanceController.materials, context);
+            var geometry: Converter.Geometry = Converter.Geometry.createGeometry(loaderGeometry, instanceController.materials, context);
 
             if (!context.options.createSkeleton.value) {
                 context.log.write("Geometry " + geometry.name + " contains skinning data, but the creation of skeletons is disabled in the options. Using static geometry only.", LogLevel.Warning);
@@ -103,24 +107,24 @@ module COLLADA.Converter {
             }
 
             // Find skeleton root nodes
-            var skeletonRootNodes = COLLADA.Converter.Geometry.getSkeletonRootNodes(instanceController.skeletons, context);
+            var skeletonRootNodes = Converter.Geometry.getSkeletonRootNodes(instanceController.skeletons, context);
             if (skeletonRootNodes.length === 0) {
                 context.log.write("Controller still has no skeleton, using unskinned geometry", LogLevel.Warning);
                 return geometry;
             }
 
             // Joints
-            var jointsElement: COLLADA.Loader.Joints | undefined = skin.joints;
+            var jointsElement: Loader.Joints | undefined = skin.joints;
             if (!jointsElement) {
                 context.log.write("Skin has no joints element, using unskinned mesh", LogLevel.Warning);
                 return geometry;
             }
-            var jointsInput: COLLADA.Loader.Input | undefined = jointsElement.joints;
+            var jointsInput: Loader.Input | undefined = jointsElement.joints;
             if (!jointsInput || !jointsInput.source) {
                 context.log.write("Skin has no joints input, using unskinned mesh", LogLevel.Warning);
                 return geometry;
             }
-            var jointsSource: COLLADA.Loader.Source | undefined = COLLADA.Loader.Source.fromLink(jointsInput.source, context);
+            var jointsSource: Loader.Source | undefined = Loader.Source.fromLink(jointsInput.source, context);
             if (!jointsSource) {
                 context.log.write("Skin has no joints source, using unskinned mesh", LogLevel.Warning);
                 return geometry;
@@ -130,16 +134,16 @@ module COLLADA.Converter {
             // Bind shape matrix
             var bindShapeMatrix: BABYLON.Matrix = new BABYLON.Matrix();
             if (skin.bindShapeMatrix !== null) {
-                COLLADA.MathUtils.mat4Extract(skin.bindShapeMatrix, 0, bindShapeMatrix);
+                MathUtils.mat4Extract(skin.bindShapeMatrix, 0, bindShapeMatrix);
             }
 
             // InvBindMatrices
-            var invBindMatricesInput: COLLADA.Loader.Input | undefined = jointsElement?.invBindMatrices;
+            var invBindMatricesInput: Loader.Input | undefined = jointsElement?.invBindMatrices;
             if (!invBindMatricesInput || !invBindMatricesInput.source) {
                 context.log.write("Skin has no inverse bind matrix input, using unskinned mesh", LogLevel.Warning);
                 return geometry;
             }
-            var invBindMatricesSource = COLLADA.Loader.Source.fromLink(invBindMatricesInput.source, context);
+            var invBindMatricesSource = Loader.Source.fromLink(invBindMatricesInput.source, context);
             if (!invBindMatricesSource) {
                 context.log.write("Skin has no inverse bind matrix source, using unskinned mesh", LogLevel.Warning);
                 return geometry;
@@ -166,7 +170,7 @@ module COLLADA.Converter {
                 context.log.write("Skin contains no bone weights input, using unskinned mesh", LogLevel.Warning);
                 return geometry;
             }
-            var weightsSource = COLLADA.Loader.Source.fromLink(weightsInput.source, context);
+            var weightsSource = Loader.Source.fromLink(weightsInput.source, context);
             if (!weightsSource) {
                 context.log.write("Skin has no bone weights source, using unskinned mesh", LogLevel.Warning);
                 return geometry;
@@ -186,7 +190,7 @@ module COLLADA.Converter {
             }
 
             // Bones
-            var skeleton = Skeleton.createFromSkin(jointSids, skeletonRootNodes, bindShapeMatrix, invBindMatrices, context);
+            var skeleton = Converter.Skeleton.createFromSkin(jointSids, skeletonRootNodes, bindShapeMatrix, invBindMatrices, context);
             if (skeleton.bones.length === 0) {
                 context.log.write("Skin contains no bones, using unskinned mesh", LogLevel.Warning);
                 return geometry;
@@ -195,30 +199,30 @@ module COLLADA.Converter {
 
             // Compact skinning data
             var bonesPerVertex = 4;
-            var skinningData = COLLADA.Converter.Geometry.compactSkinningData(skin, weightsData, bonesPerVertex, context);
+            var skinningData = Converter.Geometry.compactSkinningData(skin, weightsData, bonesPerVertex, context);
             var skinIndices = skinningData.indices;
             var skinWeights = skinningData.weights;
 
             // Distribute skin data to chunks
             for (var i = 0; i < geometry.chunks.length; ++i) {
-                var chunk: GeometryChunk = geometry.chunks[i];
-                var chunkData: GeometryData = chunk.data;
-                var chunkSrcIndices: GeometryChunkSourceIndices = chunk._colladaIndices;
+                var chunk: Converter.GeometryChunk = geometry.chunks[i];
+                var chunkData: Converter.GeometryData = chunk.data;
+                var chunkSrcIndices: Converter.GeometryChunkSourceIndices = chunk._colladaIndices;
 
                 // Distribute indices to chunks
                 chunkData.boneindex = new Uint8Array(chunk.vertexCount * bonesPerVertex);
-                COLLADA.Converter.Utils.reIndex(skinIndices, chunkSrcIndices.indices, chunkSrcIndices.indexStride, chunkSrcIndices.indexOffset,
+                Utils.reIndex(skinIndices, chunkSrcIndices.indices, chunkSrcIndices.indexStride, chunkSrcIndices.indexOffset,
                     bonesPerVertex, chunkData.boneindex, chunkData.indices, 1, 0, bonesPerVertex);
 
                 // Distribute weights to chunks
                 chunkData.boneweight = new Float32Array(chunk.vertexCount * bonesPerVertex);
-                COLLADA.Converter.Utils.reIndex(skinWeights, chunkSrcIndices.indices, chunkSrcIndices.indexStride, chunkSrcIndices.indexOffset,
+                Utils.reIndex(skinWeights, chunkSrcIndices.indices, chunkSrcIndices.indexStride, chunkSrcIndices.indexOffset,
                     bonesPerVertex, chunkData.boneweight, chunkData.indices, 1, 0, bonesPerVertex);
             }
 
             // Copy bind shape matrices
             for (var i = 0; i < geometry.chunks.length; ++i) {
-                var chunk: COLLADA.Converter.GeometryChunk = geometry.chunks[i];
+                var chunk: Converter.GeometryChunk = geometry.chunks[i];
                 chunk.bindShapeMatrix = new BABYLON.Matrix
                 chunk.bindShapeMatrix.copyFrom(bindShapeMatrix);
             }
@@ -230,14 +234,14 @@ module COLLADA.Converter {
 
             // Sort bones if necessary
             if (context.options.sortBones.value) {
-                skeleton = COLLADA.Converter.Skeleton.sortBones(skeleton, context);
+                skeleton = Converter.Skeleton.sortBones(skeleton, context);
             }
-            COLLADA.Converter.Geometry.setSkeleton(geometry, skeleton, context);
+            Converter.Geometry.setSkeleton(geometry, skeleton, context);
             return geometry;
         }
 
         static compactSkinningData(skin: Loader.Skin, weightsData: Float32Array, bonesPerVertex: number,
-            context: COLLADA.Converter.Context): { weights: Float32Array; indices:Uint8Array} {
+            context: Converter.Context): { weights: Float32Array; indices:Uint8Array} {
             var weightsIndices: Int32Array | undefined = skin.vertexWeights?.v;
             var weightsCounts: Int32Array | undefined = skin.vertexWeights?.vcount;
             var skinVertexCount: number = weightsCounts?.length || 0;
@@ -298,11 +302,11 @@ module COLLADA.Converter {
             return { weights: skinWeights, indices: skinIndices };
         }
 
-        static getSkeletonRootNodes(skeletonLinks: COLLADA.Loader.Link[], context: COLLADA.Converter.Context): COLLADA.Loader.VisualSceneNode[] {
-            var skeletonRootNodes: COLLADA.Loader.VisualSceneNode[] = [];
+        static getSkeletonRootNodes(skeletonLinks: Loader.Link[], context: Converter.Context): Loader.VisualSceneNode[] {
+            var skeletonRootNodes: Loader.VisualSceneNode[] = [];
             for (var i: number = 0; i < skeletonLinks.length; i++) {
-                var skeletonLink: COLLADA.Loader.Link = skeletonLinks[i];
-                var skeletonRootNode: COLLADA.Loader.VisualSceneNode | undefined = COLLADA.Loader.VisualSceneNode.fromLink(skeletonLink, context);
+                var skeletonLink: Loader.Link = skeletonLinks[i];
+                var skeletonRootNode: Loader.VisualSceneNode | undefined = Loader.VisualSceneNode.fromLink(skeletonLink, context);
                 if (!skeletonRootNode) {
                     context.log.write("Skeleton root node " + skeletonLink.getUrl() + " not found, skeleton root ignored", LogLevel.Warning);
                     continue;
@@ -311,42 +315,42 @@ module COLLADA.Converter {
             }
             if (skeletonRootNodes.length === 0) {
                 context.log.write("Controller has no skeleton, using the whole scene as the skeleton root", LogLevel.Warning);
-                skeletonRootNodes = context.nodes.collada.filter((node: COLLADA.Loader.VisualSceneNode) => (context.isInstanceOf(node.parent, "VisualScene")));
+                skeletonRootNodes = context.nodes.collada.filter((node: Loader.VisualSceneNode) => (context.isInstanceOf(node.parent, "VisualScene")));
             }
             return skeletonRootNodes;
         }
 
-        static createMorph(instanceController: COLLADA.Loader.InstanceController, controller: COLLADA.Loader.Controller, context: COLLADA.Converter.Context): COLLADA.Converter.Geometry | undefined{
+        static createMorph(instanceController: Loader.InstanceController, controller: Loader.Controller, context: Converter.Context): Converter.Geometry | undefined{
             context.log.write("Morph animated meshes not supported, mesh ignored", LogLevel.Warning);
             return undefined;
         }
 
-        static createGeometry(geometry: COLLADA.Loader.Geometry, instanceMaterials: COLLADA.Loader.InstanceMaterial[], context: COLLADA.Converter.Context): COLLADA.Converter.Geometry {
-            var materialMap: COLLADA.Converter.MaterialMap = COLLADA.Converter.Material.getMaterialMap(instanceMaterials, context);
+        static createGeometry(geometry: Loader.Geometry, instanceMaterials: Loader.InstanceMaterial[], context: Converter.Context): Converter.Geometry {
+            var materialMap: Converter.MaterialMap = Converter.Material.getMaterialMap(instanceMaterials, context);
 
-            var result: COLLADA.Converter.Geometry = new COLLADA.Converter.Geometry();
+            var result: Converter.Geometry = new Converter.Geometry();
             result.name = geometry.name || geometry.id || geometry.sid || "geometry";
 
             // Loop over all <triangle> elements
-            var trianglesList: COLLADA.Loader.Triangles[] = geometry.triangles;
+            var trianglesList: Loader.Triangles[] = geometry.triangles;
             for (var i: number = 0; i < trianglesList.length; i++) {
                 var triangles = trianglesList[i];
 
                 // Find the used material
-                var material: COLLADA.Converter.Material;
+                var material: Converter.Material;
                 if (triangles.material !== null) {
                     material = materialMap.symbols[triangles.material];
                     if (material === null) {
                         context.log.write("Material symbol " + triangles.material + " has no bound material instance, using default material", LogLevel.Warning);
-                        material = COLLADA.Converter.Material.createDefaultMaterial(context);
+                        material = Converter.Material.createDefaultMaterial(context);
                     }
                 } else {
                     context.log.write("Missing material index, using default material", LogLevel.Warning);
-                    material = COLLADA.Converter.Material.createDefaultMaterial(context);
+                    material = Converter.Material.createDefaultMaterial(context);
                 }
 
                 // Create a geometry chunk
-                var chunk: COLLADA.Converter.GeometryChunk = COLLADA.Converter.GeometryChunk.createChunk(geometry, triangles, context);
+                var chunk: Converter.GeometryChunk = Converter.GeometryChunk.createChunk(geometry, triangles, context);
                 if (chunk !== null) {
                     chunk.name = result.name;
                     if (trianglesList.length > 1) {
@@ -363,23 +367,23 @@ module COLLADA.Converter {
         /**
         * Transforms the given geometry (position and normals) by the given matrix
         */
-        static transformGeometry(geometry: COLLADA.Converter.Geometry, transformMatrix: BABYLON.Matrix, context: COLLADA.Converter.Context) {
+        static transformGeometry(geometry: Converter.Geometry, transformMatrix: BABYLON.Matrix, context: Converter.Context) {
             // Create the normal transformation matrix
             var normalMatrix: BABYLON.Matrix = new BABYLON.Matrix;
             transformMatrix.toNormalMatrix(normalMatrix);
 
             // Transform normals and positions of all chunks
             for (var i = 0; i < geometry.chunks.length; ++i) {
-                var chunk: COLLADA.Converter.GeometryChunk = geometry.chunks[i];
+                var chunk: Converter.GeometryChunk = geometry.chunks[i];
 
-                GeometryChunk.transformChunk(chunk, transformMatrix, normalMatrix, context);
+                Converter.GeometryChunk.transformChunk(chunk, transformMatrix, normalMatrix, context);
             }
         }
 
         /**
         * Adapts inverse bind matrices to account for any additional transformations due to the world transform
         */
-        static setupWorldTransform(geometry: COLLADA.Converter.Geometry, context: COLLADA.Converter.Context) {
+        static setupWorldTransform(geometry: Converter.Geometry, context: Converter.Context) {
             if (geometry.skeleton === null) return;
 
             // Skinning equation:                [worldMatrix]     * [invBindMatrix]        * [pos]
@@ -403,10 +407,10 @@ module COLLADA.Converter {
         /**
         * Scales the given geometry
         */
-        static scaleGeometry(geometry: COLLADA.Converter.Geometry, scale: number, context: COLLADA.Converter.Context) {
+        static scaleGeometry(geometry: Converter.Geometry, scale: number, context: Converter.Context) {
             for (var i = 0; i < geometry.chunks.length; ++i) {
-                var chunk: COLLADA.Converter.GeometryChunk = geometry.chunks[i];
-                GeometryChunk.scaleChunk(chunk, scale, context);
+                var chunk: Converter.GeometryChunk = geometry.chunks[i];
+                Converter.GeometryChunk.scaleChunk(chunk, scale, context);
             }
 
             if (geometry.skeleton && geometry.skeleton.bones) {
@@ -423,11 +427,11 @@ module COLLADA.Converter {
         *
         * This transforms the geometry by the bind shape matrix, and resets the bind shape matrix to identity.
         */
-        static applyBindShapeMatrices(geometry: COLLADA.Converter.Geometry, context: COLLADA.Converter.Context) {
+        static applyBindShapeMatrices(geometry: Converter.Geometry, context: Converter.Context) {
 
             // Transform normals and positions of all chunks by the corresponding bind shape matrix
             for (var i = 0; i < geometry.chunks.length; ++i) {
-                var chunk: COLLADA.Converter.GeometryChunk = geometry.chunks[i];
+                var chunk: Converter.GeometryChunk = geometry.chunks[i];
 
                 var bindShapeMatrix: BABYLON.Matrix = chunk.bindShapeMatrix;
                 if (bindShapeMatrix) {
@@ -435,7 +439,7 @@ module COLLADA.Converter {
                     bindShapeMatrix.toNormalMatrix(normalMatrix);
 
                     // Pre-multiply geometry data by the bind shape matrix
-                    GeometryChunk.transformChunk(chunk, bindShapeMatrix, normalMatrix, context);
+                    Converter.GeometryChunk.transformChunk(chunk, bindShapeMatrix, normalMatrix, context);
 
                     // Reset the bind shape matrix
                     chunk.bindShapeMatrix = BABYLON.Matrix.Identity();
@@ -446,25 +450,25 @@ module COLLADA.Converter {
         /**
         * Computes the bounding box of the static (unskinned) geometry
         */
-        static computeBoundingBox(geometry: COLLADA.Converter.Geometry, context: COLLADA.Converter.Context) {
+        static computeBoundingBox(geometry: Converter.Geometry, context: Converter.Context) {
             geometry.boundingBox.reset();
 
             for (var i: number = 0; i < geometry.chunks.length; ++i) {
-                var chunk: GeometryChunk = geometry.chunks[i];
-                GeometryChunk.computeBoundingBox(chunk, context);
+                var chunk: Converter.GeometryChunk = geometry.chunks[i];
+                Converter.GeometryChunk.computeBoundingBox(chunk, context);
                 geometry.boundingBox.extendBox(chunk.boundingBox);
             }
         }
 
-        static addSkeleton(geometry: COLLADA.Converter.Geometry, node: COLLADA.Converter.Node, context: COLLADA.Converter.Context) {
+        static addSkeleton(geometry: Converter.Geometry, node: Converter.Node, context: Converter.Context) {
             // Create a skeleton from a single node
-            var skeleton = COLLADA.Converter.Skeleton.createFromNode(node, context);
-            COLLADA.Converter.Geometry.setSkeleton(geometry, skeleton, context);
+            var skeleton = Converter.Skeleton.createFromNode(node, context);
+            Converter.Geometry.setSkeleton(geometry, skeleton, context);
 
             // Attach all geometry to the bone representing the given node
             for (var i = 0; i < geometry.chunks.length; ++i) {
-                var chunk: COLLADA.Converter.GeometryChunk = geometry.chunks[i];
-                var chunkData: GeometryData = chunk.data;
+                var chunk: Converter.GeometryChunk = geometry.chunks[i];
+                var chunkData: Converter.GeometryData = chunk.data;
 
                 chunkData.boneindex = new Uint8Array(chunk.vertexCount * 4);
                 chunkData.boneweight = new Float32Array(chunk.vertexCount * 4);
@@ -483,16 +487,16 @@ module COLLADA.Converter {
 
             // Sort bones if necessary
             if (context.options.sortBones.value) {
-                skeleton = COLLADA.Converter.Skeleton.sortBones(skeleton, context);
+                skeleton = Converter.Skeleton.sortBones(skeleton, context);
             }
-            COLLADA.Converter.Geometry.setSkeleton(geometry, skeleton, context);
+            Converter.Geometry.setSkeleton(geometry, skeleton, context);
         }
 
         /**
         * Moves all data from given geometries into one merged geometry.
         * The original geometries will be empty after this operation (lazy design to avoid data duplication).
         */
-        static mergeGeometries(geometries: COLLADA.Converter.Geometry[], context: COLLADA.Converter.Context): COLLADA.Converter.Geometry | undefined {
+        static mergeGeometries(geometries: Converter.Geometry[], context: Converter.Context): Converter.Geometry | undefined {
             if (geometries.length === 0) {
                 context.log.write("No geometries to merge", LogLevel.Warning);
                 return undefined;
@@ -500,26 +504,26 @@ module COLLADA.Converter {
                 return geometries[0];
             }
 
-            var result: COLLADA.Converter.Geometry = new COLLADA.Converter.Geometry();
+            var result: Converter.Geometry = new Converter.Geometry();
             result.name = "merged_geometry";
 
             // Merge skeleton bones
-            var skeleton = new Skeleton([]);
+            var skeleton = new Converter.Skeleton([]);
             geometries.forEach((g) => {
                 if (g.skeleton !== null) {
-                    skeleton = COLLADA.Converter.Skeleton.mergeSkeletons(skeleton, g.skeleton, context);
+                    skeleton = Converter.Skeleton.mergeSkeletons(skeleton, g.skeleton, context);
                 }
             });
 
             // Sort bones if necessary
             if (context.options.sortBones.value) {
-                skeleton = COLLADA.Converter.Skeleton.sortBones(skeleton, context);
+                skeleton = Converter.Skeleton.sortBones(skeleton, context);
             }
-            COLLADA.Converter.Geometry.setSkeleton(result, skeleton, context);
+            Converter.Geometry.setSkeleton(result, skeleton, context);
 
             // Recode bone indices
             geometries.forEach((geometry) => {
-                COLLADA.Converter.Geometry.setSkeleton(geometry, skeleton, context);
+                Converter.Geometry.setSkeleton(geometry, skeleton, context);
             });
 
             // Merge geometry chunks
@@ -539,16 +543,16 @@ module COLLADA.Converter {
         * Set the new skeleton for the given geometry.
         * Changes all vertex bone indices so that they point to the given skeleton bones, instead of the current geometry.skeleton bones
         */
-        static setSkeleton(geometry: COLLADA.Converter.Geometry, skeleton: COLLADA.Converter.Skeleton, context: COLLADA.Converter.Context) {
+        static setSkeleton(geometry: Converter.Geometry, skeleton: Converter.Skeleton, context: Converter.Context) {
 
             // Adapt bone indices
             if (geometry.skeleton !== null) {
                 // Compute the index map
-                var index_map: Uint32Array = COLLADA.Converter.Skeleton.getBoneIndexMap(geometry.skeleton, skeleton);
+                var index_map: Uint32Array = Converter.Skeleton.getBoneIndexMap(geometry.skeleton, skeleton);
 
                 // Recode indices
                 for (var i = 0; i < geometry.chunks.length; ++i) {
-                    var chunk: COLLADA.Converter.GeometryChunk = geometry.chunks[i];
+                    var chunk: Converter.GeometryChunk = geometry.chunks[i];
                     var boneindex: Uint8Array = chunk.data.boneindex;
 
                     if (boneindex !== null) {
@@ -563,4 +567,3 @@ module COLLADA.Converter {
         }
 
     }
-}

@@ -1,12 +1,13 @@
-/// <reference path="context.ts" />
-/// <reference path="element.ts" />
-/// <reference path="utils.ts" />
-
-
-module COLLADA.Loader {
+import {Context} from "../context"
+import {LogLevel} from "../log"
+import * as Loader from "./loader"
+import * as Converter from "../converter/converter"
+import * as Exporter from "../exporter/exporter"
+import * as Utils from "./utils"
+import * as MathUtils from "../math"
 
     export interface LinkResolveResult {
-        result: COLLADA.Loader.EElement | undefined;
+        result: Loader.EElement | undefined;
         warning: string | undefined;
     }
 
@@ -15,7 +16,7 @@ module COLLADA.Loader {
     */
     export class Link {
         url: string = "";
-        target: COLLADA.Loader.EElement | undefined;
+        target: Loader.EElement | undefined;
 
         constructor() {
         }
@@ -24,7 +25,7 @@ module COLLADA.Loader {
             throw new Error("not implemented");
         }
 
-        resolve(context: COLLADA.Loader.Context) {
+        resolve(context: Loader.Context) {
             throw new Error("not implemented");
         }
 
@@ -50,9 +51,9 @@ module COLLADA.Loader {
             return this.url;
         }
 
-        resolve(context: COLLADA.Loader.Context): void {
+        resolve(context: Loader.Context): void {
             // IDs are globally unique
-            var object: COLLADA.Loader.EElement = context.ids[this.url];
+            var object: Loader.EElement = context.ids[this.url];
             if (object != null) {
                 this.target = object;
             } else {
@@ -72,9 +73,9 @@ module COLLADA.Loader {
     *   <element texture="xyz">
     */
     export class FxLink extends Link {
-        scope: COLLADA.Loader.EElement | undefined;
+        scope: Loader.EElement | undefined;
 
-        constructor(url: string, scope: COLLADA.Loader.EElement) {
+        constructor(url: string, scope: Loader.EElement) {
             super();
             this.url = url;
             this.scope = scope;
@@ -84,9 +85,9 @@ module COLLADA.Loader {
             return this.url;
         }
 
-        resolve(context: COLLADA.Loader.Context): void {
-            var scope: COLLADA.Loader.EElement | undefined = this.scope;
-            var object: COLLADA.Loader.EElement | undefined = undefined;
+        resolve(context: Loader.Context): void {
+            var scope: Loader.EElement | undefined = this.scope;
+            var object: Loader.EElement | undefined = undefined;
             // FX targets have a unique SID within a scope
             // If the target is not found in the current scope,
             // continue searching in the parent scope.
@@ -192,24 +193,24 @@ module COLLADA.Loader {
         *   @param sids SID parts.
         *   @returns The collada element the URL points to, or an error why it wasn't found
         */
-        static findSidTarget(url: string, root: COLLADA.Loader.EElement, sids: string[], context: COLLADA.Context): LinkResolveResult {
+        static findSidTarget(url: string, root: Loader.EElement, sids: string[], context: Context): LinkResolveResult {
             var result: LinkResolveResult = { result: undefined, warning: undefined };
             if (root == null) {
                 result.result = undefined;
                 result.warning = "Could not resolve SID target " + sids.join("/") + ", missing root element";
                 return result;
             }
-            var parentObject: COLLADA.Loader.EElement = root;
-            var childObject: COLLADA.Loader.EElement | undefined = undefined;
+            var parentObject: Loader.EElement = root;
+            var childObject: Loader.EElement | undefined = undefined;
             // For each SID part, perform a depth-first search
             for (var i: number = 0, ilen: number = sids.length; i < ilen; i++) {
                 var sid: string = sids[i];
                 // Initialize a queue for the search
-                var queue: COLLADA.Loader.EElement[] = [parentObject];
+                var queue: Loader.EElement[] = [parentObject];
                 // Dept-first search
                 while (queue.length !== 0) {
                     // Get front of search queue
-                    var front: COLLADA.Loader.EElement | undefined = queue.shift();
+                    var front: Loader.EElement | undefined = queue.shift();
                     if (front) {
                         // Stop if we found the target
                         if (front.sid === sid) {
@@ -217,10 +218,10 @@ module COLLADA.Loader {
                             break;
                         }
                         // Add all children to the back of the queue
-                        var frontChildren: COLLADA.Loader.EElement[] = front.sidChildren;
+                        var frontChildren: Loader.EElement[] = front.sidChildren;
                         if (frontChildren != null) {
                             for (var j: number = 0, jlen: number = frontChildren.length; j < jlen; j++) {
-                                var sidChild: COLLADA.Loader.EElement = frontChildren[j];
+                                var sidChild: Loader.EElement = frontChildren[j];
                                 queue.push(sidChild);
                             }
                         }
@@ -240,8 +241,8 @@ module COLLADA.Loader {
             return result;
         }
 
-        resolve(context: COLLADA.Loader.Context): void {
-            var object: COLLADA.Loader.EElement | undefined;
+        resolve(context: Loader.Context): void {
+            var object: Loader.EElement | undefined;
             if (this.id == null) {
                 context.log?.write("Could not resolve SID #" + this.url + ", link has no root ID", LogLevel.Warning);
                 return;
@@ -258,4 +259,3 @@ module COLLADA.Loader {
             this.target = result.result;
         }
     }
-}

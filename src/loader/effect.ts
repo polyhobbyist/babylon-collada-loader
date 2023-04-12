@@ -1,19 +1,18 @@
-/// <reference path="context.ts" />
-/// <reference path="element.ts" />
-/// <reference path="effect_param.ts" />
-/// <reference path="effect_technique.ts" />
-/// <reference path="utils.ts" />
-
-
-module COLLADA.Loader {
+import {Context} from "../context"
+import {LogLevel} from "../log"
+import * as Loader from "./loader"
+import * as Converter from "../converter/converter"
+import * as Exporter from "../exporter/exporter"
+import * as Utils from "./utils"
+import * as MathUtils from "../math"
 
     /**
     *   An <effect> element.
     *
     */
-    export class Effect extends COLLADA.Loader.EElement {
-        params: COLLADA.Loader.EffectParam[];
-        technique: COLLADA.Loader.EffectTechnique | undefined;
+    export class Effect extends Loader.EElement {
+        params: Loader.EffectParam[];
+        technique: Loader.EffectTechnique | undefined;
 
         constructor() {
             super();
@@ -21,15 +20,15 @@ module COLLADA.Loader {
             this.params = [];
         }
 
-        static fromLink(link: Link, context: COLLADA.Context): COLLADA.Loader.Effect | undefined{
-            return COLLADA.Loader.EElement._fromLink<COLLADA.Loader.Effect>(link, "Effect", context);
+        static fromLink(link: Loader.Link, context: Context): Loader.Effect | undefined{
+            return Loader.EElement._fromLink<Loader.Effect>(link, "Effect", context);
         }
 
         /**
         *   Parses an <effect> element.
         */
-        static parse(node: Node, context: COLLADA.Loader.Context): COLLADA.Loader.Effect {
-            var result: COLLADA.Loader.Effect = new COLLADA.Loader.Effect();
+        static parse(node: Node, context: Loader.Context): Loader.Effect {
+            var result: Loader.Effect = new Loader.Effect();
 
             result.id = context.getAttributeAsString(node, "id", undefined, true);
             context.registerUrlTarget(result, true);
@@ -37,14 +36,14 @@ module COLLADA.Loader {
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
                     case "profile_COMMON":
-                        COLLADA.Loader.Effect.parseProfileCommon(child, result, context);
+                        Loader.Effect.parseProfileCommon(child, result, context);
                         break;
                     case "profile":
                         context.log.write("Skipped non-common effect profile for effect " + result.id + ".", LogLevel.Warning);
                         break;
                     case "extra":
                         if (result.technique) {
-                            COLLADA.Loader.EffectTechnique.parseExtra(child, result.technique, context);
+                            Loader.EffectTechnique.parseExtra(child, result.technique, context);
                         }
                         break;
                     default:
@@ -58,18 +57,18 @@ module COLLADA.Loader {
         /**
         *   Parses an <effect>/<profile_COMMON> element.
         */
-        static parseProfileCommon(node: Node, effect: COLLADA.Loader.Effect, context: COLLADA.Loader.Context) {
+        static parseProfileCommon(node: Node, effect: Loader.Effect, context: Loader.Context) {
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
                     case "newparam":
-                        effect.params.push(COLLADA.Loader.EffectParam.parse(child, effect, context));
+                        effect.params.push(Loader.EffectParam.parse(child, effect, context));
                         break;
                     case "technique":
-                        effect.technique = COLLADA.Loader.EffectTechnique.parse(child, effect, context);
+                        effect.technique = Loader.EffectTechnique.parse(child, effect, context);
                         break;
                     case "extra":
                         if (effect.technique) {
-                            COLLADA.Loader.EffectTechnique.parseExtra(child, effect.technique, context);
+                            Loader.EffectTechnique.parseExtra(child, effect.technique, context);
                         }
                         break;
                     default:
@@ -78,4 +77,3 @@ module COLLADA.Loader {
             });
         }
     };
-}

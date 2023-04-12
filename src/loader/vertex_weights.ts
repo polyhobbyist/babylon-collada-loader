@@ -1,16 +1,17 @@
-/// <reference path="context.ts" />
-/// <reference path="element.ts" />
-/// <reference path="input.ts" />
-/// <reference path="utils.ts" />
+import {Context} from "../context"
+import {LogLevel} from "../log"
+import * as Loader from "./loader"
+import * as Converter from "../converter/converter"
+import * as Exporter from "../exporter/exporter"
+import * as Utils from "./utils"
+import * as MathUtils from "../math"
 
-module COLLADA.Loader {
-
-    export class VertexWeights extends COLLADA.Loader.EElement {
-        inputs: COLLADA.Loader.Input[];
+    export class VertexWeights extends Loader.EElement {
+        inputs: Loader.Input[];
         vcount: Int32Array = new Int32Array();
         v: Int32Array = new Int32Array();
-        joints: COLLADA.Loader.Input | undefined = undefined;
-        weights: COLLADA.Loader.Input | undefined = undefined;
+        joints: Loader.Input | undefined = undefined;
+        weights: Loader.Input | undefined = undefined;
         count: number = 0;
 
         constructor() {
@@ -22,16 +23,16 @@ module COLLADA.Loader {
         /**
         *   Parses a <vertex_weights> element.
         */
-        static parse(node: Node, context: COLLADA.Loader.Context): COLLADA.Loader.VertexWeights {
-            var result: COLLADA.Loader.VertexWeights = new COLLADA.Loader.VertexWeights();
+        static parse(node: Node, context: Loader.Context): Loader.VertexWeights {
+            var result: Loader.VertexWeights = new Loader.VertexWeights();
 
             result.count = context.getAttributeAsInt(node, "count", 0, true);
 
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
                     case "input":
-                        var input: COLLADA.Loader.Input = COLLADA.Loader.Input.parse(child, true, context);
-                        COLLADA.Loader.VertexWeights.addInput(result, input, context);
+                        var input: Loader.Input = Loader.Input.parse(child, true, context);
+                        Loader.VertexWeights.addInput(result, input, context);
                         break;
                     case "vcount":
                         result.vcount = context.getIntsContent(child);
@@ -47,7 +48,7 @@ module COLLADA.Loader {
             return result;
         }
 
-        static addInput(weights: COLLADA.Loader.VertexWeights, input: COLLADA.Loader.Input, context: COLLADA.Loader.Context) {
+        static addInput(weights: Loader.VertexWeights, input: Loader.Input, context: Loader.Context) {
             switch (input.semantic) {
                 case "JOINT":
                     weights.joints = input;
@@ -60,4 +61,3 @@ module COLLADA.Loader {
             }
         }
     }
-}

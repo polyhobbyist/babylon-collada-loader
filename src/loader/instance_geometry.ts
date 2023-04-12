@@ -1,13 +1,14 @@
-/// <reference path="context.ts" />
-/// <reference path="element.ts" />
-/// <reference path="instance_material.ts" />
-/// <reference path="utils.ts" />
+import {Context} from "../context"
+import {LogLevel} from "../log"
+import * as Loader from "./loader"
+import * as Converter from "../converter/converter"
+import * as Exporter from "../exporter/exporter"
+import * as Utils from "./utils"
+import * as MathUtils from "../math"
 
-module COLLADA.Loader {
-
-    export class InstanceGeometry extends COLLADA.Loader.EElement {
-        geometry: Link | undefined;
-        materials: COLLADA.Loader.InstanceMaterial[];
+    export class InstanceGeometry extends Loader.EElement {
+        geometry: Loader.Link | undefined;
+        materials: Loader.InstanceMaterial[];
 
         constructor() {
             super();
@@ -18,8 +19,8 @@ module COLLADA.Loader {
         /**
         *   Parses a <instance_geometry> element.
         */
-        static parse(node: Node, parent: COLLADA.Loader.EElement, context: COLLADA.Loader.Context): COLLADA.Loader.InstanceGeometry {
-            var result: COLLADA.Loader.InstanceGeometry = new COLLADA.Loader.InstanceGeometry();
+        static parse(node: Node, parent: Loader.EElement, context: Loader.Context): Loader.InstanceGeometry {
+            var result: Loader.InstanceGeometry = new Loader.InstanceGeometry();
 
             result.geometry = context.getAttributeAsUrlLink(node, "url", true);
             result.sid = context.getAttributeAsString(node, "sid", undefined, false);
@@ -27,7 +28,7 @@ module COLLADA.Loader {
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
                     case "bind_material":
-                        COLLADA.Loader.BindMaterial.parse(child, result, context);
+                        Loader.BindMaterial.parse(child, result, context);
                         break;
                     default:
                         context.reportUnexpectedChild(child);
@@ -37,4 +38,3 @@ module COLLADA.Loader {
             return result;
         }
     };
-}

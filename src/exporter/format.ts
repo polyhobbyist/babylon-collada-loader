@@ -1,4 +1,4 @@
-module COLLADA.Exporter {
+
     /**
     * An axis aligned bounding box
     */
@@ -126,4 +126,3 @@ module COLLADA.Exporter {
         /** Base64 encoded binary data, optional */
         data?: string;
     };
-}

@@ -1,21 +1,23 @@
-/// <reference path="context.ts" />
-/// <reference path="element.ts" />
-/// <reference path="utils.ts" />
-
-module COLLADA.Loader {
+import {Context} from "../context"
+import {LogLevel} from "../log"
+import * as Loader from "./loader"
+import * as Converter from "../converter/converter"
+import * as Exporter from "../exporter/exporter"
+import * as Utils from "./utils"
+import * as MathUtils from "../math"
 
     export interface SourceData {
         length: number;
         [index: number]: any;
     }
 
-    export class Source extends COLLADA.Loader.EElement {
+    export class Source extends Loader.EElement {
         sourceId: string | undefined;
         count: number = 0;
         stride: number = 0;
         offset: number = 0;
         /** Can be one of: Float32Array, Int32Array, Uint8Array, Array<string> */
-        data: COLLADA.Loader.SourceData | undefined;
+        data: Loader.SourceData | undefined;
         params: { [s: string]: string; }
 
         constructor() {
@@ -24,18 +26,18 @@ module COLLADA.Loader {
             this.params = {};
         }
 
-        static fromLink(link: Link | undefined, context: COLLADA.Context): COLLADA.Loader.Source | undefined {
+        static fromLink(link: Loader.Link | undefined, context: Context): Loader.Source | undefined {
             if (!link) {
                 return undefined;
             }
-            return COLLADA.Loader.EElement._fromLink<COLLADA.Loader.Source>(link, "Source", context);
+            return Loader.EElement._fromLink<Loader.Source>(link, "Source", context);
         }
 
         /**
         *   Parses a <source> element
         */
-        static parse(node: Node, context: COLLADA.Loader.Context): COLLADA.Loader.Source {
-            var result: COLLADA.Loader.Source = new COLLADA.Loader.Source();
+        static parse(node: Node, context: Loader.Context): Loader.Source {
+            var result: Loader.Source = new Loader.Source();
 
             result.id = context.getAttributeAsString(node, "id", undefined, true);
             result.name = context.getAttributeAsString(node, "name", undefined, false);
@@ -61,7 +63,7 @@ module COLLADA.Loader {
                         result.data = context.getStringsContent(child);
                         break;
                     case "technique_common":
-                        COLLADA.Loader.Source.parseSourceTechniqueCommon(child, result, context);
+                        Loader.Source.parseSourceTechniqueCommon(child, result, context);
                         break;
                     case "technique":
                         context.reportUnhandledChild(child);
@@ -77,11 +79,11 @@ module COLLADA.Loader {
         /**
         *   Parses a <source>/<technique_common> element
         */
-        static parseSourceTechniqueCommon(node: Node, source: COLLADA.Loader.Source, context: COLLADA.Loader.Context) {
+        static parseSourceTechniqueCommon(node: Node, source: Loader.Source, context: Loader.Context) {
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
                     case "accessor":
-                        COLLADA.Loader.Source.parseAccessor(child, source, context);
+                        Loader.Source.parseAccessor(child, source, context);
                         break;
                     default:
                         context.reportUnexpectedChild(child);
@@ -92,7 +94,7 @@ module COLLADA.Loader {
         /**
         *   Parses a <source>/<technique_common>/<accessor> element
         */
-        static parseAccessor(node: Node, source: COLLADA.Loader.Source, context: COLLADA.Loader.Context) {
+        static parseAccessor(node: Node, source: Loader.Source, context: Loader.Context) {
 
             var sourceId: string = context.getAttributeAsString(node, "source", undefined, true);
             source.count = context.getAttributeAsInt(node, "count", 0, true) || 0;
@@ -105,7 +107,7 @@ module COLLADA.Loader {
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
                     case "param":
-                        COLLADA.Loader.Source.parseAccessorParam(child, source, context);
+                        Loader.Source.parseAccessorParam(child, source, context);
                         break;
                     default:
                         context.reportUnexpectedChild(child);
@@ -116,7 +118,7 @@ module COLLADA.Loader {
         /**
         *   Parses a <source>/<technique_common>/<accessor>/<param> element
         */
-        static parseAccessorParam(node: Node, source: COLLADA.Loader.Source, context: COLLADA.Loader.Context) {
+        static parseAccessorParam(node: Node, source: Loader.Source, context: Loader.Context) {
 
             var name: string = context.getAttributeAsString(node, "name", undefined, false);
             var semantic: string = context.getAttributeAsString(node, "semantic", undefined, false);
@@ -136,4 +138,3 @@ module COLLADA.Loader {
             }
         }
     }
-}

@@ -1,17 +1,23 @@
-/// <reference path="../math.ts" />
-/// <reference path="context.ts" />
-/// <reference path="geometry.ts" />
-/// <reference path="transform.ts" />
+import {Context} from "../context"
+import {Log, LogLevel} from "../log"
+import * as Loader from "../loader/loader"
+import * as Converter from "./converter"
+import * as Utils from "./utils"
+import * as MathUtils from "../math"
+import {Material} from "./material"
+import {Texture} from "./texture"
+import {AnimationTarget} from "./animation"
+import * as COLLADAContext from "../context"
+import {Options} from "./options"
+import {BoundingBox} from "./bounding_box"
 import * as BABYLON from 'babylonjs';
-
-module COLLADA.Converter {
 
     export class Node {
         name: string;
-        parent: COLLADA.Converter.Node | undefined;
-        children: COLLADA.Converter.Node[];
-        geometries: COLLADA.Converter.Geometry[];
-        transformations: COLLADA.Converter.Transform[];
+        parent: Converter.Node | undefined;
+        children: Converter.Node[];
+        geometries: Converter.Geometry[];
+        transformations: Converter.Transform[];
         transformation_pre: BABYLON.Matrix = new BABYLON.Matrix();
         transformation_post: BABYLON.Matrix = new BABYLON.Matrix();
         matrix: BABYLON.Matrix = new BABYLON.Matrix();
@@ -29,19 +35,19 @@ module COLLADA.Converter {
         }
 
         addTransform(mat: BABYLON.Matrix) {
-            var loader_transform = new COLLADA.Loader.NodeTransform();
+            var loader_transform = new Loader.NodeTransform();
             loader_transform.data = new Float32Array();
             mat.copyToArray(loader_transform.data);
             loader_transform.type = "matrix";
             loader_transform.name = "virtual static transform";
-            var transform = new COLLADA.Converter.TransformMatrix(loader_transform);
+            var transform = new Converter.TransformMatrix(loader_transform);
             this.transformations.unshift(transform);
         }
 
         /**
         * Returns the world transformation matrix of this node
         */
-        getWorldMatrix(context: COLLADA.Converter.Context): BABYLON.Matrix {
+        getWorldMatrix(context: Converter.Context): BABYLON.Matrix {
             if (this.parent != null) {
                 this.worldMatrix.multiply(this.parent.getWorldMatrix(context));
                 this.worldMatrix.multiply(this.getLocalMatrix(context));
@@ -54,14 +60,14 @@ module COLLADA.Converter {
         /**
         * Returns the local transformation matrix of this node
         */
-        getLocalMatrix(context: COLLADA.Converter.Context) {
+        getLocalMatrix(context: Converter.Context) {
             
             // Static pre-transform
             this.matrix.copyFrom(this.transformation_pre);
 
             // Original transformations
             for (var i: number = 0; i < this.transformations.length; i++) {
-                var transform: COLLADA.Converter.Transform = this.transformations[i];
+                var transform: Converter.Transform = this.transformations[i];
                 transform.applyTransformation(this.matrix);
             }
 
@@ -93,10 +99,10 @@ module COLLADA.Converter {
         /**
         * Returns whether there the given animation targets the transformation of this node
         */
-        isAnimatedBy(animation: COLLADA.Converter.Animation, recursive: boolean): boolean {
+        isAnimatedBy(animation: Converter.Animation, recursive: boolean): boolean {
 
             for (var i: number = 0; i < this.transformations.length; i++) {
-                var transform: COLLADA.Converter.Transform = this.transformations[i];
+                var transform: Converter.Transform = this.transformations[i];
                 if (transform.isAnimatedBy(animation)) return true;
             }
             if (recursive && this.parent) {
@@ -107,7 +113,7 @@ module COLLADA.Converter {
 
         resetAnimation(): void {
             for (var i: number = 0; i < this.transformations.length; i++) {
-                var transform: COLLADA.Converter.Transform = this.transformations[i];
+                var transform: Converter.Transform = this.transformations[i];
                 transform.resetAnimation();
             }
         }
@@ -115,24 +121,24 @@ module COLLADA.Converter {
         /**
         * Removes all nodes from that list that are not relevant for the scene graph
         */
-        static pruneNodes(nodes: COLLADA.Converter.Node[], context: COLLADA.Context) {
+        static pruneNodes(nodes: Converter.Node[], context: Context) {
             // Prune all children recursively
             for (var n: number = 0; n < nodes.length; ++n) {
-                var node: COLLADA.Converter.Node = nodes[n];
-                COLLADA.Converter.Node.pruneNodes(node.children, context);
+                var node: Converter.Node = nodes[n];
+                Converter.Node.pruneNodes(node.children, context);
             }
 
             // Remove all nodes from the list that are not relevant
-            nodes = nodes.filter((value: COLLADA.Converter.Node, index: number, array: COLLADA.Converter.Node[]) =>
+            nodes = nodes.filter((value: Converter.Node, index: number, array: Converter.Node[]) =>
                 (value.containsSceneGraphItems() || value.children.length > 0));
         }
 
         /**
         * Recursively creates a converter node tree from the given collada node root node
         */
-        static createNode(node: COLLADA.Loader.VisualSceneNode, parent: COLLADA.Converter.Node, context: COLLADA.Converter.Context): COLLADA.Converter.Node {
+        static createNode(node: Loader.VisualSceneNode, parent: Converter.Node, context: Converter.Context): Converter.Node {
             // Create new node
-            var converterNode: COLLADA.Converter.Node = new COLLADA.Converter.Node();
+            var converterNode: Converter.Node = new Converter.Node();
             converterNode.parent = parent;
             if (parent) {
                 parent.children.push(converterNode);
@@ -143,20 +149,20 @@ module COLLADA.Converter {
 
             // Node transform
             for (var i = 0; i < node.transformations.length; ++i) {
-                var transform: COLLADA.Loader.NodeTransform = node.transformations[i];
-                var converterTransform: COLLADA.Converter.Transform = null;
+                var transform: Loader.NodeTransform = node.transformations[i];
+                var converterTransform: Converter.Transform = null;
                 switch (transform.type) {
                     case "matrix":
-                        converterTransform = new COLLADA.Converter.TransformMatrix(transform);
+                        converterTransform = new Converter.TransformMatrix(transform);
                         break;
                     case "rotate":
-                        converterTransform = new COLLADA.Converter.TransformRotate(transform);
+                        converterTransform = new Converter.TransformRotate(transform);
                         break;
                     case "translate":
-                        converterTransform = new COLLADA.Converter.TransformTranslate(transform);
+                        converterTransform = new Converter.TransformTranslate(transform);
                         break;
                     case "scale":
-                        converterTransform = new COLLADA.Converter.TransformScale(transform);
+                        converterTransform = new Converter.TransformScale(transform);
                         break;
                     default:
                         context.log.write("Transformation type " + transform.type + " not supported, transform ignored", LogLevel.Warning);
@@ -171,14 +177,14 @@ module COLLADA.Converter {
             
             // Create children
             for (var i: number = 0; i < node.children.length; i++) {
-                var colladaChild: COLLADA.Loader.VisualSceneNode = node.children[i];
-                var converterChild: COLLADA.Converter.Node = COLLADA.Converter.Node.createNode(colladaChild, converterNode, context);
+                var colladaChild: Loader.VisualSceneNode = node.children[i];
+                var converterChild: Converter.Node = Converter.Node.createNode(colladaChild, converterNode, context);
             }
 
             return converterNode;
         }
 
-        static updateInitialMatrices(node: COLLADA.Converter.Node, context: COLLADA.Converter.Context) {
+        static updateInitialMatrices(node: Converter.Node, context: Converter.Context) {
             node.getLocalMatrix(context);
             node.initialLocalMatrix.copyFrom(node.matrix);
 
@@ -186,21 +192,21 @@ module COLLADA.Converter {
             node.initialWorldMatrix.copyFrom(node.worldMatrix);
         }
 
-        static createNodeData(converter_node: COLLADA.Converter.Node, context: COLLADA.Converter.Context) {
+        static createNodeData(converter_node: Converter.Node, context: Converter.Context) {
 
-            var collada_node: COLLADA.Loader.VisualSceneNode = context.nodes.findCollada(converter_node);
+            var collada_node: Loader.VisualSceneNode = context.nodes.findCollada(converter_node);
 
             // Static geometries (<instance_geometry>)
             for (var i: number = 0; i < collada_node.geometries.length; i++) {
-                var loaderGeometry: COLLADA.Loader.InstanceGeometry = collada_node.geometries[i];
-                var converterGeometry: COLLADA.Converter.Geometry = COLLADA.Converter.Geometry.createStatic(loaderGeometry, converter_node, context);
+                var loaderGeometry: Loader.InstanceGeometry = collada_node.geometries[i];
+                var converterGeometry: Converter.Geometry = Converter.Geometry.createStatic(loaderGeometry, converter_node, context);
                 converter_node.geometries.push(converterGeometry);
             }
 
             // Animated geometries (<instance_controller>)
             for (var i: number = 0; i < collada_node.controllers.length; i++) {
-                var loaderController: COLLADA.Loader.InstanceController = collada_node.controllers[i];
-                var converterGeometry: COLLADA.Converter.Geometry = COLLADA.Converter.Geometry.createAnimated(loaderController, converter_node, context);
+                var loaderController: Loader.InstanceController = collada_node.controllers[i];
+                var converterGeometry: Converter.Geometry = Converter.Geometry.createAnimated(loaderController, converter_node, context);
                 converter_node.geometries.push(converterGeometry);
             }
 
@@ -214,20 +220,20 @@ module COLLADA.Converter {
 
             // Children
             for (var i: number = 0; i < converter_node.children.length; i++) {
-                var child: COLLADA.Converter.Node = converter_node.children[i];
-                COLLADA.Converter.Node.createNodeData(child, context);
+                var child: Converter.Node = converter_node.children[i];
+                Converter.Node.createNodeData(child, context);
             }
         }
 
         /**
         * Calls the given function for all given nodes and their children (recursively)
         */
-        static forEachNode(nodes: COLLADA.Converter.Node[], fn: (node: COLLADA.Converter.Node) => void) {
+        static forEachNode(nodes: Converter.Node[], fn: (node: Converter.Node) => void) {
 
             for (var i: number = 0; i < nodes.length; ++i) {
-                var node: COLLADA.Converter.Node = nodes[i];
+                var node: Converter.Node = nodes[i];
                 fn(node);
-                COLLADA.Converter.Node.forEachNode(node.children, fn);
+                Converter.Node.forEachNode(node.children, fn);
             }
         }
 
@@ -235,12 +241,12 @@ module COLLADA.Converter {
         * Extracts all geometries in the given scene and merges them into a single geometry.
         * The geometries are detached from their original nodes in the process.
         */
-        static extractGeometries(scene_nodes: COLLADA.Converter.Node[], context: COLLADA.Converter.Context): COLLADA.Converter.Geometry[] {
+        static extractGeometries(scene_nodes: Converter.Node[], context: Converter.Context): Converter.Geometry[] {
 
             // Collect all geometries and the corresponding nodes
             // Detach geometries from nodes in the process
-            var result: { node: COLLADA.Converter.Node; geometry: COLLADA.Converter.Geometry }[] = [];
-            COLLADA.Converter.Node.forEachNode(scene_nodes, (node) => {
+            var result: { node: Converter.Node; geometry: Converter.Geometry }[] = [];
+            Converter.Node.forEachNode(scene_nodes, (node) => {
                 for (var i: number = 0; i < node.geometries.length; ++i) {
                     result.push({ node: node, geometry: node.geometries[i] });
                 }
@@ -249,7 +255,7 @@ module COLLADA.Converter {
 
             if (result.length === 0) {
                 context.log.write("No geometry found in the scene, returning an empty geometry", LogLevel.Warning);
-                var geometry: COLLADA.Converter.Geometry = new COLLADA.Converter.Geometry();
+                var geometry: Converter.Geometry = new Converter.Geometry();
                 geometry.name = "empty_geometry";
                 return [geometry];
             }
@@ -274,24 +280,24 @@ module COLLADA.Converter {
                     var world_matrix = element.node.getWorldMatrix(context);
                     if (context.options.worldTransformUnitScale) {
                         var mat: BABYLON.Matrix = new BABYLON.Matrix()
-                        mat. = BABYLON.Matrix.Invert(element.node.transformation_post);
+                        mat = BABYLON.Matrix.Invert(element.node.transformation_post);
                         world_matrix.multiply(mat);
                     }
-                    COLLADA.Converter.Geometry.transformGeometry(element.geometry, world_matrix, context);
+                    Converter.Geometry.transformGeometry(element.geometry, world_matrix, context);
                 });
             }
 
             // Merge all geometries
             if (context.options.singleGeometry) {
                 var geometries = result.map((element) => { return element.geometry });
-                var geometry: COLLADA.Converter.Geometry = COLLADA.Converter.Geometry.mergeGeometries(geometries, context);
+                var geometry: Converter.Geometry = Converter.Geometry.mergeGeometries(geometries, context);
                 return [geometry];
             } else {
                 return result.map((element) => { return element.geometry });
             }
         }
 
-        static setupWorldTransform(node: COLLADA.Converter.Node, context: COLLADA.Converter.Context) {
+        static setupWorldTransform(node: Converter.Node, context: Converter.Context) {
             var worldInvScale: BABYLON.Vector3 = Utils.getWorldInvScale(context);
             var worldTransform: BABYLON.Matrix = Utils.getWorldTransform(context);
 
@@ -321,4 +327,3 @@ module COLLADA.Converter {
             }
         }
     }
-}

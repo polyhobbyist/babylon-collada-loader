@@ -1,8 +1,10 @@
-/// <reference path="context.ts" />
-/// <reference path="element.ts" />
-/// <reference path="utils.ts" />
-
-module COLLADA.Loader {
+import {Context} from "../context"
+import {LogLevel} from "../log"
+import * as Loader from "./loader"
+import * as Converter from "../converter/converter"
+import * as Exporter from "../exporter/exporter"
+import * as Utils from "./utils"
+import * as MathUtils from "../math"
 
     export interface InstanceMaterialVertexInput {
         inputSemantic: string;
@@ -10,20 +12,20 @@ module COLLADA.Loader {
     }
 
     export interface InstanceMaterialParam {
-        target: SidLink;
+        target: Loader.SidLink;
     }
 
-    export interface InstanceMaterialContainer extends COLLADA.Loader.EElement {
-        materials: COLLADA.Loader.InstanceMaterial[];
+    export interface InstanceMaterialContainer extends Loader.EElement {
+        materials: Loader.InstanceMaterial[];
     }
 
-    export class InstanceMaterial extends COLLADA.Loader.EElement {
-        material: UrlLink | undefined;
+    export class InstanceMaterial extends Loader.EElement {
+        material: Loader.UrlLink | undefined;
         symbol: string = "";
         /** Contains uniform parameters */
-        params: { [s: string]: COLLADA.Loader.InstanceMaterialParam; }
+        params: { [s: string]: Loader.InstanceMaterialParam; }
         /** Contains vertex paramters */
-        vertexInputs: { [s: string]: COLLADA.Loader.InstanceMaterialVertexInput; }
+        vertexInputs: { [s: string]: Loader.InstanceMaterialVertexInput; }
 
         constructor() {
             super();
@@ -35,8 +37,8 @@ module COLLADA.Loader {
         /**
         *   Parses a <instance_material> element.
         */
-        static parse(node: Node, parent: COLLADA.Loader.InstanceMaterialContainer, context: COLLADA.Loader.Context): COLLADA.Loader.InstanceMaterial {
-            var result: COLLADA.Loader.InstanceMaterial = new COLLADA.Loader.InstanceMaterial();
+        static parse(node: Node, parent: Loader.InstanceMaterialContainer, context: Loader.Context): Loader.InstanceMaterial {
+            var result: Loader.InstanceMaterial = new Loader.InstanceMaterial();
 
             result.symbol = context.getAttributeAsString(node, "symbol", undefined, false);
             result.material = context.getAttributeAsUrlLink(node, "target", true);
@@ -45,10 +47,10 @@ module COLLADA.Loader {
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
                     case "bind_vertex_input":
-                        COLLADA.Loader.InstanceMaterial.parseBindVertexInput(child, result, context);
+                        Loader.InstanceMaterial.parseBindVertexInput(child, result, context);
                         break;
                     case "bind":
-                        COLLADA.Loader.InstanceMaterial.parseBind(child, result, context);
+                        Loader.InstanceMaterial.parseBind(child, result, context);
                         break;
                     default:
                         context.reportUnexpectedChild(child);
@@ -61,7 +63,7 @@ module COLLADA.Loader {
         /**
         *   Parses a <instance_material>/<bind_vertex_input> element.
         */
-        static parseBindVertexInput(node: Node, instanceMaterial: COLLADA.Loader.InstanceMaterial, context: COLLADA.Loader.Context) {
+        static parseBindVertexInput(node: Node, instanceMaterial: Loader.InstanceMaterial, context: Loader.Context) {
             var semantic: string = context.getAttributeAsString(node, "semantic", undefined, true);
             var inputSemantic: string = context.getAttributeAsString(node, "input_semantic", undefined, true);
             var inputSet: number | undefined = context.getAttributeAsInt(node, "input_set", 0, false);
@@ -79,9 +81,9 @@ module COLLADA.Loader {
         /**
         *   Parses a <instance_material>/<bind> element.
         */
-        static parseBind(node: Node, instanceMaterial: COLLADA.Loader.InstanceMaterial, context: COLLADA.Loader.Context) {
+        static parseBind(node: Node, instanceMaterial: Loader.InstanceMaterial, context: Loader.Context) {
             var semantic: string = context.getAttributeAsString(node, "semantic", undefined, false);
-            var target: SidLink | undefined = context.getAttributeAsSidLink(node, "target", "", true);
+            var target: Loader.SidLink | undefined = context.getAttributeAsSidLink(node, "target", "", true);
 
             if (semantic != null && target) {
                 instanceMaterial.params[semantic] = {
@@ -92,4 +94,3 @@ module COLLADA.Loader {
             }
         }
     }
-}

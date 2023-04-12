@@ -1,4 +1,4 @@
-module COLLADA {
+
 
     export enum LogLevel {
         Debug = 1,
@@ -87,4 +87,3 @@ module COLLADA {
             }
         }
     }
-}

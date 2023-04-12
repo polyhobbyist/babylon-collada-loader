@@ -1,11 +1,14 @@
-/// <reference path="context.ts" />
-/// <reference path="element.ts" />
-/// <reference path="utils.ts" />
+import {Context} from "../context"
+import {LogLevel} from "../log"
+import * as Loader from "./loader"
+import * as Converter from "../converter/converter"
+import * as Exporter from "../exporter/exporter"
+import * as Utils from "./utils"
+import * as MathUtils from "../math"
 
-module COLLADA.Loader {
 
-    export class InstanceCamera extends COLLADA.Loader.EElement {
-        camera: Link | undefined;
+    export class InstanceCamera extends Loader.EElement {
+        camera: Loader.Link | undefined;
 
         constructor() {
             super();
@@ -15,8 +18,8 @@ module COLLADA.Loader {
         /**
         *   Parses a <instance_light> element.
         */
-        static parse(node: Node, parent: COLLADA.Loader.VisualSceneNode, context: COLLADA.Loader.Context): COLLADA.Loader.InstanceCamera {
-            var result: COLLADA.Loader.InstanceCamera = new COLLADA.Loader.InstanceCamera();
+        static parse(node: Node, parent: Loader.VisualSceneNode, context: Loader.Context): Loader.InstanceCamera {
+            var result: Loader.InstanceCamera = new Loader.InstanceCamera();
 
             result.camera = context.getAttributeAsUrlLink(node, "url", true);
             result.sid = context.getAttributeAsString(node, "sid", undefined, false);
@@ -36,4 +39,3 @@ module COLLADA.Loader {
             return result;
         }
     };
-}

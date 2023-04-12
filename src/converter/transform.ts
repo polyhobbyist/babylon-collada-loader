@@ -1,9 +1,15 @@
-/// <reference path="../math.ts" />
-/// <reference path="animation_channel.ts" />
-/// <reference path="animation.ts" />
+import {Log, LogLevel} from "../log"
+import * as Loader from "../loader/loader"
+import * as Converter from "./converter"
+import * as Utils from "./utils"
+import * as MathUtils from "../math"
+import {Bone} from "./bone"
+import {Texture} from "./texture"
+import {AnimationTarget} from "./animation"
+import * as COLLADAContext from "../context"
+import {Options} from "./options"
+import {BoundingBox} from "./bounding_box"
 import * as BABYLON from 'babylonjs';
-
-module COLLADA.Converter {
 
     export enum TransformType {
         Translation = 1,
@@ -16,9 +22,9 @@ module COLLADA.Converter {
         original_data: Float32Array;
         rows: number;
         colums: number;
-        channels: COLLADA.Converter.AnimationChannel[] | undefined;
+        channels: Converter.AnimationChannel[] | undefined;
 
-        constructor(transform: COLLADA.Loader.NodeTransform, rows: number, columns: number) {
+        constructor(transform: Loader.NodeTransform, rows: number, columns: number) {
             this.rows = rows;
             this.colums = columns;
             this.channels = [];
@@ -36,27 +42,27 @@ module COLLADA.Converter {
         getTargetDataColumns(): number {
             return this.colums;
         }
-        applyAnimation(channel: COLLADA.Converter.AnimationChannel, time: number, context: COLLADA.Converter.Context) {
-            COLLADA.Converter.AnimationChannel?.applyToData(channel, this.data, time, context);
+        applyAnimation(channel: Converter.AnimationChannel, time: number, context: Converter.Context) {
+            Converter.AnimationChannel?.applyToData(channel, this.data, time, context);
             this.updateFromData();
         }
-        registerAnimation(channel: COLLADA.Converter.AnimationChannel): void {
+        registerAnimation(channel: Converter.AnimationChannel): void {
             this.channels?.push(channel);
         }
         isAnimated(): boolean {
             return this.channels?this.channels.length > 0:false;
         }
-        isAnimatedBy(animation: COLLADA.Converter.Animation): boolean {
+        isAnimatedBy(animation: Converter.Animation): boolean {
             if (animation !== null && this.channels) {
                 for (var i: number = 0; i < this.channels.length || 0; ++i) {
-                    var channel: COLLADA.Converter.AnimationChannel = this.channels[i];
+                    var channel: Converter.AnimationChannel = this.channels[i];
                     if (animation.channels.indexOf(channel) !== -1) {
                         return true;
                     }
                 }
                 return false;
             } else {
-                return this.channels?this.channels.length > 0:0;
+                return this.channels?this.channels.length > 0:false;
             }
         }
         resetAnimation() {
@@ -71,35 +77,35 @@ module COLLADA.Converter {
         updateFromData() {
             throw new Error("Not implemented");
         }
-        hasTransformType(type: COLLADA.Converter.TransformType): boolean {
+        hasTransformType(type: Converter.TransformType): boolean {
             throw new Error("Not implemented");
         }
     }
 
-    export class TransformMatrix extends Transform implements COLLADA.Converter.AnimationTarget {
+    export class TransformMatrix extends Transform implements Converter.AnimationTarget {
         matrix: BABYLON.Matrix;
-        constructor(transform: COLLADA.Loader.NodeTransform) {
+        constructor(transform: Loader.NodeTransform) {
             super(transform, 4, 4);
             this.matrix = new BABYLON.Matrix();
             this.updateFromData();
         }
         updateFromData() {
-            COLLADA.MathUtils.mat4Extract(this.data, 0, this.matrix);
+            MathUtils.mat4Extract(this.data, 0, this.matrix);
         }
         applyTransformation(mat: BABYLON.Matrix) {
             this.matrix.multiply(this.matrix);
         }
-        hasTransformType(type: COLLADA.Converter.TransformType): boolean {
+        hasTransformType(type: Converter.TransformType): boolean {
             return true;
         }
     }
 
-    export class TransformRotate extends Transform implements COLLADA.Converter.AnimationTarget {
+    export class TransformRotate extends Transform implements Converter.AnimationTarget {
         /** Source data: axis */
         axis: BABYLON.Vector3 = new BABYLON.Vector3;
         /** Source data: angle */
         radians: number;
-        constructor(transform: COLLADA.Loader.NodeTransform) {
+        constructor(transform: Loader.NodeTransform) {
             super(transform, 4, 1);
             this.axis = new BABYLON.Vector3;
             this.radians = 0;
@@ -114,15 +120,15 @@ module COLLADA.Converter {
             
             mat.multiply(r);
         }
-        hasTransformType(type: COLLADA.Converter.TransformType): boolean {
-            return (type === COLLADA.Converter.TransformType.Rotation);
+        hasTransformType(type: Converter.TransformType): boolean {
+            return (type === Converter.TransformType.Rotation);
         }
     }
 
-    export class TransformTranslate extends Transform implements COLLADA.Converter.AnimationTarget {
+    export class TransformTranslate extends Transform implements Converter.AnimationTarget {
         /** Source data: translation */
         pos: BABYLON.Vector3 = new BABYLON.Vector3();
-        constructor(transform: COLLADA.Loader.NodeTransform) {
+        constructor(transform: Loader.NodeTransform) {
             super(transform, 3, 1);
             this.updateFromData();
         }
@@ -133,15 +139,15 @@ module COLLADA.Converter {
             let t = BABYLON.Matrix.Translation(this.pos.x, this.pos.y, this.pos.z);
             mat.multiply(t);
         }
-        hasTransformType(type: COLLADA.Converter.TransformType): boolean {
-            return (type === COLLADA.Converter.TransformType.Translation);
+        hasTransformType(type: Converter.TransformType): boolean {
+            return (type === Converter.TransformType.Translation);
         }
     }
 
-    export class TransformScale extends Transform implements COLLADA.Converter.AnimationTarget {
+    export class TransformScale extends Transform implements Converter.AnimationTarget {
         /** Source data: scaling */
         scl: BABYLON.Vector3 = new BABYLON.Vector3();
-        constructor(transform: COLLADA.Loader.NodeTransform) {
+        constructor(transform: Loader.NodeTransform) {
             super(transform, 3, 1);
             this.updateFromData();
         }
@@ -152,8 +158,7 @@ module COLLADA.Converter {
             let t = BABYLON.Matrix.Scaling(this.scl.x, this.scl.y, this.scl.z);
             mat.multiply(t);
         }
-        hasTransformType(type: COLLADA.Converter.TransformType): boolean {
-            return (type === COLLADA.Converter.TransformType.Scale);
+        hasTransformType(type: Converter.TransformType): boolean {
+            return (type === Converter.TransformType.Scale);
         }
     }
-}

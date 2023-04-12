@@ -1,19 +1,19 @@
-/// <reference path="context.ts" />
-/// <reference path="element.ts" />
-/// <reference path="bind_material.ts" />
-/// <reference path="instance_material.ts" />
-/// <reference path="utils.ts" />
+import {Context} from "../context"
+import {LogLevel} from "../log"
+import * as Loader from "./loader"
+import * as Converter from "../converter/converter"
+import * as Exporter from "../exporter/exporter"
+import * as Utils from "./utils"
+import * as MathUtils from "../math"
 
-module COLLADA.Loader {
-
-    export interface InstanceControllerContainer extends COLLADA.Loader.EElement {
-        controllers: COLLADA.Loader.InstanceController[];
+    export interface InstanceControllerContainer extends Loader.EElement {
+        controllers: Loader.InstanceController[];
     }
 
-    export class InstanceController extends COLLADA.Loader.EElement {
-        controller: Link | undefined;
-        skeletons: Link[];
-        materials: COLLADA.Loader.InstanceMaterial[];
+    export class InstanceController extends Loader.EElement {
+        controller: Loader.Link | undefined;
+        skeletons: Loader.Link[];
+        materials: Loader.InstanceMaterial[];
 
         constructor() {
             super();
@@ -25,8 +25,8 @@ module COLLADA.Loader {
         /**
         *   Parses a <instance_controller> element.
         */
-        static parse(node: Node, parent: COLLADA.Loader.InstanceControllerContainer, context: COLLADA.Loader.Context): COLLADA.Loader.InstanceController {
-            var result: COLLADA.Loader.InstanceController = new COLLADA.Loader.InstanceController();
+        static parse(node: Node, parent: Loader.InstanceControllerContainer, context: Loader.Context): Loader.InstanceController {
+            var result: Loader.InstanceController = new Loader.InstanceController();
 
             result.controller = context.getAttributeAsUrlLink(node, "url", true);
             result.sid = context.getAttributeAsString(node, "sid", undefined, false);
@@ -39,7 +39,7 @@ module COLLADA.Loader {
                         result.skeletons.push(context.createUrlLink(context.getTextContent(child)));
                         break;
                     case "bind_material":
-                        COLLADA.Loader.BindMaterial.parse(child, result, context);
+                        Loader.BindMaterial.parse(child, result, context);
                         break;
                     default:
                         context.reportUnexpectedChild(child);
@@ -49,4 +49,3 @@ module COLLADA.Loader {
             return result;
         }
     };
-}

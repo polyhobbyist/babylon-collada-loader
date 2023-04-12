@@ -1,5 +1,5 @@
 
-function vec3_stream_copy(
+export function vec3_stream_copy(
     out: Float32Array,
     out_offset: number,
     a: Float32Array,
@@ -10,7 +10,7 @@ function vec3_stream_copy(
     out[out_offset + 2] = a[a_offset + 2];
 }
 
-function quat_stream_copy(
+export function quat_stream_copy(
     out: Float32Array,
     out_offset: number,
     a: Float32Array,
@@ -22,7 +22,7 @@ function quat_stream_copy(
     out[out_offset + 3] = a[a_offset + 3];
 }
 
-function vec3_stream_lerp(
+export function vec3_stream_lerp(
     out: Float32Array,
     out_offset: number,
     a: Float32Array,
@@ -37,7 +37,7 @@ function vec3_stream_lerp(
     out[out_offset + 2] = ta * a[a_offset + 2] + t * a[b_offset + 2];
 }
 
-function quat_stream_slerp(
+export function quat_stream_slerp(
     out: Float32Array,
     out_offset: number,
     a: Float32Array,
@@ -85,7 +85,7 @@ function quat_stream_slerp(
     out[out_offset + 3] = scale0 * aw + scale1 * bw;
 }
 
-function mat_stream_compose(
+export function mat_stream_compose(
     out: Float32Array,
     out_offset: number,
     pos: Float32Array,
@@ -136,7 +136,7 @@ function mat_stream_compose(
     out[out_offset + 15] = 1;
 };
 
-function mat4_stream_multiply(
+export function mat4_stream_multiply(
     out: Float32Array,
     out_offset: number,
     a: Float32Array,

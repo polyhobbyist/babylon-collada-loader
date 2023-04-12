@@ -1,9 +1,10 @@
-/// <reference path="../math.ts" />
-/// <reference path="context.ts" />
-/// <reference path="utils.ts" />
-/// <reference path="animation.ts" />
-
-module COLLADA.Converter {
+import {Context} from "./context"
+import {LogLevel} from "../log"
+import {AnimationTarget} from "./animation"
+import * as Loader from "../loader/loader"
+import * as Converter from "./converter"
+import * as Utils from "./utils"
+import * as MathUtils from "../math"
 
     export interface AnimationChannelIndices {
         /** left index */
@@ -13,7 +14,7 @@ module COLLADA.Converter {
     }
 
     export class AnimationChannel {
-        target: COLLADA.Converter.AnimationTarget;
+        target: AnimationTarget;
         interpolation: string[];
         input: Float32Array;
         output: Float32Array;
@@ -34,7 +35,7 @@ module COLLADA.Converter {
         }
 
         // TODO: This is the most expensive function in the whole project. Use a binary search or find out why it's so slow.
-        findInputIndices(t: number, context: COLLADA.Converter.Context): COLLADA.Converter.AnimationChannelIndices {
+        findInputIndices(t: number, context: Context): AnimationChannelIndices {
             var input: Float32Array = this.input;
 
             var warnInvalidTime = (str: string) => {
@@ -75,14 +76,14 @@ module COLLADA.Converter {
             return { i0: 0, i1: 1 };
         }
 
-        static createInputData(input: COLLADA.Loader.Input, inputName: string, dataDim: number, context: COLLADA.Converter.Context): Float32Array {
+        static createInputData(input: Loader.Input, inputName: string, dataDim: number, context: Context): Float32Array {
             // Input
             if (input === null) {
                 return null;
             }
 
             // Source
-            var source: COLLADA.Loader.Source = COLLADA.Loader.Source.fromLink(input.source, context);
+            var source: Loader.Source = Loader.Source.fromLink(input.source, context);
             if (source === null) {
                 context.log.write("Animation channel has no " + inputName + " input data, data ignored", LogLevel.Warning);
                 return null;
@@ -93,10 +94,10 @@ module COLLADA.Converter {
                 context.log.write("Animation channel has a nonstandard dimensionality for " + inputName + ", data ignored", LogLevel.Warning);
                 return null;
             }
-            return COLLADA.Converter.Utils.createFloatArray(source, inputName, dataDim, context);
+            return Utils.createFloatArray(source, inputName, dataDim, context);
         }
 
-        static createInputDataFromArray(inputs: COLLADA.Loader.Input[], inputName: string, dataDim: number, context: COLLADA.Converter.Context): Float32Array {
+        static createInputDataFromArray(inputs: Loader.Input[], inputName: string, dataDim: number, context: Context): Float32Array {
             // Samplers can have more than one output if they describe multiple curves at once.
             // I don't understand from the spec how a single channel could describe the animation of multiple parameters,
             // since each channel references a single SID target
@@ -104,24 +105,24 @@ module COLLADA.Converter {
                 if (inputs.length > 1) {
                     context.log.write("Animation channel has more than one " + inputName + " input, using only the first one", LogLevel.Warning);
                 }
-                return COLLADA.Converter.AnimationChannel.createInputData(inputs[0], inputName, dataDim, context);
+                return AnimationChannel.createInputData(inputs[0], inputName, dataDim, context);
             } else {
                 return null;
             }
         }
 
-        static create(channel: COLLADA.Loader.Channel, context: COLLADA.Converter.Context): COLLADA.Converter.AnimationChannel {
-            var result: COLLADA.Converter.AnimationChannel = new COLLADA.Converter.AnimationChannel();
+        static create(channel: Loader.Channel, context: Context): AnimationChannel {
+            var result: AnimationChannel = new AnimationChannel();
 
             // Element
-            var element: COLLADA.Loader.EElement = COLLADA.Loader.EElement.fromLink(channel.target, context);
+            var element: Loader.EElement = Loader.EElement.fromLink(channel.target, context);
             if (element === null) {
                 context.log.write("Animation channel has an invalid target '" + channel.target.url + "', animation ignored", LogLevel.Warning);
                 return null;
             }
 
             // Target
-            var target: COLLADA.Converter.AnimationTarget = context.animationTargets.findConverter(element);
+            var target: AnimationTarget = context.animationTargets.findConverter(element);
             if (target === null) {
                 context.log.write("Animation channel has no converter target '" + channel.target.url + "', animation ignored", LogLevel.Warning);
                 return null;
@@ -129,7 +130,7 @@ module COLLADA.Converter {
             result.target = target;
 
             // Sampler
-            var sampler: COLLADA.Loader.Sampler = COLLADA.Loader.Sampler.fromLink(channel.source, context);
+            var sampler: Loader.Sampler = Loader.Sampler.fromLink(channel.source, context);
             if (sampler === null) {
                 context.log.write("Animation channel has an invalid sampler '" + channel.source.url + "', animation ignored", LogLevel.Warning);
                 return null;
@@ -141,7 +142,7 @@ module COLLADA.Converter {
             var targetDataDim: number = targetDataRows * targetDataColumns;
 
             // Destination data offset and count
-            var targetLink: COLLADA.Loader.SidLink = channel.target;
+            var targetLink: Loader.SidLink = channel.target;
             if (targetLink.dotSyntax) {
                 // Member syntax: single named element
                 result.dataCount = 1;
@@ -214,10 +215,10 @@ module COLLADA.Converter {
 
 
             // Interpolation data
-            result.input = COLLADA.Converter.AnimationChannel.createInputData(sampler.input, "input", 1, context);
-            result.output = COLLADA.Converter.AnimationChannel.createInputDataFromArray(sampler.outputs, "output", result.dataCount, context);
-            result.inTangent = COLLADA.Converter.AnimationChannel.createInputDataFromArray(sampler.inTangents, "intangent", result.dataCount + 1, context);
-            result.outTangent = COLLADA.Converter.AnimationChannel.createInputDataFromArray(sampler.outTangents, "outtangent", result.dataCount + 1, context);
+            result.input = AnimationChannel.createInputData(sampler.input, "input", 1, context);
+            result.output = AnimationChannel.createInputDataFromArray(sampler.outputs, "output", result.dataCount, context);
+            result.inTangent = AnimationChannel.createInputDataFromArray(sampler.inTangents, "intangent", result.dataCount + 1, context);
+            result.outTangent = AnimationChannel.createInputDataFromArray(sampler.outTangents, "outtangent", result.dataCount + 1, context);
 
             if (result.input === null) {
                 context.log.write("Animation channel has no input data, animation ignored", LogLevel.Warning);
@@ -234,19 +235,19 @@ module COLLADA.Converter {
                 context.log.write("Animation channel has no interpolation input, animation ignored", LogLevel.Warning);
                 return null;
             }
-            var interpolationSource: COLLADA.Loader.Source = COLLADA.Loader.Source.fromLink(interpolationInput.source, context);
+            var interpolationSource: Loader.Source = Loader.Source.fromLink(interpolationInput.source, context);
             if (interpolationSource === null) {
                 context.log.write("Animation channel has no interpolation source, animation ignored", LogLevel.Warning);
                 return null;
             }
-            result.interpolation = COLLADA.Converter.Utils.createStringArray(interpolationSource, "interpolation type", 1, context);
+            result.interpolation = Utils.createStringArray(interpolationSource, "interpolation type", 1, context);
 
             target.registerAnimation(result);
             return result;
         }
 
         static interpolateLinear(time: number, t0: number, t1: number, i0: number, i1: number, dataCount: number, dataOffset: number,
-            channel: COLLADA.Converter.AnimationChannel, destData: Float32Array) {
+            channel: AnimationChannel, destData: Float32Array) {
 
             // Find s
             var s: number = (time - t0) / (t1 - t0);
@@ -260,14 +261,14 @@ module COLLADA.Converter {
         }
 
         static interpolateBezier(time: number, t0: number, t1: number, i0: number, i1: number, dataCount: number, dataOffset: number,
-            channel: COLLADA.Converter.AnimationChannel, destData: Float32Array) {
+            channel: AnimationChannel, destData: Float32Array) {
 
             // Find s
             var tc0: number = channel.outTangent[i0 * (dataCount + 1)];
             var tc1: number = channel.inTangent[i1 * (dataCount + 1)];
             var tol: number = Math.abs(t1 - t0) * 1e-4;
-            var s: number = COLLADA.MathUtils.bisect(time, (s) => COLLADA.MathUtils.bezier(t0, tc0, tc1, t1, s), tol, 100);
-            var t_err: number = Math.abs(time - COLLADA.MathUtils.bezier(t0, tc0, tc1, t1, s));
+            var s: number = MathUtils.bisect(time, (s) => MathUtils.bezier(t0, tc0, tc1, t1, s), tol, 100);
+            var t_err: number = Math.abs(time - MathUtils.bezier(t0, tc0, tc1, t1, s));
 
             // Evaluate bezier
             for (var i = 0; i < dataCount; ++i) {
@@ -275,18 +276,18 @@ module COLLADA.Converter {
                 var p1: number = channel.output[i1 * dataCount + i];
                 var c0: number = channel.outTangent[i0 * (dataCount + 1) + i + 1];
                 var c1: number = channel.inTangent[i1 * (dataCount + 1) + i + 1];
-                destData[dataOffset + i] = COLLADA.MathUtils.bezier(p0, c0, c1, p1, s);
+                destData[dataOffset + i] = MathUtils.bezier(p0, c0, c1, p1, s);
             }
         }
 
         static interpolateHermite(time: number, t0: number, t1: number, i0: number, i1: number, dataCount: number, dataOffset: number,
-            channel: COLLADA.Converter.AnimationChannel, destData: Float32Array) {
+            channel: AnimationChannel, destData: Float32Array) {
 
             // Find s
             var tt0: number = channel.outTangent[i0 * (dataCount + 1)];
             var tt1: number = channel.inTangent[i1 * (dataCount + 1)];
             var tol: number = Math.abs(t1 - t0) * 1e-5;
-            var s: number = COLLADA.MathUtils.bisect(time, (s) => COLLADA.MathUtils.hermite(t0, tt0, tt1, t1, s), tol, 100);
+            var s: number = MathUtils.bisect(time, (s) => MathUtils.hermite(t0, tt0, tt1, t1, s), tol, 100);
 
             // Evaluate hermite
             for (var i = 0; i < dataCount; ++i) {
@@ -294,17 +295,17 @@ module COLLADA.Converter {
                 var p1: number = channel.output[i1 * dataCount + i];
                 var t0: number = channel.outTangent[i0 * (dataCount + 1) + i + 1];
                 var t1: number = channel.inTangent[i1 * (dataCount + 1) + i + 1];
-                destData[dataOffset + i] = COLLADA.MathUtils.hermite(p0, t0, t1, p1, s);
+                destData[dataOffset + i] = MathUtils.hermite(p0, t0, t1, p1, s);
             }
         }
 
-        static applyToData(channel: COLLADA.Converter.AnimationChannel, destData: Float32Array, time: number, context: COLLADA.Converter.Context) {
+        static applyToData(channel: AnimationChannel, destData: Float32Array, time: number, context: Context) {
             // Do nothing if the channel does not contain a minimum of information
             if (channel.input === null || channel.output === null) {
                 return;
             }
 
-            var indices: COLLADA.Converter.AnimationChannelIndices = channel.findInputIndices(time, context);
+            var indices: AnimationChannelIndices = channel.findInputIndices(time, context);
             var i0: number = indices.i0;
             var i1: number = indices.i1;
             var t0: number = channel.input[i0];
@@ -321,20 +322,20 @@ module COLLADA.Converter {
                     }
                     break;
                 case "LINEAR":
-                    COLLADA.Converter.AnimationChannel.interpolateLinear(time, t0, t1, i0, i1, dataCount, dataOffset, channel, destData);
+                    AnimationChannel.interpolateLinear(time, t0, t1, i0, i1, dataCount, dataOffset, channel, destData);
                     break;
                 case "BEZIER":
                     if (channel.inTangent !== null && channel.outTangent !== null) {
-                        COLLADA.Converter.AnimationChannel.interpolateBezier(time, t0, t1, i0, i1, dataCount, dataOffset, channel, destData);
+                        AnimationChannel.interpolateBezier(time, t0, t1, i0, i1, dataCount, dataOffset, channel, destData);
                     } else {
-                        COLLADA.Converter.AnimationChannel.interpolateLinear(time, t0, t1, i0, i1, dataCount, dataOffset, channel, destData);
+                        AnimationChannel.interpolateLinear(time, t0, t1, i0, i1, dataCount, dataOffset, channel, destData);
                     }
                     break;
                 case "HERMITE":
                     if (channel.inTangent !== null && channel.outTangent !== null) {
-                        COLLADA.Converter.AnimationChannel.interpolateHermite(time, t0, t1, i0, i1, dataCount, dataOffset, channel, destData);
+                        AnimationChannel.interpolateHermite(time, t0, t1, i0, i1, dataCount, dataOffset, channel, destData);
                     } else {
-                        COLLADA.Converter.AnimationChannel.interpolateLinear(time, t0, t1, i0, i1, dataCount, dataOffset, channel, destData);
+                        AnimationChannel.interpolateLinear(time, t0, t1, i0, i1, dataCount, dataOffset, channel, destData);
                     }
                     break;
                 case "CARDINAL":
@@ -352,4 +353,3 @@ module COLLADA.Converter {
             }
         }
     }
-}

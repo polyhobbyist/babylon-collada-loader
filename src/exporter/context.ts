@@ -1,23 +1,28 @@
-/// <reference path="../context.ts" />
-/// <reference path="data_chunk.ts" />
+import * as COLLADAContext from "../context"
+import {Log, LogLevel} from "../log"
+import * as Loader from "../loader/loader"
+import * as Converter from "../converter/converter"
+import * as Exporter from "./exporter"
+import * as Utils from "./utils"
+import * as MathUtils from "../math"
+import {AnimationTrack} from "./animation_track"
 
-module COLLADA.Exporter {
 
-    export class Context extends COLLADA.Context {
+    export class Context extends COLLADAContext.Context {
         log: Log;
-        chunks: COLLADA.Exporter.DataChunk[];
+        chunks: Exporter.DataChunk[];
         chunk_data: Uint8Array[];
         bytes_written: number;
 
         constructor(log: Log) {
-            super();
+            super(log);
             this.log = log;
             this.chunks = [];
             this.chunk_data = [];
             this.bytes_written = 0;
         }
 
-        registerChunk(chunk: COLLADA.Exporter.DataChunk) {
+        registerChunk(chunk: Exporter.DataChunk) {
             this.chunks.push(chunk);
             chunk.byte_offset = this.bytes_written;
             this.bytes_written += chunk.getBytesCount();
@@ -30,7 +35,7 @@ module COLLADA.Exporter {
 
             // Copy data from all chunks
             for (var i: number = 0; i < this.chunks.length; ++i) {
-                var chunk: COLLADA.Exporter.DataChunk = this.chunks[i];
+                var chunk: Exporter.DataChunk = this.chunks[i];
                 var chunk_data: Uint8Array = chunk.getDataView();
                 var chunk_data_length: number = chunk_data.length;
                 var chunk_data_offet: number = chunk.byte_offset;
@@ -43,4 +48,3 @@ module COLLADA.Exporter {
             return result;
         }
     }
-}

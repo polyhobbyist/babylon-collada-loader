@@ -1,10 +1,11 @@
 /// <reference path="./stream-math.ts" />
 
-module COLLADA {
+import {vec3_stream_lerp, vec3_stream_copy, quat_stream_slerp, quat_stream_copy, mat4_stream_multiply, mat_stream_compose} from './stream-math'
+import * as Model from './model'
     /**
 * Stores the transformation of all skeleton bones.
 */
-class RMXPose {
+export class RMXPose {
     pos: Float32Array;
     rot: Float32Array;
     scl: Float32Array;
@@ -21,7 +22,7 @@ class RMXPose {
 /**
 * Stores the bone matrices in a WebGL texture.
 */
-class RMXBoneMatrixTexture {
+export class RMXBoneMatrixTexture {
     size: number;
     texture: WebGLTexture;
     data: Float32Array;
@@ -85,12 +86,12 @@ class RMXBoneMatrixTexture {
 /**
 * A collection of static functions to play back skeletal animations.
 */
-class RMXSkeletalAnimation {
+export class RMXSkeletalAnimation {
 
     /** 
     * Exports all bone matrices (world matrix * inverse bind matrix) of a pose to a flat number array
     */
-    static exportPose(skeleton: RMXSkeleton, pose: RMXPose, dest: Float32Array) {
+    static exportPose(skeleton: Model.RMXSkeleton, pose: RMXPose, dest: Float32Array) {
         var world_matrices = pose.world_matrices;
 
         // Loop over all bones
@@ -115,7 +116,7 @@ class RMXSkeletalAnimation {
     /** 
     * Reset the pose to the bind pose of the skeleton
     */
-    static resetPose(skeleton: RMXSkeleton, pose: RMXPose) {
+    static resetPose(skeleton: Model.RMXSkeleton, pose: RMXPose) {
         var dest_pos: Float32Array = pose.pos;
         var dest_rot: Float32Array = pose.rot;
         var dest_scl: Float32Array = pose.scl;
@@ -132,9 +133,9 @@ class RMXSkeletalAnimation {
             var bone_rot = bone.rot;
             var bone_scl = bone.scl;
 
-            vec3_stream_copy(dest_pos, b3, <Float32Array>bone_pos, 0);
-            quat_stream_copy(dest_rot, b4, <Float32Array>bone_rot, 0);
-            vec3_stream_copy(dest_scl, b3, <Float32Array>bone_scl, 0);
+            vec3_stream_copy(dest_pos, b3, Float32Array.from(bone_pos.asArray()), 0);
+            quat_stream_copy(dest_rot, b4, Float32Array.from(bone_rot.asArray()), 0);
+            vec3_stream_copy(dest_scl, b3, Float32Array.from(bone_scl.asArray()), 0);
         }
     }
 
@@ -171,7 +172,7 @@ class RMXSkeletalAnimation {
     /** 
     * Sample the animation, store the result in pose
     */
-    static sampleAnimation(animation: RMXAnimation, skeleton: RMXSkeleton, pose: RMXPose, frame: number) {
+    static sampleAnimation(animation: Model.RMXAnimation, skeleton: Model.RMXSkeleton, pose: RMXPose, frame: number) {
 
         var looped = true;
         if (looped) {
@@ -221,23 +222,22 @@ class RMXSkeletalAnimation {
             if (track_pos) {
                 vec3_stream_lerp(dest_pos, b3, track_pos, f13, track_pos, f23, s);
             } else {
-                vec3_stream_copy(dest_pos, b3, <Float32Array>bone_pos, 0);
+                vec3_stream_copy(dest_pos, b3, Float32Array.from(bone_pos.asArray()), 0);
             }
 
             // Rotation (quaternion spherical interpolation)
             if (track_rot) {
                 quat_stream_slerp(dest_rot, b4, track_rot, f14, track_rot, f24, s);
             } else {
-                quat_stream_copy(dest_rot, b4, <Float32Array>bone_rot, 0);
+                quat_stream_copy(dest_rot, b4, Float32Array.from(bone_rot.asArray()), 0);
             }
 
             // Scale (linear interpolation)
             if (track_scl) {
                 vec3_stream_lerp(dest_scl, b3, track_scl, f13, track_scl, f23, s);
             } else {
-                vec3_stream_copy(dest_scl, b3, <Float32Array>bone_scl, 0);
+                vec3_stream_copy(dest_scl, b3, Float32Array.from(bone_scl.asArray()), 0);
             }
         }
     }
-}
 }

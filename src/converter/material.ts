@@ -1,9 +1,16 @@
-/// <reference path="context.ts" />
-
-module COLLADA.Converter {
+import {Log, LogLevel} from "../log"
+import * as Loader from "../loader/loader"
+import * as Converter from "./converter"
+import * as Utils from "./utils"
+import * as MathUtils from "../math"
+import {Texture} from "./texture"
+import {AnimationTarget} from "./animation"
+import * as COLLADAContext from "../context"
+import {Options} from "./options"
+import {BoundingBox} from "./bounding_box"
 
     export class MaterialMap {
-        symbols: { [symbol: string]: COLLADA.Converter.Material };
+        symbols: { [symbol: string]: Converter.Material };
 
         constructor() {
             this.symbols = {};
@@ -12,9 +19,9 @@ module COLLADA.Converter {
 
     export class Material {
         name: string;
-        diffuse: COLLADA.Converter.Texture;
-        specular: COLLADA.Converter.Texture;
-        normal: COLLADA.Converter.Texture;
+        diffuse: Converter.Texture;
+        specular: Converter.Texture;
+        normal: Converter.Texture;
 
         constructor() {
             this.name = null;
@@ -23,35 +30,35 @@ module COLLADA.Converter {
             this.normal = null;
         }
 
-        static createDefaultMaterial(context: COLLADA.Converter.Context): COLLADA.Converter.Material {
-            var result: COLLADA.Converter.Material = context.materials.findConverter(null);
+        static createDefaultMaterial(context: Converter.Context): Converter.Material {
+            var result: Converter.Material = context.materials.findConverter(null);
             if (result) {
                 return result;
             } else {
-                result = new COLLADA.Converter.Material();
+                result = new Converter.Material();
                 context.materials.register(undefined, result);
                 return result;
             }
         }
 
-        static createMaterial(instanceMaterial: COLLADA.Loader.InstanceMaterial, context: COLLADA.Converter.Context): COLLADA.Converter.Material {
+        static createMaterial(instanceMaterial: Loader.InstanceMaterial, context: Converter.Context): Converter.Material {
 
-            var material: COLLADA.Loader.Material = COLLADA.Loader.Material.fromLink(instanceMaterial.material, context);
+            var material: Loader.Material = Loader.Material.fromLink(instanceMaterial.material, context);
             if (material === null) {
                 context.log.write("Material not found, material skipped.", LogLevel.Warning);
-                return COLLADA.Converter.Material.createDefaultMaterial(context);
+                return Converter.Material.createDefaultMaterial(context);
             }
 
-            var effect: COLLADA.Loader.Effect = COLLADA.Loader.Effect.fromLink(material.effect, context);
+            var effect: Loader.Effect = Loader.Effect.fromLink(material.effect, context);
             if (effect === null) {
                 context.log.write("Material effect not found, using default material", LogLevel.Warning);
-                return COLLADA.Converter.Material.createDefaultMaterial(context);
+                return Converter.Material.createDefaultMaterial(context);
             }
 
-            var technique: COLLADA.Loader.EffectTechnique = effect.technique;
+            var technique: Loader.EffectTechnique = effect.technique;
             if (technique === null) {
                 context.log.write("Material effect not found, using default material", LogLevel.Warning);
-                return COLLADA.Converter.Material.createDefaultMaterial(context);
+                return Converter.Material.createDefaultMaterial(context);
             }
 
             if (technique.diffuse !== null && technique.diffuse.color !== null) {
@@ -62,25 +69,25 @@ module COLLADA.Converter {
                 context.log.write("Material " + material.id + " contains constant specular colors, colors ignored", LogLevel.Warning);
             }
 
-            var result: COLLADA.Converter.Material = context.materials.findConverter(material);
+            var result: Converter.Material = context.materials.findConverter(material);
             if (result) return result;
 
-            result = new COLLADA.Converter.Material();
+            result = new Converter.Material();
             result.name = material.id;
-            result.diffuse = COLLADA.Converter.Texture.createTexture(technique.diffuse, context);
-            result.specular = COLLADA.Converter.Texture.createTexture(technique.specular, context);
-            result.normal = COLLADA.Converter.Texture.createTexture(technique.bump, context);
+            result.diffuse = Converter.Texture.createTexture(technique.diffuse, context);
+            result.specular = Converter.Texture.createTexture(technique.specular, context);
+            result.normal = Converter.Texture.createTexture(technique.bump, context);
             context.materials.register(material, result);
 
             return result;
         }
 
-        static getMaterialMap(instanceMaterials: COLLADA.Loader.InstanceMaterial[], context: COLLADA.Converter.Context): COLLADA.Converter.MaterialMap {
-            var result: COLLADA.Converter.MaterialMap = new COLLADA.Converter.MaterialMap();
+        static getMaterialMap(instanceMaterials: Loader.InstanceMaterial[], context: Converter.Context): Converter.MaterialMap {
+            var result: Converter.MaterialMap = new Converter.MaterialMap();
 
             var numMaterials: number = 0;
             for (var i: number = 0; i < instanceMaterials.length; i++) {
-                var instanceMaterial: COLLADA.Loader.InstanceMaterial = instanceMaterials[i];
+                var instanceMaterial: Loader.InstanceMaterial = instanceMaterials[i];
 
                 var symbol: string = instanceMaterial.symbol;
                 if (symbol === null) {
@@ -93,9 +100,8 @@ module COLLADA.Converter {
                     continue;
                 }
 
-                result.symbols[symbol] = COLLADA.Converter.Material.createMaterial(instanceMaterial, context);
+                result.symbols[symbol] = Converter.Material.createMaterial(instanceMaterial, context);
             }
             return result;
         }
     }
-}
