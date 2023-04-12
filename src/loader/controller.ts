@@ -6,7 +6,7 @@
 
 module COLLADA.Loader {
 
-    export class Controller extends COLLADA.Loader.Element {
+    export class Controller extends COLLADA.Loader.EElement {
         skin: COLLADA.Loader.Skin | undefined;
         morph: COLLADA.Loader.Morph | undefined;
 
@@ -16,7 +16,7 @@ module COLLADA.Loader {
         }
 
         static fromLink(link: Link, context: COLLADA.Context): COLLADA.Loader.Controller | undefined {
-            return COLLADA.Loader.Element._fromLink<COLLADA.Loader.Controller>(link, "Controller", context);
+            return COLLADA.Loader.EElement._fromLink<COLLADA.Loader.Controller>(link, "Controller", context);
         }
 
         /**

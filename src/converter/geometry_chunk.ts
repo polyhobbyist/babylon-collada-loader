@@ -231,7 +231,7 @@ module COLLADA.Converter {
             result.triangleCount = triangleCount;
             result.indexBufferOffset = 0;
             result.data = geometryData;
-            result._colladaIndices = sourceIndices;
+            result._colladaIndices = sourceIndices; 
 
             return result;
         }

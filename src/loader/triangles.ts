@@ -5,7 +5,7 @@
 
 module COLLADA.Loader {
 
-    export class Triangles extends COLLADA.Loader.Element {
+    export class Triangles extends COLLADA.Loader.EElement {
         /** "triangles", "polylist", or "polygons" */
         type: string = "";
         count: number = 0;

@@ -6,11 +6,11 @@
 
 module COLLADA.Loader {
 
-    export interface InstanceControllerContainer extends COLLADA.Loader.Element {
+    export interface InstanceControllerContainer extends COLLADA.Loader.EElement {
         controllers: COLLADA.Loader.InstanceController[];
     }
 
-    export class InstanceController extends COLLADA.Loader.Element {
+    export class InstanceController extends COLLADA.Loader.EElement {
         controller: Link | undefined;
         skeletons: Link[];
         materials: COLLADA.Loader.InstanceMaterial[];

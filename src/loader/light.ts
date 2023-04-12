@@ -5,7 +5,7 @@
 
 module COLLADA.Loader {
 
-    export class Light extends COLLADA.Loader.Element {
+    export class Light extends COLLADA.Loader.EElement {
         type: string | undefined;
         color: Float32Array | undefined;
         params: { [s: string]: COLLADA.Loader.LightParam; }

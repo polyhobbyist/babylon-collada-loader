@@ -5,7 +5,7 @@
 
 module COLLADA.Loader {
 
-    export class VertexWeights extends COLLADA.Loader.Element {
+    export class VertexWeights extends COLLADA.Loader.EElement {
         inputs: COLLADA.Loader.Input[];
         vcount: Int32Array = new Int32Array();
         v: Int32Array = new Int32Array();

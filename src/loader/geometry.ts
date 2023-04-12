@@ -7,7 +7,7 @@
 
 module COLLADA.Loader {
 
-    export class Geometry extends COLLADA.Loader.Element {
+    export class Geometry extends COLLADA.Loader.EElement {
         sources: COLLADA.Loader.Source[];
         vertices: COLLADA.Loader.Vertices[];
         triangles: COLLADA.Loader.Triangles[];
@@ -21,7 +21,7 @@ module COLLADA.Loader {
         }
 
         static fromLink(link: Link, context: COLLADA.Context): COLLADA.Loader.Geometry | undefined{
-            return COLLADA.Loader.Element._fromLink<COLLADA.Loader.Geometry>(link, "Geometry", context);
+            return COLLADA.Loader.EElement._fromLink<COLLADA.Loader.Geometry>(link, "Geometry", context);
         }
 
         /**

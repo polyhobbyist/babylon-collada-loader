@@ -4,7 +4,7 @@
 
 module COLLADA.Loader {
 
-    export class Image extends COLLADA.Loader.Element {
+    export class Image extends COLLADA.Loader.EElement {
         initFrom: string | undefined;
 
         constructor() {
@@ -13,7 +13,7 @@ module COLLADA.Loader {
         }
 
         static fromLink(link: Link, context: COLLADA.Context): COLLADA.Loader.Image  | undefined{
-            return COLLADA.Loader.Element._fromLink<COLLADA.Loader.Image>(link, "Image", context);
+            return COLLADA.Loader.EElement._fromLink<COLLADA.Loader.Image>(link, "Image", context);
         }
 
         /**

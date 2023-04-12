@@ -7,7 +7,7 @@
 
 module COLLADA.Loader {
 
-    export class Skin extends COLLADA.Loader.Element {
+    export class Skin extends COLLADA.Loader.EElement {
         source: UrlLink | undefined;
         bindShapeMatrix: Float32Array = new Float32Array();
         sources: COLLADA.Loader.Source[] | undefined;

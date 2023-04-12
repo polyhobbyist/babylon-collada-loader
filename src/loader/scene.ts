@@ -8,7 +8,7 @@ module COLLADA.Loader {
     /**
     *   A <scene> element.
     */
-    export class Scene extends COLLADA.Loader.Element {
+    export class Scene extends COLLADA.Loader.EElement {
         instance: Link | undefined = undefined;
 
         constructor() {

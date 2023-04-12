@@ -1,8 +1,7 @@
-
 module COLLADA.Loader {
 
     export class Context extends COLLADA.Context {
-        ids: { [s: string]: COLLADA.Loader.Element; }
+        ids: { [s: string]: COLLADA.Loader.EElement; }
         links: Link[] | undefined;
         totalBytes: number = 0;
         loadedBytes: number = 0;
@@ -13,6 +12,26 @@ module COLLADA.Loader {
             this.links = [];
         }
 
+        getAttributeNamed(el: Node, name: string) : Attr | undefined {
+            var e = el as Element;
+            var a = e.getAttributeNode(name);
+            if (a) {
+                return a;
+            } else {
+                return undefined;
+            }
+
+        }
+
+        getAttributeFromChildNodesNamed(cn: NodeListOf<ChildNode>, name: string) : Attr | undefined {
+            cn.forEach(el => {
+                var a = this.getAttributeNamed(el, name);
+                if (a) {
+                    return a;
+                }
+            });
+            return undefined;
+        }
 
         getTextContent(el: Node): string {
             return el.textContent || (<any>el).firstChild.getNodeValue()+"";
@@ -43,8 +62,8 @@ module COLLADA.Loader {
         }
 
         getAttributeAsFloat(el: Node, name: string, defaultValue: number, required: boolean): number {
-            var attr: Attr = el.childNodes.attributes.getNamedItem(name);
-            if (attr != null) {
+            var attr = this.getAttributeFromChildNodesNamed(el.childNodes, name);
+            if (attr) {
                 return parseFloat(attr.value);
             } else if (!required) {
                 return defaultValue;
@@ -55,8 +74,8 @@ module COLLADA.Loader {
         }
 
         getAttributeAsInt(el: Node, name: string, defaultValue: number, required: boolean): number{
-            var attr: Attr = el.attributes.getNamedItem(name);
-            if (attr != null) {
+            var attr = this.getAttributeNamed(el, name);
+            if (attr) {
                 return parseInt(attr.value, 10);
             } else if (!required) {
                 return defaultValue;
@@ -67,8 +86,8 @@ module COLLADA.Loader {
         }
 
         getAttributeAsString(el: Node, name: string, defaultValue: string | undefined, required: boolean): string {
-            var attr: Attr = el.attributes.getNamedItem(name);
-            if (attr != null) {
+            var attr = this.getAttributeNamed(el, name);
+            if (attr) {
                 return attr.value + "";
             } else if (!required) {
                 return defaultValue?defaultValue:"";
@@ -90,15 +109,15 @@ module COLLADA.Loader {
             return link;
         }
 
-        createFxLink(url: string, scope: COLLADA.Loader.Element): FxLink {
+        createFxLink(url: string, scope: COLLADA.Loader.EElement): FxLink {
             var link: FxLink = new FxLink(url, scope);
             this.links?.push(link);
             return link;
         }
 
         getAttributeAsUrlLink(el: Node, name: string, required: boolean): UrlLink | undefined{
-            var attr: Attr = el.attributes.getNamedItem(name);
-            if (attr != null) {
+            var attr = this.getAttributeNamed(el, name);
+            if (attr) {
                 return this.createUrlLink(attr.value);
             } else if (!required) {
                 return undefined;
@@ -109,8 +128,8 @@ module COLLADA.Loader {
         }
 
         getAttributeAsSidLink(el: Node, name: string, parentId: string, required: boolean): SidLink | undefined {
-            var attr: Attr = el.attributes.getNamedItem(name);
-            if (attr != null) {
+            var attr = this.getAttributeNamed(el, name);
+            if (attr) {
                 return this.createSidLink(attr.value, parentId);
             } else if (!required) {
                 return undefined;
@@ -120,9 +139,9 @@ module COLLADA.Loader {
             }
         }
 
-        getAttributeAsFxLink(el: Node, name: string, scope: COLLADA.Loader.Element, required: boolean): FxLink | undefined{
-            var attr: Attr = el.attributes.getNamedItem(name);
-            if (attr != null) {
+        getAttributeAsFxLink(el: Node, name: string, scope: COLLADA.Loader.EElement, required: boolean): FxLink | undefined{
+            var attr = this.getAttributeNamed(el, name);
+            if (attr) {
                 return this.createFxLink(attr.value, scope);
             } else if (!required) {
                 return undefined;
@@ -208,7 +227,7 @@ module COLLADA.Loader {
             }
         }
 
-        registerUrlTarget(object: COLLADA.Loader.Element, needsId: boolean) {
+        registerUrlTarget(object: COLLADA.Loader.EElement, needsId: boolean) {
             var id: string = object.id;
             // Abort if the object has no ID
             if (id == null) {
@@ -226,7 +245,7 @@ module COLLADA.Loader {
             this.ids[id] = object;
         }
 
-        registerFxTarget(object: COLLADA.Loader.Element, scope: COLLADA.Loader.Element) {
+        registerFxTarget(object: COLLADA.Loader.EElement, scope: COLLADA.Loader.EElement) {
             var sid: string = object.sid;
             if (sid == null) {
                 this.log?.write("Cannot add a FX target: object has no SID.", LogLevel.Error);
@@ -241,7 +260,7 @@ module COLLADA.Loader {
             scope.fxChildren[sid] = object;
         }
 
-        registerSidTarget(object: COLLADA.Loader.Element, parent: COLLADA.Loader.Element) {
+        registerSidTarget(object: COLLADA.Loader.EElement, parent: COLLADA.Loader.EElement) {
             // SID links are registered within the parent scope
             parent.sidChildren.push(object);
         }

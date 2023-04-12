@@ -9,7 +9,7 @@ module COLLADA.Loader {
         [index: number]: any;
     }
 
-    export class Source extends COLLADA.Loader.Element {
+    export class Source extends COLLADA.Loader.EElement {
         sourceId: string | undefined;
         count: number = 0;
         stride: number = 0;
@@ -28,7 +28,7 @@ module COLLADA.Loader {
             if (!link) {
                 return undefined;
             }
-            return COLLADA.Loader.Element._fromLink<COLLADA.Loader.Source>(link, "Source", context);
+            return COLLADA.Loader.EElement._fromLink<COLLADA.Loader.Source>(link, "Source", context);
         }
 
         /**

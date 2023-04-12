@@ -7,7 +7,7 @@ module COLLADA.Loader {
     /**
     *   A template for a COLLADA element class. No actual use.
     */
-    export class ElementTemplate extends COLLADA.Loader.Element {
+    export class ElementTemplate extends COLLADA.Loader.EElement {
         member: any;
 
         constructor() {

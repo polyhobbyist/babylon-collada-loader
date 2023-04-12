@@ -7,7 +7,7 @@ module COLLADA.Loader {
     /**
     *   An <asset> element.
     */
-    export class Asset extends COLLADA.Loader.Element {
+    export class Asset extends COLLADA.Loader.EElement {
         unit: number = 0;
         upAxis: string = "";
 

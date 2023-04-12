@@ -2,13 +2,11 @@ module COLLADA.Converter {
 
     export class ColladaConverterData {
         data: Uint8Array;
-        offset: number;
-        length: number;
+        offset: number = 0;
+        length: number = 0;
 
         constructor(input: ArrayBuffer) {
             this.data = new Uint8Array(input);
-            this.length = null;
-            this.offset = null;
         }
 
     }

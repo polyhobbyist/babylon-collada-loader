@@ -11,28 +11,30 @@ module COLLADA.Converter {
     export class Geometry {
         name: string;
         chunks: COLLADA.Converter.GeometryChunk[];
-        private skeleton: COLLADA.Converter.Skeleton;
+        private skeleton: COLLADA.Converter.Skeleton | undefined ;
         boundingBox: BoundingBox;
 
         constructor() {
             this.name = "";
             this.chunks = [];
-            this.skeleton = null;
             this.boundingBox = new BoundingBox();
         }
 
-        getSkeleton(): Skeleton {
+        getSkeleton(): Skeleton | undefined{
             return this.skeleton;
         }
 
         /**
         * Creates a static (non-animated) geometry
         */
-        static createStatic(instanceGeometry: COLLADA.Loader.InstanceGeometry, node: COLLADA.Converter.Node, context: COLLADA.Converter.Context): COLLADA.Converter.Geometry {
-            var geometry: COLLADA.Loader.Geometry = COLLADA.Loader.Geometry.fromLink(instanceGeometry.geometry, context);
-            if (geometry === null) {
+        static createStatic(instanceGeometry: COLLADA.Loader.InstanceGeometry, node: COLLADA.Converter.Node, context: COLLADA.Converter.Context): COLLADA.Converter.Geometry | undefined{
+            if (!instanceGeometry || !instanceGeometry.geometry) {
+                return undefined;
+            }
+            var geometry = COLLADA.Loader.Geometry.fromLink(instanceGeometry.geometry, context);
+            if (!geometry) {
                 context.log.write("Geometry instance has no geometry, mesh ignored", LogLevel.Warning);
-                return null;
+                return undefined;
             }
 
             var result = COLLADA.Converter.Geometry.createGeometry(geometry, instanceGeometry.materials, context);
@@ -45,11 +47,14 @@ module COLLADA.Converter {
         /**
         * Creates an animated (skin or morph) geometry
         */
-        static createAnimated(instanceController: COLLADA.Loader.InstanceController, node: COLLADA.Converter.Node, context: COLLADA.Converter.Context): COLLADA.Converter.Geometry {
-            var controller: COLLADA.Loader.Controller = COLLADA.Loader.Controller.fromLink(instanceController.controller, context);
-            if (controller === null) {
+        static createAnimated(instanceController: COLLADA.Loader.InstanceController, node: COLLADA.Converter.Node, context: COLLADA.Converter.Context): COLLADA.Converter.Geometry | undefined{
+            if (!instanceController || !instanceController.controller) {
+                return undefined;
+            }
+            var controller = COLLADA.Loader.Controller.fromLink(instanceController.controller, context);
+            if (!controller) {
                 context.log.write("Controller instance has no controller, mesh ignored", LogLevel.Warning);
-                return null;
+                return undefined;
             }
 
             if (controller.skin !== null) {
@@ -58,32 +63,35 @@ module COLLADA.Converter {
                 return COLLADA.Converter.Geometry.createMorph(instanceController, controller, context);
             }
 
-            return null;
+            return undefined;
         }
 
         /**
         * Creates a skin-animated geometry
         */
-        static createSkin(instanceController: COLLADA.Loader.InstanceController, controller: COLLADA.Loader.Controller, context: COLLADA.Converter.Context): COLLADA.Converter.Geometry {
+        static createSkin(instanceController: COLLADA.Loader.InstanceController, controller: COLLADA.Loader.Controller, context: COLLADA.Converter.Context): COLLADA.Converter.Geometry | undefined{
+            if (!instanceController || !instanceController.controller) {
+                return undefined;
+            }
             // Controller element
-            var controller: COLLADA.Loader.Controller = COLLADA.Loader.Controller.fromLink(instanceController.controller, context);
-            if (controller === null) {
+            var controller = COLLADA.Loader.Controller.fromLink(instanceController.controller, context) as COLLADA.Loader.Controller;
+            if (!controller) {
                 context.log.write("Controller instance has no controller, mesh ignored", LogLevel.Error);
-                return null;
+                return undefined;
             }
 
             // Skin element
-            var skin: COLLADA.Loader.Skin = controller.skin;
-            if (skin === null) {
+            var skin = controller.skin;
+            if (!skin || !skin.source) {
                 context.log.write("Controller has no skin, mesh ignored", LogLevel.Error);
-                return null;
+                return undefined;
             }
 
             // Geometry element
-            var loaderGeometry: COLLADA.Loader.Geometry = COLLADA.Loader.Geometry.fromLink(skin.source, context);
-            if (loaderGeometry === null) {
+            var loaderGeometry = COLLADA.Loader.Geometry.fromLink(skin.source, context);
+            if (!loaderGeometry) {
                 context.log.write("Controller has no geometry, mesh ignored", LogLevel.Error);
-                return null;
+                return undefined;
             }
 
             // Create skin geometry
@@ -377,17 +385,17 @@ module COLLADA.Converter {
             // Skinning equation:                [worldMatrix]     * [invBindMatrix]        * [pos]
             // Same with transformation A added: [worldMatrix]     * [invBindMatrix * A^-1] * [A * pos]
             // Same with transformation B added: [worldMatrix * B] * [B^-1 * invBindMatrix] * [pos]
-            geometry.skeleton.bones.forEach((bone) => {
+            geometry.skeleton?.bones.forEach((bone) => {
                 
                 // Transformation A (the world scale)
                 if (context.options.worldTransformBake) {
-                    mat4.multiply(bone.invBindMatrix, bone.invBindMatrix, Utils.getWorldInvTransform(context));
+                    bone.invBindMatrix = bone.invBindMatrix.multiply(Utils.getWorldInvTransform(context));
                 }
 
                 // Transformation B (the post-transformation of the corresponding node)
                 if (context.options.worldTransformUnitScale) {
                     var mat = BABYLON.Matrix.Invert(bone.node.transformation_post);
-                    mat4.multiply(bone.invBindMatrix, mat, bone.invBindMatrix);
+                    bone.invBindMatrix = mat.multiply(bone.invBindMatrix);
                 }
             });
         }
@@ -401,7 +409,7 @@ module COLLADA.Converter {
                 GeometryChunk.scaleChunk(chunk, scale, context);
             }
 
-            if (geometry.skeleton !== null) {
+            if (geometry.skeleton && geometry.skeleton.bones) {
                 geometry.skeleton.bones.forEach((bone) => {
                     bone.invBindMatrix[12] *= scale;
                     bone.invBindMatrix[13] *= scale;

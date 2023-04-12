@@ -8,7 +8,7 @@ module COLLADA.Loader {
     /**
     *   An <newparam> element.
     */
-    export class EffectSampler extends COLLADA.Loader.Element {
+    export class EffectSampler extends COLLADA.Loader.EElement {
         surface: Link | undefined;
         image: Link | undefined;
         wrapS: string = "";
@@ -25,13 +25,13 @@ module COLLADA.Loader {
         }
 
         static fromLink(link: Link, context: COLLADA.Context): COLLADA.Loader.EffectSampler | undefined {
-            return COLLADA.Loader.Element._fromLink<COLLADA.Loader.EffectSampler>(link, "EffectSampler", context);
+            return COLLADA.Loader.EElement._fromLink<COLLADA.Loader.EffectSampler>(link, "EffectSampler", context);
         }
 
         /**
         *   Parses a <newparam> element.
         */
-        static parse(node: Node, parent: COLLADA.Loader.Element, context: COLLADA.Loader.Context): COLLADA.Loader.EffectSampler {
+        static parse(node: Node, parent: COLLADA.Loader.EElement, context: COLLADA.Loader.Context): COLLADA.Loader.EffectSampler {
             var result: COLLADA.Loader.EffectSampler = new COLLADA.Loader.EffectSampler();
 
             Utils.forEachChild(node, function (child: Node) {

@@ -5,7 +5,7 @@
 
 module COLLADA.Loader {
 
-    export class Joints extends COLLADA.Loader.Element {
+    export class Joints extends COLLADA.Loader.EElement {
         joints: COLLADA.Loader.Input | undefined;
         invBindMatrices: COLLADA.Loader.Input | undefined;
 

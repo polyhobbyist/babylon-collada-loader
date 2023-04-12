@@ -210,7 +210,7 @@ module COLLADA.Converter {
 
                 // Get rest pose transformation of the current bone
                 var mat0 = bone.node.getLocalMatrix(context);
-                COLLADA.MathUtils.decompose(mat0, pos0, rot0, scl0);
+                mat0.decompose(scl0, rot0, pos0);
 
                 inv_rot0 = rot0.invert();
                 inv_pos0 = pos0.negate();

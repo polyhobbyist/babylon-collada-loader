@@ -44,7 +44,7 @@ module COLLADA.Converter {
             // The joint ids do not seem to be real scoped identifiers(chapter 3.3, "COLLADA Target Addressing"), since they lack the first part (the anchor id)
             // The skin element(chapter 5, "skin" element) *implies* that the joint ids are scoped identifiers relative to the skeleton root node,
             // so perform a SID-like breadth-first search.
-            var boneNode: COLLADA.Loader.Element | undefined = undefined;
+            var boneNode: COLLADA.Loader.EElement | undefined = undefined;
             var warnings: string[] = [];
             for (var i: number = 0; i < skeletonRootNodes.length; i++) {
                 var skeletonRoot: COLLADA.Loader.VisualSceneNode = skeletonRootNodes[i];

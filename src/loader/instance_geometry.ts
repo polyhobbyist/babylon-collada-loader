@@ -5,7 +5,7 @@
 
 module COLLADA.Loader {
 
-    export class InstanceGeometry extends COLLADA.Loader.Element {
+    export class InstanceGeometry extends COLLADA.Loader.EElement {
         geometry: Link | undefined;
         materials: COLLADA.Loader.InstanceMaterial[];
 
@@ -18,7 +18,7 @@ module COLLADA.Loader {
         /**
         *   Parses a <instance_geometry> element.
         */
-        static parse(node: Node, parent: COLLADA.Loader.Element, context: COLLADA.Loader.Context): COLLADA.Loader.InstanceGeometry {
+        static parse(node: Node, parent: COLLADA.Loader.EElement, context: COLLADA.Loader.Context): COLLADA.Loader.InstanceGeometry {
             var result: COLLADA.Loader.InstanceGeometry = new COLLADA.Loader.InstanceGeometry();
 
             result.geometry = context.getAttributeAsUrlLink(node, "url", true);

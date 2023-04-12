@@ -1,4 +1,4 @@
-import { readFile } from 'fs/promises';
+import { promises as fs } from 'fs';
 import * as BABYLON from "babylonjs";
 
 
@@ -77,7 +77,7 @@ export class DAEFileLoader implements BABYLON.ISceneLoaderPluginAsync, BABYLON.I
       loader.log = new COLLADA.LogFilter(loaderlog, COLLADA.LogLevel.Debug);
       
       var parser = new DOMParser();
-      var meshdata = await readFile(fileToLoad).toString();
+      var meshdata = await fs.readFile(fileToLoad).toString();
       var colladaXml = parser.parseFromString(meshdata, "text/xml");
 
       var colladaDoc = loader.loadFromXML("id", colladaXml);

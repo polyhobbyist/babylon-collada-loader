@@ -4,7 +4,7 @@
 
 module COLLADA.Loader {
 
-    export class Library<T extends COLLADA.Loader.Element> {
+    export class Library<T extends COLLADA.Loader.EElement> {
         children: T[];
 
 
@@ -12,7 +12,7 @@ module COLLADA.Loader {
             this.children = [];
         }
 
-        static parse<T extends COLLADA.Loader.Element>(node: Node, parser: (child: Node, context: COLLADA.Loader.Context) => T, childName: string, context: COLLADA.Loader.Context): COLLADA.Loader.Library<T> {
+        static parse<T extends COLLADA.Loader.EElement>(node: Node, parser: (child: Node, context: COLLADA.Loader.Context) => T, childName: string, context: COLLADA.Loader.Context): COLLADA.Loader.Library<T> {
             var result: COLLADA.Loader.Library<T> = new COLLADA.Loader.Library<T>();
 
             Utils.forEachChild(node, function (child: Node) {

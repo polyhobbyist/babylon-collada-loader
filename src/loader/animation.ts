@@ -7,7 +7,7 @@
 
 module COLLADA.Loader {
 
-    export class Animation extends COLLADA.Loader.Element {
+    export class Animation extends COLLADA.Loader.EElement {
         parent: COLLADA.Loader.Animation | undefined;
         children: COLLADA.Loader.Animation[];
         sources: COLLADA.Loader.Source[];

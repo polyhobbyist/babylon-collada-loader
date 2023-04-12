@@ -11,7 +11,7 @@ module COLLADA.Loader {
     *   An <technique> element.
     *
     */
-    export class EffectTechnique extends COLLADA.Loader.Element {
+    export class EffectTechnique extends COLLADA.Loader.EElement {
         params: COLLADA.Loader.EffectParam[] | undefined;
         shading: string = "";
         emission: COLLADA.Loader.ColorOrTexture | undefined;
@@ -34,13 +34,13 @@ module COLLADA.Loader {
         }
 
         static fromLink(link: Link, context: COLLADA.Context): COLLADA.Loader.EffectTechnique | undefined{
-            return COLLADA.Loader.Element._fromLink<COLLADA.Loader.EffectTechnique>(link, "EffectTechnique", context);
+            return COLLADA.Loader.EElement._fromLink<COLLADA.Loader.EffectTechnique>(link, "EffectTechnique", context);
         }
 
         /**
         *   Parses a <technique> element.
         */
-        static parse(node: Node, parent: COLLADA.Loader.Element, context: COLLADA.Loader.Context): COLLADA.Loader.EffectTechnique {
+        static parse(node: Node, parent: COLLADA.Loader.EElement, context: COLLADA.Loader.Context): COLLADA.Loader.EffectTechnique {
             var result: COLLADA.Loader.EffectTechnique = new COLLADA.Loader.EffectTechnique();
 
             result.sid = context.getAttributeAsString(node, "sid", undefined, false);

@@ -3,7 +3,7 @@
 
 module COLLADA.Loader {
 
-    export class NodeTransform extends COLLADA.Loader.Element {
+    export class NodeTransform extends COLLADA.Loader.EElement {
         type: string | undefined;
         data: Float32Array | undefined;
 

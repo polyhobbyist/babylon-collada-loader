@@ -2,14 +2,15 @@
 /// <reference path="format.ts" />
 /// <reference path="../math.ts" />
 import * as BABYLON from 'babylonjs';
+import * as MathUtils from '../math'
 
 module COLLADA.Exporter {
 
     export class Skeleton {
 
         static toJSON(skeleton: COLLADA.Converter.Skeleton, context: COLLADA.Exporter.Context): COLLADA.Exporter.BoneJSON[] | undefined{
-            if (skeleton === null) {
-                return null;
+            if (!skeleton) {
+                return undefined ;
             }
 
             // TODO: options for this
@@ -23,14 +24,16 @@ module COLLADA.Exporter {
 
                 // Bone default transform
                 var mat: BABYLON.Matrix = bone.node.initialLocalMatrix;
-                var pos: number[] = [0, 0, 0];
-                var rot: number[] = [0, 0, 0, 1];
-                var scl: number[] = [1, 1, 1];
-                COLLADA.MathUtils.decompose(mat, pos, rot, scl);
+                var pos = new BABYLON.Vector3(0, 0, 0);
+                var rot= new BABYLON.Quaternion(0, 0, 0, 1);
+                var scl= new BABYLON.Vector3(1, 1, 1);
+                mat.decompose(scl, rot, pos);
 
                 // Bone inverse bind matrix
                 var inv_bind_mat: number[] = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
-                COLLADA.MathUtils.copyNumberArray(bone.invBindMatrix, inv_bind_mat, 16);
+                MathUtils.copyNumberArray(bone.invBindMatrix, inv_bind_mat, 16);
+
+                /* TODO Polyhobbyist
 
                 result.push({
                     name: bone.name,
@@ -41,6 +44,7 @@ module COLLADA.Exporter {
                     rot: rot.map((x) => COLLADA.MathUtils.round(x, rot_tol)),
                     scl: scl.map((x) => COLLADA.MathUtils.round(x, scl_tol))
                 });
+                */
             });
 
             return result;

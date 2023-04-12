@@ -3,7 +3,7 @@
 
 module COLLADA.Loader {
 
-    export class Input extends COLLADA.Loader.Element {
+    export class Input extends COLLADA.Loader.EElement {
         /** "VERTEX", "POSITION", "NORMAL", "TEXCOORD", ... */
         semantic: string = "";
         /** URL of source object */

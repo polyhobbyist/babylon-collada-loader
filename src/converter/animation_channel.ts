@@ -114,7 +114,7 @@ module COLLADA.Converter {
             var result: COLLADA.Converter.AnimationChannel = new COLLADA.Converter.AnimationChannel();
 
             // Element
-            var element: COLLADA.Loader.Element = COLLADA.Loader.Element.fromLink(channel.target, context);
+            var element: COLLADA.Loader.EElement = COLLADA.Loader.EElement.fromLink(channel.target, context);
             if (element === null) {
                 context.log.write("Animation channel has an invalid target '" + channel.target.url + "', animation ignored", LogLevel.Warning);
                 return null;

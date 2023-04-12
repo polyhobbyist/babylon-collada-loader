@@ -4,7 +4,7 @@
 
 module COLLADA.Loader {
 
-    export class LightParam extends COLLADA.Loader.Element {
+    export class LightParam extends COLLADA.Loader.EElement {
         value: number| undefined;
 
         constructor() {

@@ -1,41 +1,52 @@
+import * as BABYLON from 'babylonjs';
 /// <reference path="../math.ts" />
 
 module COLLADA.Converter {
 
     export class BoundingBox {
-        public min: Vec3;
-        public max: Vec3;
+        public min: BABYLON.Vector3 = new BABYLON.Vector3();
+        public max: BABYLON.Vector3 = new BABYLON.Vector3();
 
         constructor() {
-            this.min = vec3.create();
-            this.max = vec3.create();
             this.reset();
         }
 
         reset() {
-            vec3.set(this.min, Infinity, Infinity, Infinity);
-            vec3.set(this.max, -Infinity, -Infinity, -Infinity);
+            this.min.set(Infinity, Infinity, Infinity);
+            this.max.set(-Infinity, -Infinity, -Infinity);
         }
 
         fromPositions(p: Float32Array, offset: number, count: number) {
             this.reset();
             for (var i: number = 0; i < count; ++i) {
-                for (var d: number = 0; d < 3; ++d) {
-                    var value: number = p[(offset + i) * 3 + d];
-                    this.min[d] = Math.min(this.min[d], value);
-                    this.max[d] = Math.max(this.max[d], value);
+                    var value = p[(offset + i) * 3 + 0];
+                    this.min.x = Math.min(this.min.x, value);
+                    this.max.x = Math.max(this.max.x, value);
+
+                    value = p[(offset + i) * 3 + 1];
+                    this.min.y = Math.min(this.min.y, value);
+                    this.max.y = Math.max(this.max.y, value);
+
+                    value = p[(offset + i) * 3 + 2];
+                    this.min.z = Math.min(this.min.z, value);
+                    this.max.z = Math.max(this.max.z, value);
                 }
-            }
         }
 
-        extend(p: Vec3) {
-            vec3.max(this.max, this.max, p);
-            vec3.min(this.min, this.min, p);
+        extend(p: BABYLON.Vector3) {
+            this.min.x = Math.min(this.min.x, p.x);
+            this.max.x = Math.max(this.max.x, p.x);
+
+            this.min.y = Math.min(this.min.y, p.y);
+            this.max.y = Math.max(this.max.y, p.y);
+
+            this.min.z = Math.min(this.min.z, p.z);
+            this.max.z = Math.max(this.max.z, p.z);
         }
 
         extendBox(b: BoundingBox) {
-            vec3.max(this.max, this.max, b.max);
-            vec3.min(this.min, this.min, b.min);
+            this.extend(b.max);
+            this.extend(b.min);
         }
     }
 }

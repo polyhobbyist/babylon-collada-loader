@@ -9,7 +9,7 @@ module COLLADA.Loader {
     *   A <surface> element.
     *
     */
-    export class EffectSurface extends COLLADA.Loader.Element {
+    export class EffectSurface extends COLLADA.Loader.EElement {
         type: string = "";
         initFrom: Link | undefined;
         format: string = "";
@@ -24,13 +24,13 @@ module COLLADA.Loader {
         }
 
         static fromLink(link: Link, context: COLLADA.Context): COLLADA.Loader.EffectSurface | undefined{
-            return COLLADA.Loader.Element._fromLink<COLLADA.Loader.EffectSurface>(link, "EffectSurface", context);
+            return COLLADA.Loader.EElement._fromLink<COLLADA.Loader.EffectSurface>(link, "EffectSurface", context);
         }
 
         /**
         *   Parses a <surface> element.
         */
-        static parse(node: Node, parent: COLLADA.Loader.Element, context: COLLADA.Loader.Context): COLLADA.Loader.EffectSurface {
+        static parse(node: Node, parent: COLLADA.Loader.EElement, context: COLLADA.Loader.Context): COLLADA.Loader.EffectSurface {
             var result: COLLADA.Loader.EffectSurface = new COLLADA.Loader.EffectSurface();
 
             result.type = context.getAttributeAsString(node, "type", undefined, true);

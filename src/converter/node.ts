@@ -30,10 +30,11 @@ module COLLADA.Converter {
 
         addTransform(mat: BABYLON.Matrix) {
             var loader_transform = new COLLADA.Loader.NodeTransform();
-            loader_transform.data = <Float32Array>mat;
+            loader_transform.data = new Float32Array();
+            mat.copyToArray(loader_transform.data);
             loader_transform.type = "matrix";
             loader_transform.name = "virtual static transform";
-            var transform = new TransformMatrix(loader_transform);
+            var transform = new COLLADA.Converter.TransformMatrix(loader_transform);
             this.transformations.unshift(transform);
         }
 

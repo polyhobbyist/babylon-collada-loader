@@ -4,7 +4,7 @@
 
 module COLLADA.Loader {
 
-    export class Material extends COLLADA.Loader.Element {
+    export class Material extends COLLADA.Loader.EElement {
         effect: Link | undefined;
 
         constructor() {
@@ -13,7 +13,7 @@ module COLLADA.Loader {
         }
 
         static fromLink(link: Link, context: COLLADA.Context): COLLADA.Loader.Material | undefined {
-            return COLLADA.Loader.Element._fromLink<COLLADA.Loader.Material>(link, "Material", context);
+            return COLLADA.Loader.EElement._fromLink<COLLADA.Loader.Material>(link, "Material", context);
         }
 
         /**

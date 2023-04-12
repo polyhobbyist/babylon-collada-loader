@@ -11,7 +11,7 @@ module COLLADA.Loader {
     *   An <effect> element.
     *
     */
-    export class Effect extends COLLADA.Loader.Element {
+    export class Effect extends COLLADA.Loader.EElement {
         params: COLLADA.Loader.EffectParam[];
         technique: COLLADA.Loader.EffectTechnique | undefined;
 
@@ -22,7 +22,7 @@ module COLLADA.Loader {
         }
 
         static fromLink(link: Link, context: COLLADA.Context): COLLADA.Loader.Effect | undefined{
-            return COLLADA.Loader.Element._fromLink<COLLADA.Loader.Effect>(link, "Effect", context);
+            return COLLADA.Loader.EElement._fromLink<COLLADA.Loader.Effect>(link, "Effect", context);
         }
 
         /**

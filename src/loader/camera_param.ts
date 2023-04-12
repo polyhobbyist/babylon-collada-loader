@@ -3,7 +3,7 @@
 
 module COLLADA.Loader {
 
-    export class CameraParam extends COLLADA.Loader.Element {
+    export class CameraParam extends COLLADA.Loader.EElement {
         value: number = 0;
 
         constructor() {

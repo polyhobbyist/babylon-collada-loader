@@ -5,7 +5,7 @@
 
 module COLLADA.Loader {
 
-    export class Sampler extends COLLADA.Loader.Element {
+    export class Sampler extends COLLADA.Loader.EElement {
         input: COLLADA.Loader.Input | undefined;
         outputs: COLLADA.Loader.Input[];
         inTangents: COLLADA.Loader.Input[];
@@ -21,7 +21,7 @@ module COLLADA.Loader {
         }
 
         static fromLink(link: Link, context: COLLADA.Context): COLLADA.Loader.Sampler | undefined{
-            return COLLADA.Loader.Element._fromLink<COLLADA.Loader.Sampler>(link, "Sampler", context);
+            return COLLADA.Loader.EElement._fromLink<COLLADA.Loader.Sampler>(link, "Sampler", context);
         }
 
         /**

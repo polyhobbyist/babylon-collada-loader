@@ -3,7 +3,7 @@
 
 module COLLADA.Loader {
 
-    export class Morph extends COLLADA.Loader.Element {
+    export class Morph extends COLLADA.Loader.EElement {
 
         constructor() {
             super();

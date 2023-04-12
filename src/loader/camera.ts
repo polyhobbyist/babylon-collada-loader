@@ -5,14 +5,13 @@
 
 module COLLADA.Loader {
 
-    export class Camera extends COLLADA.Loader.Element {
-        type: string;
+    export class Camera extends COLLADA.Loader.EElement {
+        type: string = "";
         params: { [s: string]: COLLADA.Loader.CameraParam; }
 
         constructor() {
             super();
             this._className += "Camera|";
-            this.type = null;
             this.params = {};
         }
 

@@ -102,7 +102,7 @@ export class BabylonSkeleton {
 
         // The pose stores information about the current bone transformations
         this.pose = new COLLADA.RMXPose(skeleton.bones.length);
-        RMXSkeletalAnimation.resetPose(this.skeleton, this.pose);
+        COLLADA.RMXSkeletalAnimation.resetPose(this.skeleton, this.pose);
 
         // The bone texture stores the bone matrices for the use on the GPU
         this.boneTexture = new COLLADA.RMXBoneMatrixTexture(skeleton.bones.length);

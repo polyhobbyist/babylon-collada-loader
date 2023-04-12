@@ -4,7 +4,7 @@
 
 module COLLADA.Loader {
 
-    export class InstanceLight extends COLLADA.Loader.Element {
+    export class InstanceLight extends COLLADA.Loader.EElement {
         light: Link | undefined;
 
         constructor() {

@@ -4,7 +4,7 @@
 
 module COLLADA.Loader {
 
-    export class InstanceCamera extends COLLADA.Loader.Element {
+    export class InstanceCamera extends COLLADA.Loader.EElement {
         camera: Link | undefined;
 
         constructor() {

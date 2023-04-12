@@ -4,7 +4,7 @@
 
 module COLLADA.Loader {
 
-    export class ColorOrTexture extends COLLADA.Loader.Element {
+    export class ColorOrTexture extends COLLADA.Loader.EElement {
         color: Float32Array | undefined;
         textureSampler: Link | undefined;
         texcoord: string = "";
@@ -19,7 +19,7 @@ module COLLADA.Loader {
         /**
         *   Parses a color or texture element  (<ambient>, <diffuse>, ...).
         */
-        static parse(node: Node, parent: COLLADA.Loader.Element, context: COLLADA.Loader.Context): COLLADA.Loader.ColorOrTexture {
+        static parse(node: Node, parent: COLLADA.Loader.EElement, context: COLLADA.Loader.Context): COLLADA.Loader.ColorOrTexture {
             var result: COLLADA.Loader.ColorOrTexture = new COLLADA.Loader.ColorOrTexture();
 
             result.opaque = context.getAttributeAsString(node, "opaque", undefined, false);

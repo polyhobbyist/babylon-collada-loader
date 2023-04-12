@@ -9,7 +9,7 @@ module COLLADA.Loader {
     /**
     *   An <visual_scene> element.
     */
-    export class VisualScene extends COLLADA.Loader.Element {
+    export class VisualScene extends COLLADA.Loader.EElement {
         children: COLLADA.Loader.VisualSceneNode[];
 
         constructor() {
@@ -19,7 +19,7 @@ module COLLADA.Loader {
         }
 
         static fromLink(link: Link, context: COLLADA.Context): COLLADA.Loader.VisualScene | undefined {
-            return COLLADA.Loader.Element._fromLink<COLLADA.Loader.VisualScene>(link, "VisualScene", context);
+            return COLLADA.Loader.EElement._fromLink<COLLADA.Loader.VisualScene>(link, "VisualScene", context);
         }
 
         static parse(node: Node, context: COLLADA.Loader.Context): COLLADA.Loader.VisualScene {

@@ -13,11 +13,11 @@ module COLLADA.Loader {
         target: SidLink;
     }
 
-    export interface InstanceMaterialContainer extends COLLADA.Loader.Element {
+    export interface InstanceMaterialContainer extends COLLADA.Loader.EElement {
         materials: COLLADA.Loader.InstanceMaterial[];
     }
 
-    export class InstanceMaterial extends COLLADA.Loader.Element {
+    export class InstanceMaterial extends COLLADA.Loader.EElement {
         material: UrlLink | undefined;
         symbol: string = "";
         /** Contains uniform parameters */

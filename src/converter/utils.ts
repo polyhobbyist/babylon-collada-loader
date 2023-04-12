@@ -1,4 +1,5 @@
 import * as BABYLON from 'babylonjs';
+import * as LoaderSource from '../loader/source'
 
 module COLLADA.Converter {
 

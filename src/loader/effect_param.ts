@@ -11,7 +11,7 @@ module COLLADA.Loader {
     *   An <newparam> element.
     *
     */
-    export class EffectParam extends COLLADA.Loader.Element {
+    export class EffectParam extends COLLADA.Loader.EElement {
         semantic: string| undefined;
         surface: COLLADA.Loader.EffectSurface| undefined;
         sampler: COLLADA.Loader.EffectSampler| undefined;
@@ -23,13 +23,13 @@ module COLLADA.Loader {
         }
 
         static fromLink(link: Link, context: COLLADA.Context): COLLADA.Loader.EffectParam | undefined {
-            return COLLADA.Loader.Element._fromLink<COLLADA.Loader.EffectParam>(link, "EffectParam", context);
+            return COLLADA.Loader.EElement._fromLink<COLLADA.Loader.EffectParam>(link, "EffectParam", context);
         }
 
         /**
         *   Parses a <newparam> element.
         */
-        static parse(node: Node, parent: COLLADA.Loader.Element, context: COLLADA.Loader.Context): COLLADA.Loader.EffectParam {
+        static parse(node: Node, parent: COLLADA.Loader.EElement, context: COLLADA.Loader.Context): COLLADA.Loader.EffectParam {
             var result: COLLADA.Loader.EffectParam = new COLLADA.Loader.EffectParam();
 
             result.sid = context.getAttributeAsString(node, "sid", undefined, false);

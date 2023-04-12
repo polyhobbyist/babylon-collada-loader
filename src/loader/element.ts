@@ -10,7 +10,7 @@ module COLLADA.Loader {
     *   Contains members for URL, FX, and SID adressing,
     *   even if the actual element does not support those.
     */
-    export class Element {
+    export class EElement {
         /** Class name so that we do not depend on instanceof */
         _className: string;
         /** Collada URL adressing: identifier */
@@ -18,11 +18,11 @@ module COLLADA.Loader {
         /** Collada SID/FX adressing: identifier */
         sid: string = "";
         /** Collada FX adressing: parent element */
-        fxParent: COLLADA.Loader.Element | undefined;
+        fxParent: COLLADA.Loader.EElement | undefined;
         /** Collada FX adressing: child elements */
-        fxChildren: { [sid: string]: COLLADA.Loader.Element; };
+        fxChildren: { [sid: string]: COLLADA.Loader.EElement; };
         /** Collada SID adressing: child elements */
-        sidChildren: COLLADA.Loader.Element[];
+        sidChildren: COLLADA.Loader.EElement[];
         /** Name of the element. Not used for any adressing. */
         name: string = "";
 
@@ -33,11 +33,11 @@ module COLLADA.Loader {
             this._className = "|Element|";
         }
 
-        static fromLink(link: Link, context: COLLADA.Context): COLLADA.Loader.Element | undefined{
-            return COLLADA.Loader.Element._fromLink<COLLADA.Loader.Element>(link, "Element", context);
+        static fromLink(link: Link, context: COLLADA.Context): COLLADA.Loader.EElement | undefined{
+            return COLLADA.Loader.EElement._fromLink<COLLADA.Loader.EElement>(link, "Element", context);
         }
 
-        static _fromLink<T extends COLLADA.Loader.Element>(link: Link, typeName: string, context: COLLADA.Context): T | undefined{
+        static _fromLink<T extends COLLADA.Loader.EElement>(link: Link, typeName: string, context: COLLADA.Context): T | undefined{
             if (!link) {
                 return undefined;
             } else if (!link.target) {

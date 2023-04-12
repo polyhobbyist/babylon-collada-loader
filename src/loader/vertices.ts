@@ -5,7 +5,7 @@
 
 module COLLADA.Loader {
 
-    export class Vertices extends COLLADA.Loader.Element {
+    export class Vertices extends COLLADA.Loader.EElement {
         inputs: COLLADA.Loader.Input[];
 
         constructor() {
@@ -15,7 +15,7 @@ module COLLADA.Loader {
         }
 
         static fromLink(link: Link, context: COLLADA.Context): COLLADA.Loader.Vertices | undefined {
-            return COLLADA.Loader.Element._fromLink<COLLADA.Loader.Vertices>(link, "Vertices", context);
+            return COLLADA.Loader.EElement._fromLink<COLLADA.Loader.Vertices>(link, "Vertices", context);
         }
 
         /**

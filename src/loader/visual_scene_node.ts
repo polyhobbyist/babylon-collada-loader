@@ -13,11 +13,11 @@ module COLLADA.Loader {
     /**
     *   A <node> element (child of <visual_scene>, <library_nodes>, or another <node>).
     */
-    export class VisualSceneNode extends COLLADA.Loader.Element {
+    export class VisualSceneNode extends COLLADA.Loader.EElement {
         type: string;
         layer: string;
         children: COLLADA.Loader.VisualSceneNode[];
-        parent: COLLADA.Loader.Element | undefined;
+        parent: COLLADA.Loader.EElement | undefined;
         transformations: COLLADA.Loader.NodeTransform[];
         geometries: COLLADA.Loader.InstanceGeometry[];
         controllers: COLLADA.Loader.InstanceController[];
@@ -39,10 +39,10 @@ module COLLADA.Loader {
         }
 
         static fromLink(link: Link, context: COLLADA.Context): COLLADA.Loader.VisualSceneNode | undefined {
-            return COLLADA.Loader.Element._fromLink<COLLADA.Loader.VisualSceneNode>(link, "VisualSceneNode", context);
+            return COLLADA.Loader.EElement._fromLink<COLLADA.Loader.VisualSceneNode>(link, "VisualSceneNode", context);
         }
 
-        static registerParent(child: COLLADA.Loader.VisualSceneNode, parent: COLLADA.Loader.Element, context: COLLADA.Loader.Context) {
+        static registerParent(child: COLLADA.Loader.VisualSceneNode, parent: COLLADA.Loader.EElement, context: COLLADA.Loader.Context) {
             child.parent = parent;
             context.registerSidTarget(child, parent);
         }

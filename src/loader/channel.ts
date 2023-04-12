@@ -4,7 +4,7 @@
 
 module COLLADA.Loader {
 
-    export class Channel extends COLLADA.Loader.Element {
+    export class Channel extends COLLADA.Loader.EElement {
         source: UrlLink | undefined;
         target: SidLink | undefined;
 
