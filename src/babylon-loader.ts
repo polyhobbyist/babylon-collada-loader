@@ -44,11 +44,23 @@ export class BabylonModelLoader {
     }
 
     private createTexture(url: string, scene : BABYLON.Scene): BABYLON.Texture {
-        if (url == null || url == "") {
+        if ((url == null)  || (url == "")) {
             return new BABYLON.Texture("", scene);
         }
 
+        // TODO Polyhobbyist
+
         return new BABYLON.Texture("url", scene);
+    }
+
+    private parseColor(color: string) : BABYLON.Color3 {
+        color = color.trim();
+        var rgba = color.split(' ');
+        if (rgba.length >= 3) {
+            throw new Error("Color ${rgba} does not have 3 values")
+        }
+    
+        return new BABYLON.Color3(parseFloat(rgba[0]), parseFloat(rgba[1]), parseFloat(rgba[2]));
     }
 
     private createMaterial(material: Model.RMXMaterial, skinned: boolean, scene : BABYLON.Scene): BABYLON.Material {
@@ -61,7 +73,9 @@ export class BabylonModelLoader {
         } else {
             var result = new BABYLON.StandardMaterial(hash, scene);
             //result.skinning = skinned;
-            result.diffuseColor  = new BABYLON.Color3(0.8, 0.8, 0.8);
+            result.diffuseColor  = this.parseColor(material.diffuse);
+            result.ambientColor = this.parseColor(material.normal);
+            result.specularColor = this.parseColor(material.specular);
 
             this.materialCache[hash] = result;
             return result;
@@ -70,7 +84,7 @@ export class BabylonModelLoader {
 
     createModel(model: Model.RMXModel, scene : BABYLON.Scene): BabylonModel {
         var result = new BabylonModel();
-        var skinned = model.skeleton != null;
+        var skinned = model.skeleton? true : false;
 
         // Geometry - create THREE objects
         for (var i = 0; i < model.chunks.length; ++i) {
@@ -84,10 +98,13 @@ export class BabylonModelLoader {
             if (chunk.geometry) {
                 var m = new BABYLON.Mesh("", scene);
                 chunk.geometry.applyToMesh(m);
+                m.material = chunk.material; 
 
                 result.meshes.push(m);
             }
         }
+
+
 
         // Skeleton - use custom object
         result.skeleton = model.skeleton;

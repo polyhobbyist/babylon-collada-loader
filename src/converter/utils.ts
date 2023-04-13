@@ -99,7 +99,7 @@ import { ConverterContext } from "./context";
 
         export function createFloatArray(source: SourceLoader.Source, name: string, outDim: number, context: Context): Float32Array {
             if (!source) {
-                return new Float32Array();
+                return null;
             }
 
             if (source.stride > outDim) {
@@ -113,13 +113,13 @@ import { ConverterContext } from "./context";
             var iEnd: number = source.offset + source.count * source.stride;
             if (iEnd > source.data.length) {
                 context.log.write("Source for " + name + " tries to access too many elements, data ignored", LogLevel.Warning);
-                return new Float32Array();
+                return null;
             }
 
             // Get source raw data
             if (!(source.data instanceof Float32Array)) {
                 context.log.write("Source for " + name + " does not contain floating point data, data ignored", LogLevel.Warning);
-                return new Float32Array();
+                return null;
             }
             var srcData: Float32Array = <Float32Array>source.data;
 
