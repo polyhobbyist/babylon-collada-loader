@@ -1,15 +1,12 @@
-import {Context} from "../context"
-import {LogLevel} from "../log"
-import * as Loader from "./loader"
-import * as Converter from "../converter/converter"
-import * as Exporter from "../exporter/exporter"
+
+import { LoaderContext } from "./context"
+import { EElement } from "./element"
 import * as Utils from "./utils"
-import * as MathUtils from "../math"
 
     /**
     *   A template for a COLLADA element class. No actual use.
     */
-    export class ElementTemplate extends Loader.EElement {
+    export class ElementTemplate extends EElement {
         member: any;
 
         constructor() {
@@ -21,8 +18,8 @@ import * as MathUtils from "../math"
         /**
         *   Parses a <...> element.
         */
-        static parse(node: Node, context: Loader.LoaderContext): Loader.ElementTemplate {
-            var result: Loader.ElementTemplate = new Loader.ElementTemplate();
+        static parse(node: Node, context: LoaderContext): ElementTemplate {
+            var result: ElementTemplate = new ElementTemplate();
 
             result.id = context.getAttributeAsString(node, "id", undefined, true);
 

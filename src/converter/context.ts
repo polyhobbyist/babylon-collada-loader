@@ -1,6 +1,6 @@
 import {Log, LogLevel} from "../log"
-import * as Loader from "../loader/loader"
-import * as Converter from "./converter"
+
+
 import * as Utils from "./utils"
 import * as MathUtils from "../math"
 import {Material} from "./material"
@@ -9,6 +9,10 @@ import {Texture} from "./texture"
 import {AnimationTarget} from "./animation"
 import * as COLLADAContext from "../context"
 import {Options} from "./options"
+import { EElement } from "../loader/element"
+import { VisualSceneNode } from "../loader/visual_scene_node"
+import { Node } from "../converter/node"
+import { Image } from "../loader/image"
 
 /**
     * A map that maps various COLLADA objects to converter objects
@@ -47,9 +51,9 @@ import {Options} from "./options"
 
     export class ConverterContext extends COLLADAContext.Context {
         materials: ObjectMap<LoaderMaterial.Material, Material>;
-        textures: ObjectMap<Loader.Image, Texture>;
-        nodes: ObjectMap<Loader.VisualSceneNode, Converter.Node>;
-        animationTargets: ObjectMap<Loader.EElement, AnimationTarget>;
+        textures: ObjectMap<Image, Texture>;
+        nodes: ObjectMap<VisualSceneNode, Node>;
+        animationTargets: ObjectMap<EElement, AnimationTarget>;
         log: Log;
         options: Options;
         messageCount: { [name: string]: number };
@@ -59,9 +63,9 @@ import {Options} from "./options"
             this.log = log;
             this.options = options;
             this.materials = new ObjectMap<LoaderMaterial.Material, Material>();
-            this.textures = new ObjectMap<Loader.Image, Texture>();
-            this.nodes = new ObjectMap<Loader.VisualSceneNode, Converter.Node>();
-            this.animationTargets = new ObjectMap<Loader.EElement, AnimationTarget>();
+            this.textures = new ObjectMap<Image, Texture>();
+            this.nodes = new ObjectMap<VisualSceneNode, Node>();
+            this.animationTargets = new ObjectMap<EElement, AnimationTarget>();
             this.messageCount = {};
         }
     }

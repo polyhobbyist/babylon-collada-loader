@@ -1,6 +1,6 @@
 import {Log, LogLevel} from "../log"
-import * as Loader from "../loader/loader"
-import * as Converter from "./converter"
+
+
 import * as Utils from "./utils"
 import * as MathUtils from "../math"
 import {Texture} from "./texture"
@@ -8,9 +8,14 @@ import {AnimationTarget} from "./animation"
 import * as COLLADAContext from "../context"
 import {Options} from "./options"
 import {BoundingBox} from "./bounding_box"
+import { Effect } from "../loader/effect"
+import { EffectTechnique } from "../loader/effect_technique"
+import { InstanceMaterial } from "../loader/instance_material"
+import { ConverterContext } from "./context"
+import * as MaterialLoader from "../loader/material"
 
     export class MaterialMap {
-        symbols: { [symbol: string]: Converter.Material };
+        symbols: { [symbol: string]: Material };
 
         constructor() {
             this.symbols = {};
@@ -19,9 +24,9 @@ import {BoundingBox} from "./bounding_box"
 
     export class Material {
         name: string;
-        diffuse: Converter.Texture;
-        specular: Converter.Texture;
-        normal: Converter.Texture;
+        diffuse: Texture;
+        specular: Texture;
+        normal: Texture;
 
         constructor() {
             this.name = null;
@@ -30,35 +35,35 @@ import {BoundingBox} from "./bounding_box"
             this.normal = null;
         }
 
-        static createDefaultMaterial(context: Converter.ConverterContext): Converter.Material {
-            var result: Converter.Material = context.materials.findConverter(null);
+        static createDefaultMaterial(context: ConverterContext): Material {
+            var result: Material = context.materials.findConverter(null);
             if (result) {
                 return result;
             } else {
-                result = new Converter.Material();
+                result = new Material();
                 context.materials.register(undefined, result);
                 return result;
             }
         }
 
-        static createMaterial(instanceMaterial: Loader.InstanceMaterial, context: Converter.ConverterContext): Converter.Material {
+        static createMaterial(instanceMaterial: InstanceMaterial, context: ConverterContext): Material {
 
-            var material: Loader.Material = Loader.Material.fromLink(instanceMaterial.material, context);
+            var material = MaterialLoader.Material.fromLink(instanceMaterial.material, context);
             if (!material) {
                 context.log.write("Material not found, material skipped.", LogLevel.Warning);
-                return Converter.Material.createDefaultMaterial(context);
+                return Material.createDefaultMaterial(context);
             }
 
-            var effect: Loader.Effect = Loader.Effect.fromLink(material.effect, context);
+            var effect: Effect = Effect.fromLink(material.effect, context);
             if (!effect) {
                 context.log.write("Material effect not found, using default material", LogLevel.Warning);
-                return Converter.Material.createDefaultMaterial(context);
+                return Material.createDefaultMaterial(context);
             }
 
-            var technique: Loader.EffectTechnique = effect.technique;
+            var technique: EffectTechnique = effect.technique;
             if (!technique) {
                 context.log.write("Material effect not found, using default material", LogLevel.Warning);
-                return Converter.Material.createDefaultMaterial(context);
+                return Material.createDefaultMaterial(context);
             }
 
             if (technique.diffuse !== null && technique.diffuse.color !== null) {
@@ -69,25 +74,25 @@ import {BoundingBox} from "./bounding_box"
                 context.log.write("Material " + material.id + " contains constant specular colors, colors ignored", LogLevel.Warning);
             }
 
-            var result: Converter.Material = context.materials.findConverter(material);
+            var result: Material = context.materials.findConverter(material);
             if (result) return result;
 
-            result = new Converter.Material();
+            result = new Material();
             result.name = material.id;
-            result.diffuse = Converter.Texture.createTexture(technique.diffuse, context);
-            result.specular = Converter.Texture.createTexture(technique.specular, context);
-            result.normal = Converter.Texture.createTexture(technique.bump, context);
+            result.diffuse = Texture.createTexture(technique.diffuse, context);
+            result.specular = Texture.createTexture(technique.specular, context);
+            result.normal = Texture.createTexture(technique.bump, context);
             context.materials.register(material, result);
 
             return result;
         }
 
-        static getMaterialMap(instanceMaterials: Loader.InstanceMaterial[], context: Converter.ConverterContext): Converter.MaterialMap {
-            var result: Converter.MaterialMap = new Converter.MaterialMap();
+        static getMaterialMap(instanceMaterials: InstanceMaterial[], context: ConverterContext): MaterialMap {
+            var result: MaterialMap = new MaterialMap();
 
             var numMaterials: number = 0;
             for (var i: number = 0; i < instanceMaterials.length; i++) {
-                var instanceMaterial: Loader.InstanceMaterial = instanceMaterials[i];
+                var instanceMaterial: InstanceMaterial = instanceMaterials[i];
 
                 var symbol: string = instanceMaterial.symbol;
                 if (!symbol) {
@@ -100,7 +105,7 @@ import {BoundingBox} from "./bounding_box"
                     continue;
                 }
 
-                result.symbols[symbol] = Converter.Material.createMaterial(instanceMaterial, context);
+                result.symbols[symbol] = Material.createMaterial(instanceMaterial, context);
             }
             return result;
         }

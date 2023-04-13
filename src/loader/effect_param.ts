@@ -1,20 +1,21 @@
-import {Context} from "../context"
-import {LogLevel} from "../log"
-import * as Loader from "./loader"
-import * as Converter from "../converter/converter"
-import * as Exporter from "../exporter/exporter"
+import { Context } from "../context"
+import { LoaderContext } from "./context";
+import { EffectSampler } from "./effect_sampler";
+import { EffectSurface } from "./effect_surface";
+import { EElement } from "./element";
+import { Link } from "./link";
+
 import * as Utils from "./utils"
-import * as MathUtils from "../math"
 
 
     /**
     *   An <newparam> element.
     *
     */
-    export class EffectParam extends Loader.EElement {
+    export class EffectParam extends EElement {
         semantic: string| undefined;
-        surface: Loader.EffectSurface| undefined;
-        sampler: Loader.EffectSampler| undefined;
+        surface: EffectSurface| undefined;
+        sampler: EffectSampler| undefined;
         floats: Float32Array| undefined;
 
         constructor() {
@@ -22,15 +23,15 @@ import * as MathUtils from "../math"
             this._className += "EffectParam|";
         }
 
-        static fromLink(link: Loader.Link, context: Context): Loader.EffectParam | undefined {
-            return Loader.EElement._fromLink<Loader.EffectParam>(link, "EffectParam", context);
+        static fromLink(link: Link, context: Context): EffectParam | undefined {
+            return EElement._fromLink<EffectParam>(link, "EffectParam", context);
         }
 
         /**
         *   Parses a <newparam> element.
         */
-        static parse(node: Node, parent: Loader.EElement, context: Loader.LoaderContext): Loader.EffectParam {
-            var result: Loader.EffectParam = new Loader.EffectParam();
+        static parse(node: Node, parent: EElement, context: LoaderContext): EffectParam {
+            var result: EffectParam = new EffectParam();
 
             result.sid = context.getAttributeAsString(node, "sid", undefined, false);
             context.registerFxTarget(result, parent);
@@ -53,10 +54,10 @@ import * as MathUtils from "../math"
                         result.floats = context.getFloatsContent(child);
                         break;
                     case "surface":
-                        result.surface = Loader.EffectSurface.parse(child, result, context);
+                        result.surface = EffectSurface.parse(child, result, context);
                         break;
                     case "sampler2D":
-                        result.sampler = Loader.EffectSampler.parse(child, result, context);
+                        result.sampler = EffectSampler.parse(child, result, context);
                         break;
                     default:
                         context.reportUnexpectedChild(child);

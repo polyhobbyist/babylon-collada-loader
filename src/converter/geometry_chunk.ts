@@ -1,6 +1,7 @@
 import {Log, LogLevel} from "../log"
-import * as Loader from "../loader/loader"
-import * as Converter from "./converter"
+
+import * as SourceLoader from "../loader/source"
+
 import * as Utils from "./utils"
 import * as MathUtils from "../math"
 import {Material} from "./material"
@@ -10,6 +11,11 @@ import * as COLLADAContext from "../context"
 import {Options} from "./options"
 import {BoundingBox} from "./bounding_box"
 import * as BABYLON from 'babylonjs';
+import { Input } from "../loader/input"
+import { Triangles } from "../loader/triangles"
+import { Vertices } from "../loader/vertices"
+import * as LoaderGeometry from "../loader/geometry"
+import { ConverterContext } from "./context"
 
     export class GeometryData {
         indices: Uint32Array = new Uint32Array();
@@ -41,7 +47,7 @@ import * as BABYLON from 'babylonjs';
         public indexBufferOffset: number = 0;
         /** Geometry data buffer */
         public data: GeometryData = new GeometryData();
-        public material: Converter.Material = new Converter.Material();
+        public material: Material = new Material();
         public boundingBox: BoundingBox= new BoundingBox();;
         /** Bind shape matrix (skinned geometry only) */
         public bindShapeMatrix: BABYLON.Matrix = new BABYLON.Matrix();
@@ -53,18 +59,18 @@ import * as BABYLON from 'babylonjs';
         *
         * This de-indexes the COLLADA data, so that it is usable by GPUs.
         */
-        static createChunk(geometry: Loader.Geometry, triangles: Loader.Triangles, context: Converter.ConverterContext): Converter.GeometryChunk | undefined{
+        static createChunk(geometry: LoaderGeometry.Geometry, triangles: Triangles, context: ConverterContext): GeometryChunk | undefined{
             if (!triangles?.inputs) {
                 return undefined;
             }
 
             // Per-triangle data input
-            var inputTriVertices: Loader.Input | undefined;
-            var inputTriNormal: Loader.Input | undefined;
-            var inputTriColor: Loader.Input | undefined;
-            var inputTriTexcoord: Loader.Input[] = [];
+            var inputTriVertices: Input | undefined;
+            var inputTriNormal: Input | undefined;
+            var inputTriColor: Input | undefined;
+            var inputTriTexcoord: Input[] = [];
             for (var i: number = 0; i < triangles.inputs.length; i++) {
-                var input: Loader.Input = triangles.inputs[i];
+                var input: Input = triangles.inputs[i];
                 switch (input.semantic) {
                     case "VERTEX":
                         inputTriVertices = input;
@@ -88,22 +94,22 @@ import * as BABYLON from 'babylonjs';
             }
 
             // Per-triangle data source
-            var srcTriVertices = Loader.Vertices.fromLink(inputTriVertices.source, context);
+            var srcTriVertices = Vertices.fromLink(inputTriVertices.source, context);
             if (!srcTriVertices) {
                 context.log.write("Geometry " + geometry.id + " has no vertices, geometry ignored", LogLevel.Warning);
                 return undefined;
             }
-            var srcTriNormal = Loader.Source.fromLink(inputTriNormal != null ? inputTriNormal.source : undefined, context);
-            var srcTriColor = Loader.Source.fromLink(inputTriColor != null ? inputTriColor.source : undefined, context);
-            var srcTriTexcoord = inputTriTexcoord.map((x: Loader.Input) => Loader.Source.fromLink(x != null ? x.source : undefined, context));
+            var srcTriNormal = SourceLoader.Source.fromLink(inputTriNormal != null ? inputTriNormal.source : undefined, context);
+            var srcTriColor = SourceLoader.Source.fromLink(inputTriColor != null ? inputTriColor.source : undefined, context);
+            var srcTriTexcoord = inputTriTexcoord.map((x: Input) => SourceLoader.Source.fromLink(x != null ? x.source : undefined, context));
 
             // Per-vertex data input
             var inputVertPos = null;
             var inputVertNormal = null;
             var inputVertColor = null;
-            var inputVertTexcoord: Loader.Input[] = [];
+            var inputVertTexcoord: Input[] = [];
             for (var i: number = 0; i < srcTriVertices.inputs.length; i++) {
-                var input: Loader.Input = srcTriVertices.inputs[i];
+                var input: Input = srcTriVertices.inputs[i];
                 switch (input.semantic) {
                     case "POSITION":
                         inputVertPos = input;
@@ -127,14 +133,14 @@ import * as BABYLON from 'babylonjs';
             }
 
             // Per-vertex data source
-            var srcVertPos = Loader.Source.fromLink(inputVertPos.source, context);
+            var srcVertPos = SourceLoader.Source.fromLink(inputVertPos.source, context);
             if (!srcVertPos) {
                 context.log.write("Geometry " + geometry.id + " has no vertex positions, geometry ignored", LogLevel.Warning);
                 return undefined;
             }
-            var srcVertNormal = Loader.Source.fromLink(inputVertNormal != null ? inputVertNormal.source : undefined, context);
-            var srcVertColor = Loader.Source.fromLink(inputVertColor != null ? inputVertColor.source : undefined, context);
-            var srcVertTexcoord = inputVertTexcoord.map((x: Loader.Input) => Loader.Source.fromLink(x != null ? x.source : undefined, context));
+            var srcVertNormal = SourceLoader.Source.fromLink(inputVertNormal != null ? inputVertNormal.source : undefined, context);
+            var srcVertColor = SourceLoader.Source.fromLink(inputVertColor != null ? inputVertColor.source : undefined, context);
+            var srcVertTexcoord = inputVertTexcoord.map((x: Input) => SourceLoader.Source.fromLink(x != null ? x.source : undefined, context));
 
             // Raw data
             var dataVertPos: Float32Array = Utils.createFloatArray(srcVertPos, "vertex position", 3, context);
@@ -229,7 +235,7 @@ import * as BABYLON from 'babylonjs';
             sourceIndices.indexOffset = indexOffsetPosition;
 
             // Geometry chunk
-            var result: Converter.GeometryChunk = new Converter.GeometryChunk();
+            var result: GeometryChunk = new GeometryChunk();
             result.vertexCount = vertexCount;
             result.vertexBufferOffset = 0;
             result.triangleCount = triangleCount;
@@ -243,7 +249,7 @@ import * as BABYLON from 'babylonjs';
         /**
         * Computes the bounding box of the static (unskinned) geometry
         */
-        static computeBoundingBox(chunk: Converter.GeometryChunk, context: Converter.ConverterContext) {
+        static computeBoundingBox(chunk: GeometryChunk, context: ConverterContext) {
             chunk.boundingBox.fromPositions(chunk.data.position, chunk.vertexBufferOffset, chunk.vertexCount);
         }
 
@@ -264,7 +270,7 @@ import * as BABYLON from 'babylonjs';
         /**
         * Transforms the positions and normals of the given Chunk by the given matrices
         */
-        static transformChunk(chunk: Converter.GeometryChunk, positionMatrix: BABYLON.Matrix, normalMatrix: BABYLON.Matrix, context: Converter.ConverterContext) {
+        static transformChunk(chunk: GeometryChunk, positionMatrix: BABYLON.Matrix, normalMatrix: BABYLON.Matrix, context: ConverterContext) {
             var position: Float32Array = chunk.data.position;
             if (position !== null) {
                 GeometryChunk.transformEachVector(position, positionMatrix);
@@ -279,7 +285,7 @@ import * as BABYLON from 'babylonjs';
         /**
         * Scales the positions of the given Chunk
         */
-        static scaleChunk(chunk: Converter.GeometryChunk, scale: number, context: Converter.ConverterContext) {
+        static scaleChunk(chunk: GeometryChunk, scale: number, context: ConverterContext) {
             var position: Float32Array = chunk.data.position;
             if (position !== null) {
                 for (var i = 0; i < position.length; ++i) {
@@ -295,7 +301,7 @@ import * as BABYLON from 'babylonjs';
         * Each chunk then uses the same buffers, but uses a different portion of the buffers, according to the triangleCount and triangleOffset.
         * A single new chunk containing all the geometry is returned.
         */
-        static mergeChunkData(chunks: Converter.GeometryChunk[], context: Converter.ConverterContext) {
+        static mergeChunkData(chunks: GeometryChunk[], context: ConverterContext) {
 
             if (chunks.length < 2) {
                 return;

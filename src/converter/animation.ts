@@ -1,13 +1,16 @@
 import {Context} from "../context"
 import {LogLevel} from "../log"
-import * as Loader from "../loader/loader"
-import * as Converter from "./converter"
+
+
 import * as Utils from "./utils"
 import * as MathUtils from "../math"
+import { AnimationChannel } from "./animation_channel"
+import { ConverterContext } from "./context"
+import * as LoaderAnimation from '../loader/animation';
 
     export interface AnimationTarget {
-        applyAnimation(channel: Converter.AnimationChannel, time: number, context: Context): void;
-        registerAnimation(channel: Converter.AnimationChannel): void;
+        applyAnimation(channel: AnimationChannel, time: number, context: Context): void;
+        registerAnimation(channel: AnimationChannel): void;
         getTargetDataRows(): number;
         getTargetDataColumns(): number;
     }
@@ -105,7 +108,7 @@ import * as MathUtils from "../math"
     export class Animation {
         id: string;
         name: string;
-        channels: Converter.AnimationChannel[];
+        channels: AnimationChannel[];
 
         constructor() {
             this.id = null;
@@ -113,37 +116,37 @@ import * as MathUtils from "../math"
             this.channels = [];
         }
 
-        static create(animation: Loader.Animation, context: Converter.ConverterContext): Converter.Animation {
-            var result: Converter.Animation = new Converter.Animation();
+        static create(animation: LoaderAnimation.Animation, context: ConverterContext): Animation {
+            var result: Animation = new Animation();
             result.id = animation.id;
             result.name = animation.name;
 
-            Converter.Animation.addChannelsToAnimation(animation, result, context);
+            Animation.addChannelsToAnimation(animation, result, context);
 
             return result;
         }
 
-        static addChannelsToAnimation(collada_animation: Loader.Animation, converter_animation: Converter.Animation, context: Converter.ConverterContext) {
+        static addChannelsToAnimation(collada_animation: LoaderAnimation.Animation, converter_animation: Animation, context: ConverterContext) {
             // Channels
             for (var i: number = 0; i < collada_animation.channels.length; ++i) {
-                var channel: Converter.AnimationChannel = Converter.AnimationChannel.create(collada_animation.channels[i], context);
+                var channel: AnimationChannel = AnimationChannel.create(collada_animation.channels[i], context);
                 converter_animation.channels.push(channel);
             }
 
             // Children
             for (var i: number = 0; i < collada_animation.children.length; ++i) {
-                var child: Loader.Animation = collada_animation.children[i];
-                Converter.Animation.addChannelsToAnimation(child, converter_animation, context);
+                var child = collada_animation.children[i];
+                Animation.addChannelsToAnimation(child, converter_animation, context);
             }
         }
 
         /**
         * Returns the time and fps statistics of this animation
         */
-        static getTimeStatistics(animation: Converter.Animation, index_begin: number, index_end: number, result: Converter.AnimationTimeStatistics, context: Converter.ConverterContext) {
+        static getTimeStatistics(animation: Animation, index_begin: number, index_end: number, result: AnimationTimeStatistics, context: ConverterContext) {
             // Channels
             for (var i: number = 0; i < animation.channels.length; ++i) {
-                var channel: Converter.AnimationChannel = animation.channels[i];
+                var channel: AnimationChannel = animation.channels[i];
 
                 if (channel) {
                     var begin = (index_begin !== null) ? index_begin : -Infinity;

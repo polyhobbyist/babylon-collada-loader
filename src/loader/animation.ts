@@ -1,17 +1,19 @@
-import {Context} from "../context"
-import {LogLevel} from "../log"
-import * as Loader from "./loader"
+import { Channel } from "./channel"
+import { LoaderContext } from "./context"
+import { EElement } from "./element"
+import { Sampler } from "./sampler"
+import * as SourceLoader from "./source"
 import * as Utils from "./utils"
-import * as MathUtils from "../math"
+import * as AnimationConverter from "../converter/animation"
 
 
 
-    export class Animation extends Loader.EElement {
-        parent: Loader.Animation | undefined;
-        children: Loader.Animation[];
-        sources: Loader.Source[];
-        samplers: Loader.Sampler[];
-        channels: Loader.Channel[];
+    export class Animation extends EElement {
+        parent: Animation | undefined;
+        children: Animation[];
+        sources: SourceLoader.Source[];
+        samplers: Sampler[];
+        channels: Channel[];
 
         constructor() {
             super();
@@ -22,7 +24,7 @@ import * as MathUtils from "../math"
             this.channels = [];
         }
 
-        root(): Loader.Animation {
+        root(): Animation {
             if (this.parent != null) {
                 return this.parent.root();
             } else {
@@ -33,8 +35,8 @@ import * as MathUtils from "../math"
         /**
         *   Parses an <animation> element.
         */
-        static parse(node: Node, context: Loader.LoaderContext): Loader.Animation {
-            var result: Loader.Animation = new Loader.Animation();
+        static parse(node: Node, context: LoaderContext): Animation {
+            var result: Animation = new Animation();
 
             result.id = context.getAttributeAsString(node, "id", undefined, false);
             result.name = context.getAttributeAsString(node, "name", undefined, false);
@@ -44,18 +46,18 @@ import * as MathUtils from "../math"
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
                     case "animation":
-                        var animation: Loader.Animation = Loader.Animation.parse(child, context);
+                        var animation: Animation = Animation.parse(child, context);
                         animation.parent = result;
                         result.children.push(animation);
                         break;
                     case "source":
-                        result.sources.push(Loader.Source.parse(child, context));
+                        result.sources.push(SourceLoader.Source.parse(child, context));
                         break;
                     case "sampler":
-                        result.samplers.push(Loader.Sampler.parse(child, context));
+                        result.samplers.push(Sampler.parse(child, context));
                         break;
                     case "channel":
-                        result.channels.push(Loader.Channel.parse(child, result, context));
+                        result.channels.push(Channel.parse(child, result, context));
                         break;
                     default:
                         context.reportUnexpectedChild(child);
@@ -68,10 +70,10 @@ import * as MathUtils from "../math"
     };
 
     
-    export class AnimationLibrary extends Loader.EElement {
+    export class AnimationLibrary extends EElement {
         children: Animation[] = [];
 
-        static parse(node: Node, context: Loader.LoaderContext): AnimationLibrary {
+        static parse(node: Node, context: LoaderContext): AnimationLibrary {
             var result: AnimationLibrary = new AnimationLibrary();
 
             Utils.forEachChild(node, function (child: Node) {

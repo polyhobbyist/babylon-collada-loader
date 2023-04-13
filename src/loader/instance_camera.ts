@@ -1,14 +1,13 @@
-import {Context} from "../context"
-import {LogLevel} from "../log"
-import * as Loader from "./loader"
-import * as Converter from "../converter/converter"
-import * as Exporter from "../exporter/exporter"
+
+import { LoaderContext } from "./context";
+import { EElement } from "./element";
+import { Link } from "./link";
 import * as Utils from "./utils"
-import * as MathUtils from "../math"
+import { VisualSceneNode } from "./visual_scene_node";
 
 
-    export class InstanceCamera extends Loader.EElement {
-        camera: Loader.Link | undefined;
+    export class InstanceCamera extends EElement {
+        camera: Link | undefined;
 
         constructor() {
             super();
@@ -18,8 +17,8 @@ import * as MathUtils from "../math"
         /**
         *   Parses a <instance_light> element.
         */
-        static parse(node: Node, parent: Loader.VisualSceneNode, context: Loader.LoaderContext): Loader.InstanceCamera {
-            var result: Loader.InstanceCamera = new Loader.InstanceCamera();
+        static parse(node: Node, parent: VisualSceneNode, context: LoaderContext): InstanceCamera {
+            var result: InstanceCamera = new InstanceCamera();
 
             result.camera = context.getAttributeAsUrlLink(node, "url", true);
             result.sid = context.getAttributeAsString(node, "sid", undefined, false);

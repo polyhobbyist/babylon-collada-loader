@@ -1,6 +1,7 @@
-import * as Loader from "../loader/loader"
+import { LoaderContext } from "./context";
+import { EElement } from "./element";
 
-    export class CameraParam extends Loader.EElement {
+    export class CameraParam extends EElement {
         value: number = 0;
 
         constructor() {
@@ -11,8 +12,8 @@ import * as Loader from "../loader/loader"
         /**
         *   Parses a camera parameter element.
         */
-        static parse(node: Node, context: Loader.LoaderContext): Loader.CameraParam {
-            var result: Loader.CameraParam = new Loader.CameraParam();
+        static parse(node: Node, context: LoaderContext): CameraParam {
+            var result: CameraParam = new CameraParam();
 
             result.sid = context.getAttributeAsString(node, "sid", undefined, false);
             result.name = node.nodeName;

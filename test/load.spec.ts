@@ -1,11 +1,11 @@
 import path from 'path';
 import { readFileSync } from 'fs';
 import * as Loader from "../src/loader"
-import * as Converter from "../src/converter/converter"
-import * as Exporter from "../src/exporter/exporter"
 import {RMXModelLoader} from "../src/model-loader"
 import * as BabylonLoader from "../src/babylon-loader"
 import {RMXModel} from "../src/model"
+import { ColladaConverter } from '../src/converter/colladaconverter';
+import { ColladaExporter } from '../src/exporter/colladaexporter';
 
 describe("Testing Dae", () => {
   test('Test Parsing XML', () => {
@@ -20,10 +20,10 @@ describe("Testing Dae", () => {
     var colladaDoc = loader.loadFromXML("id", colladaXml);
     expect(colladaDoc).toBeDefined();
 
-    var converter = new Converter.ColladaConverter();
+    var converter = new ColladaConverter();
     var convertedDoc = converter.convert(colladaDoc);
 
-    var exporter = new Exporter.ColladaExporter();
+    var exporter = new ColladaExporter();
     var exportedDoc = exporter.export(convertedDoc);
 
     var modelLoader = new RMXModelLoader;

@@ -1,8 +1,5 @@
 import {Context} from "./context"
 import {LogLevel} from "./log"
-import * as Loader from "./loader/loader"
-import * as Converter from "./converter/converter"
-import * as Exporter from "./exporter/exporter"
 import * as Model from "./model"
 import * as ModelAnimation from "./model-animation"
 

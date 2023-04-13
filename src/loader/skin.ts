@@ -1,17 +1,18 @@
-import {Context} from "../context"
-import {LogLevel} from "../log"
-import * as Loader from "./loader"
-import * as Converter from "../converter/converter"
-import * as Exporter from "../exporter/exporter"
-import * as Utils from "./utils"
-import * as MathUtils from "../math"
 
-    export class Skin extends Loader.EElement {
-        source: Loader.UrlLink | undefined;
+import { LoaderContext } from "./context";
+import { EElement } from "./element";
+import { Joints } from "./joints";
+import { UrlLink } from "./link";
+import * as SourceLoader from "./source"
+import * as Utils from "./utils"
+import { VertexWeights } from "./vertex_weights";
+
+    export class Skin extends EElement {
+        source: UrlLink | undefined;
         bindShapeMatrix: Float32Array = new Float32Array();
-        sources: Loader.Source[] | undefined;
-        joints: Loader.Joints | undefined;
-        vertexWeights: Loader.VertexWeights | undefined;
+        sources: SourceLoader.Source[] | undefined;
+        joints: Joints | undefined;
+        vertexWeights: VertexWeights | undefined;
 
         constructor() {
             super();
@@ -21,8 +22,8 @@ import * as MathUtils from "../math"
         /**
         *   Parses a <skin> element.
         */
-        static parse(node: Node, context: Loader.LoaderContext): Loader.Skin {
-            var result: Loader.Skin = new Loader.Skin();
+        static parse(node: Node, context: LoaderContext): Skin {
+            var result: Skin = new Skin();
 
             result.source = context.getAttributeAsUrlLink(node, "source", true);
 
@@ -32,13 +33,13 @@ import * as MathUtils from "../math"
                         result.bindShapeMatrix = context.getFloatsContent(child);
                         break;
                     case "source":
-                        result.sources?.push(Loader.Source.parse(child, context));
+                        result.sources?.push(SourceLoader.Source.parse(child, context));
                         break;
                     case "joints":
-                        result.joints = Loader.Joints.parse(child, context);
+                        result.joints = Joints.parse(child, context);
                         break;
                     case "vertex_weights":
-                        result.vertexWeights = Loader.VertexWeights.parse(child, context);
+                        result.vertexWeights = VertexWeights.parse(child, context);
                         break;
                     default:
                         context.reportUnexpectedChild(child);

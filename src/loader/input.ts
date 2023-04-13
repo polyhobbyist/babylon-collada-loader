@@ -1,17 +1,14 @@
-import {Context} from "../context"
-import {LogLevel} from "../log"
-import * as Loader from "./loader"
-import * as Converter from "../converter/converter"
-import * as Exporter from "../exporter/exporter"
-import * as Utils from "./utils"
-import * as MathUtils from "../math"
+import { LoaderContext } from "./context";
+import { EElement } from "./element";
+import { UrlLink } from "./link";
 
 
-    export class Input extends Loader.EElement {
+
+    export class Input extends EElement {
         /** "VERTEX", "POSITION", "NORMAL", "TEXCOORD", ... */
         semantic: string = "";
         /** URL of source object */
-        source: Loader.UrlLink | undefined;
+        source: UrlLink | undefined;
         /** Offset in index array */
         offset: number = 0;
         /** Optional set identifier */
@@ -25,8 +22,8 @@ import * as MathUtils from "../math"
         /**
         *   Parses an <input> element.
         */
-        static parse(node: Node, shared: boolean, context: Loader.LoaderContext): Loader.Input {
-            var result: Loader.Input = new Loader.Input();
+        static parse(node: Node, shared: boolean, context: LoaderContext): Input {
+            var result: Input = new Input();
 
             result.semantic = context.getAttributeAsString(node, "semantic", undefined, true);
             result.source = context.getAttributeAsUrlLink(node, "source", true);

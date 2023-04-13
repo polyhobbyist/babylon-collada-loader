@@ -1,25 +1,23 @@
-import {Context} from "../context"
-import {LogLevel} from "../log"
-import * as Loader from "./loader"
-import * as Converter from "../converter/converter"
-import * as Exporter from "../exporter/exporter"
+import { Scene } from "./scene"
+import { LogLevel } from "../log"
+import { AnimationLibrary } from "./animation"
+import { Asset } from "./asset"
+import { CameraLibrary } from "./camera"
+import { LoaderContext } from "./context"
+import { ControllerLibrary } from "./controller"
+import { EffectLibrary } from "./effect"
+import { GeometryLibrary } from "./geometry"
+import { ImageLibrary } from "./image"
+import { LightLibrary } from "./light"
+import { MaterialLibrary } from "./material"
 import * as Utils from "./utils"
-import * as MathUtils from "../math"
-import {MaterialLibrary} from "./material"
-import {EffectLibrary} from "./effect"
-import {GeometryLibrary} from "./geometry"
-import {ImageLibrary} from "./image"
-import {VisualSceneLibrary} from "./visual_scene"
-import {ControllerLibrary} from "./controller"
-import {AnimationLibrary} from "./animation"
-import {LightLibrary} from "./light"
-import {CameraLibrary} from "./camera"
-import {VisualSceneNodeLibrary} from "./visual_scene_node"
+import { VisualSceneLibrary } from "./visual_scene"
+import { VisualSceneNodeLibrary } from "./visual_scene_node"
 
 
     export class Document {
-        scene: Loader.Scene | undefined;
-        asset: Loader.Asset | undefined;
+        scene: Scene | undefined;
+        asset: Asset | undefined;
         libEffects: EffectLibrary;
         libMaterials: MaterialLibrary;
         libGeometries: GeometryLibrary;
@@ -44,31 +42,31 @@ import {VisualSceneNodeLibrary} from "./visual_scene_node"
             this.libNodes = new VisualSceneNodeLibrary();
         }
 
-        static parse(doc: XMLDocument, context: Loader.LoaderContext): Loader.Document {
+        static parse(doc: XMLDocument, context: LoaderContext): Document {
 
             // There should be one top level <COLLADA> element
             var colladaNodes = doc.getElementsByTagName("COLLADA");
             if (colladaNodes.length === 0) {
                 context.log?.write("Cannot parse document, no top level COLLADA element.", LogLevel.Error);
-                return new Loader.Document();
+                return new Document();
             } else if (colladaNodes.length > 1) {
                 context.log?.write("Cannot parse document, more than one top level COLLADA element.", LogLevel.Error);
-                return new Loader.Document();
+                return new Document();
             }
 
-            return Loader.Document.parseCOLLADA(colladaNodes[0] || colladaNodes.item(0), context);
+            return Document.parseCOLLADA(colladaNodes[0] || colladaNodes.item(0), context);
         }
 
-        static parseCOLLADA(node: Node, context: Loader.LoaderContext): Loader.Document {
-            var result: Loader.Document = new Loader.Document();
+        static parseCOLLADA(node: Node, context: LoaderContext): Document {
+            var result: Document = new Document();
 
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
                     case "asset":
-                        result.asset = Loader.Asset.parse(child, context);
+                        result.asset = Asset.parse(child, context);
                         break;
                     case "scene":
-                        result.scene = Loader.Scene.parse(child, context);
+                        result.scene = Scene.parse(child, context);
                         break;
                     case "library_effects":
                         result.libEffects = EffectLibrary.parse(child, context);

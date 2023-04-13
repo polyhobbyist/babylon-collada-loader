@@ -1,12 +1,10 @@
-import {Context} from "../context"
-import {LogLevel} from "../log"
-import * as Loader from "./loader"
-import * as Converter from "../converter/converter"
-import * as Exporter from "../exporter/exporter"
-import * as Utils from "./utils"
-import * as MathUtils from "../math"
+import { LogLevel } from "../log"
+import { LoaderContext } from "./context";
+import { EElement } from "./element";
+import { VisualSceneNode } from "./visual_scene_node";
 
-    export class NodeTransform extends Loader.EElement {
+
+    export class NodeTransform extends EElement {
         type: string | undefined;
         data: Float32Array | undefined;
 
@@ -18,8 +16,8 @@ import * as MathUtils from "../math"
         /**
         *   Parses a transformation element.
         */
-        static parse(node: Node, parent: Loader.VisualSceneNode, context: Loader.LoaderContext): Loader.NodeTransform {
-            var result: Loader.NodeTransform = new Loader.NodeTransform();
+        static parse(node: Node, parent: VisualSceneNode, context: LoaderContext): NodeTransform {
+            var result: NodeTransform = new NodeTransform();
 
             result.sid = context.getAttributeAsString(node, "sid", undefined, false);
             result.type = node.nodeName;

@@ -1,13 +1,11 @@
-import {Context} from "../context"
-import {LogLevel} from "../log"
-import * as Loader from "./loader"
-import * as Converter from "../converter/converter"
-import * as Exporter from "../exporter/exporter"
-import * as Utils from "./utils"
-import * as MathUtils from "../math"
+import { Context } from "../context"
+import { LogLevel } from "../log"
+import { LoaderContext } from "./context";
+import { EElement } from "./element";
+
 
     export interface LinkResolveResult {
-        result: Loader.EElement | undefined;
+        result: EElement | undefined;
         warning: string | undefined;
     }
 
@@ -16,7 +14,7 @@ import * as MathUtils from "../math"
     */
     export class Link {
         url: string = "";
-        target: Loader.EElement | undefined;
+        target: EElement | undefined;
 
         constructor() {
         }
@@ -25,7 +23,7 @@ import * as MathUtils from "../math"
             throw new Error("not implemented");
         }
 
-        resolve(context: Loader.LoaderContext) {
+        resolve(context: LoaderContext) {
             throw new Error("not implemented");
         }
 
@@ -51,9 +49,9 @@ import * as MathUtils from "../math"
             return this.url;
         }
 
-        resolve(context: Loader.LoaderContext): void {
+        resolve(context: LoaderContext): void {
             // IDs are globally unique
-            var object: Loader.EElement = context.ids[this.url];
+            var object: EElement = context.ids[this.url];
             if (object != null) {
                 this.target = object;
             } else {
@@ -73,9 +71,9 @@ import * as MathUtils from "../math"
     *   <element texture="xyz">
     */
     export class FxLink extends Link {
-        scope: Loader.EElement | undefined;
+        scope: EElement | undefined;
 
-        constructor(url: string, scope: Loader.EElement) {
+        constructor(url: string, scope: EElement) {
             super();
             this.url = url;
             this.scope = scope;
@@ -85,9 +83,9 @@ import * as MathUtils from "../math"
             return this.url;
         }
 
-        resolve(context: Loader.LoaderContext): void {
-            var scope: Loader.EElement | undefined = this.scope;
-            var object: Loader.EElement | undefined = undefined;
+        resolve(context: LoaderContext): void {
+            var scope: EElement | undefined = this.scope;
+            var object: EElement | undefined = undefined;
             // FX targets have a unique SID within a scope
             // If the target is not found in the current scope,
             // continue searching in the parent scope.
@@ -193,24 +191,24 @@ import * as MathUtils from "../math"
         *   @param sids SID parts.
         *   @returns The collada element the URL points to, or an error why it wasn't found
         */
-        static findSidTarget(url: string, root: Loader.EElement, sids: string[], context: Context): LinkResolveResult {
+        static findSidTarget(url: string, root: EElement, sids: string[], context: Context): LinkResolveResult {
             var result: LinkResolveResult = { result: undefined, warning: undefined };
             if (root == null) {
                 result.result = undefined;
                 result.warning = "Could not resolve SID target " + sids.join("/") + ", missing root element";
                 return result;
             }
-            var parentObject: Loader.EElement = root;
-            var childObject: Loader.EElement | undefined = undefined;
+            var parentObject: EElement = root;
+            var childObject: EElement | undefined = undefined;
             // For each SID part, perform a depth-first search
             for (var i: number = 0, ilen: number = sids.length; i < ilen; i++) {
                 var sid: string = sids[i];
                 // Initialize a queue for the search
-                var queue: Loader.EElement[] = [parentObject];
+                var queue: EElement[] = [parentObject];
                 // Dept-first search
                 while (queue.length !== 0) {
                     // Get front of search queue
-                    var front: Loader.EElement | undefined = queue.shift();
+                    var front: EElement | undefined = queue.shift();
                     if (front) {
                         // Stop if we found the target
                         if (front.sid === sid) {
@@ -218,10 +216,10 @@ import * as MathUtils from "../math"
                             break;
                         }
                         // Add all children to the back of the queue
-                        var frontChildren: Loader.EElement[] = front.sidChildren;
+                        var frontChildren: EElement[] = front.sidChildren;
                         if (frontChildren != null) {
                             for (var j: number = 0, jlen: number = frontChildren.length; j < jlen; j++) {
-                                var sidChild: Loader.EElement = frontChildren[j];
+                                var sidChild: EElement = frontChildren[j];
                                 queue.push(sidChild);
                             }
                         }
@@ -241,8 +239,8 @@ import * as MathUtils from "../math"
             return result;
         }
 
-        resolve(context: Loader.LoaderContext): void {
-            var object: Loader.EElement | undefined;
+        resolve(context: LoaderContext): void {
+            var object: EElement | undefined;
             if (this.id == null) {
                 context.log?.write("Could not resolve SID #" + this.url + ", link has no root ID", LogLevel.Warning);
                 return;

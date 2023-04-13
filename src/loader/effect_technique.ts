@@ -1,25 +1,27 @@
-import {Context} from "../context"
-import {LogLevel} from "../log"
-import * as Loader from "./loader"
-import * as Converter from "../converter/converter"
-import * as Exporter from "../exporter/exporter"
+import { Context } from "../context"
+import { LogLevel } from "../log"
+import { ColorOrTexture } from "./color_or_texture";
+import { LoaderContext } from "./context";
+import { EffectParam } from "./effect_param";
+import { EElement } from "./element";
+import { Link } from "./link";
+
 import * as Utils from "./utils"
-import * as MathUtils from "../math"
 
     /**
     *   An <technique> element.
     *
     */
-    export class EffectTechnique extends Loader.EElement {
-        params: Loader.EffectParam[] | undefined;
+    export class EffectTechnique extends EElement {
+        params: EffectParam[] | undefined;
         shading: string = "";
-        emission: Loader.ColorOrTexture | undefined;
-        ambient: Loader.ColorOrTexture | undefined;
-        diffuse: Loader.ColorOrTexture | undefined;
-        specular: Loader.ColorOrTexture | undefined;
-        reflective: Loader.ColorOrTexture | undefined;
-        transparent: Loader.ColorOrTexture | undefined;
-        bump: Loader.ColorOrTexture | undefined;
+        emission: ColorOrTexture | undefined;
+        ambient: ColorOrTexture | undefined;
+        diffuse: ColorOrTexture | undefined;
+        specular: ColorOrTexture | undefined;
+        reflective: ColorOrTexture | undefined;
+        transparent: ColorOrTexture | undefined;
+        bump: ColorOrTexture | undefined;
         shininess: number = 0;
         transparency: number = 0;
         reflectivity: number = 0;
@@ -32,15 +34,15 @@ import * as MathUtils from "../math"
             this.params = [];
         }
 
-        static fromLink(link: Loader.Link, context: Context): Loader.EffectTechnique | undefined{
-            return Loader.EElement._fromLink<Loader.EffectTechnique>(link, "EffectTechnique", context);
+        static fromLink(link: Link, context: Context): EffectTechnique | undefined{
+            return EElement._fromLink<EffectTechnique>(link, "EffectTechnique", context);
         }
 
         /**
         *   Parses a <technique> element.
         */
-        static parse(node: Node, parent: Loader.EElement, context: Loader.LoaderContext): Loader.EffectTechnique {
-            var result: Loader.EffectTechnique = new Loader.EffectTechnique();
+        static parse(node: Node, parent: EElement, context: LoaderContext): EffectTechnique {
+            var result: EffectTechnique = new EffectTechnique();
 
             result.sid = context.getAttributeAsString(node, "sid", undefined, false);
             context.registerFxTarget(result, parent);
@@ -52,10 +54,10 @@ import * as MathUtils from "../math"
                     case "lambert":
                     case "constant":
                         result.shading = child.nodeName;
-                        Loader.EffectTechnique.parseParam(child, result, "COMMON", context);
+                        EffectTechnique.parseParam(child, result, "COMMON", context);
                         break;
                     case "extra":
-                        Loader.EffectTechnique.parseExtra(child, result, context);
+                        EffectTechnique.parseExtra(child, result, context);
                         break;
                     default:
                         context.reportUnexpectedChild(child);
@@ -69,32 +71,32 @@ import * as MathUtils from "../math"
         *   Parses a <technique>/(<blinn>|<phong>|<lambert>|<constant>) element.
         *   In addition to <technique>, node may also be child of <technique>/<extra>
         */
-        static parseParam(node: Node, technique: Loader.EffectTechnique, profile: string, context: Loader.LoaderContext) {
+        static parseParam(node: Node, technique: EffectTechnique, profile: string, context: LoaderContext) {
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
                     case "newparam":
-                        technique.params?.push(Loader.EffectParam.parse(child, technique, context));
+                        technique.params?.push(EffectParam.parse(child, technique, context));
                         break;
                     case "emission":
-                        technique.emission = Loader.ColorOrTexture.parse(child, technique, context);
+                        technique.emission = ColorOrTexture.parse(child, technique, context);
                         break;
                     case "ambient":
-                        technique.ambient = Loader.ColorOrTexture.parse(child, technique, context);
+                        technique.ambient = ColorOrTexture.parse(child, technique, context);
                         break;
                     case "diffuse":
-                        technique.diffuse = Loader.ColorOrTexture.parse(child, technique, context);
+                        technique.diffuse = ColorOrTexture.parse(child, technique, context);
                         break;
                     case "specular":
-                        technique.specular = Loader.ColorOrTexture.parse(child, technique, context);
+                        technique.specular = ColorOrTexture.parse(child, technique, context);
                         break;
                     case "reflective":
-                        technique.reflective = Loader.ColorOrTexture.parse(child, technique, context);
+                        technique.reflective = ColorOrTexture.parse(child, technique, context);
                         break;
                     case "transparent":
-                        technique.transparent = Loader.ColorOrTexture.parse(child, technique, context);
+                        technique.transparent = ColorOrTexture.parse(child, technique, context);
                         break;
                     case "bump":
-                        technique.bump = Loader.ColorOrTexture.parse(child, technique, context);
+                        technique.bump = ColorOrTexture.parse(child, technique, context);
                         break;
                     case "shininess":
                         technique.shininess = context.getFloatContent(child.childNodes[1] || child.childNodes.item(0));
@@ -122,7 +124,7 @@ import * as MathUtils from "../math"
         /**
         *   Parses a <technique>/<extra> element.
         */
-        static parseExtra(node: Node, technique: Loader.EffectTechnique, context: Loader.LoaderContext) {
+        static parseExtra(node: Node, technique: EffectTechnique, context: LoaderContext) {
             if (technique == null) {
                 context.log.write("Ignored element <extra>, because there is no <technique>.", LogLevel.Warning);
                 return;
@@ -132,7 +134,7 @@ import * as MathUtils from "../math"
                 switch (child.nodeName) {
                     case "technique":
                         var profile: string = context.getAttributeAsString(child, "profile", undefined, true);
-                        Loader.EffectTechnique.parseParam(child, technique, profile, context);
+                        EffectTechnique.parseParam(child, technique, profile, context);
                         break;
                     default:
                         context.reportUnexpectedChild(child);

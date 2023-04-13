@@ -1,14 +1,13 @@
-import {Context} from "../context"
-import {LogLevel} from "../log"
-import * as Loader from "./loader"
-import * as Converter from "../converter/converter"
-import * as Exporter from "../exporter/exporter"
-import * as Utils from "./utils"
-import * as MathUtils from "../math"
+import { LogLevel } from "../log"
+import { LoaderContext } from "./context";
+import { EElement } from "./element";
+import { Input } from "./input";
 
-    export class Joints extends Loader.EElement {
-        joints: Loader.Input | undefined;
-        invBindMatrices: Loader.Input | undefined;
+import * as Utils from "./utils"
+
+    export class Joints extends EElement {
+        joints: Input | undefined;
+        invBindMatrices: Input | undefined;
 
         constructor() {
             super();
@@ -18,16 +17,16 @@ import * as MathUtils from "../math"
         /**
         *   Parses a <joints> element.
         */
-        static parse(node: Node, context: Loader.LoaderContext): Loader.Joints {
-            var result: Loader.Joints = new Loader.Joints();
+        static parse(node: Node, context: LoaderContext): Joints {
+            var result: Joints = new Joints();
 
-            var inputs: Loader.Input[] = [];
+            var inputs: Input[] = [];
 
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
                     case "input":
-                        var input: Loader.Input = Loader.Input.parse(child, false, context);
-                        Loader.Joints.addInput(result, input, context);
+                        var input: Input = Input.parse(child, false, context);
+                        Joints.addInput(result, input, context);
                         inputs.push(input);
                         break;
                     default:
@@ -38,7 +37,7 @@ import * as MathUtils from "../math"
             return result;
         }
 
-        static addInput(joints: Loader.Joints, input: Loader.Input, context: Loader.LoaderContext) {
+        static addInput(joints: Joints, input: Input, context: LoaderContext) {
             switch (input.semantic) {
                 case "JOINT":
                     joints.joints = input;

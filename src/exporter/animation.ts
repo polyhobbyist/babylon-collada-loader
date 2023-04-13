@@ -1,15 +1,16 @@
 import {Context} from "../context"
 import {LogLevel} from "../log"
-import * as Loader from "../loader/loader"
-import * as Converter from "../converter/converter"
-import * as Exporter from "./exporter"
+
 import * as Utils from "./utils"
 import * as MathUtils from "../math"
 import {AnimationTrack} from "./animation_track"
+import { AnimationData } from "../converter/animation_data"
+import { ExporterContext } from "./context"
+import { AnimationJSON } from "./format"
 
     export class Animation {
 
-        static toJSON(animation: Converter.AnimationData, context: Exporter.ExporterContext): Exporter.AnimationJSON {
+        static toJSON(animation: AnimationData, context: ExporterContext): AnimationJSON {
             if (!animation) {
                 return {
                     name: "",

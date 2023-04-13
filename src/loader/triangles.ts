@@ -1,18 +1,16 @@
-import {Context} from "../context"
-import {LogLevel} from "../log"
-import * as Loader from "./loader"
-import * as Converter from "../converter/converter"
-import * as Exporter from "../exporter/exporter"
-import * as Utils from "./utils"
-import * as MathUtils from "../math"
 
-    export class Triangles extends Loader.EElement {
+import { LoaderContext } from "./context"
+import { EElement } from "./element"
+import { Input } from "./input"
+import * as Utils from "./utils"
+
+    export class Triangles extends EElement {
         /** "triangles", "polylist", or "polygons" */
         type: string = "";
         count: number = 0;
         /** A material "symbol", bound by <bind_material> */
         material: string = "";
-        inputs: Loader.Input[] = [];
+        inputs: Input[] = [];
         indices: Uint32Array = new Uint32Array();
         vcount: Uint32Array = new Uint32Array();
 
@@ -24,8 +22,8 @@ import * as MathUtils from "../math"
         /**
         *   Parses a <triangles> element.
         */
-        static parse(node: Node, context: Loader.LoaderContext): Loader.Triangles {
-            var result: Loader.Triangles = new Loader.Triangles();
+        static parse(node: Node, context: LoaderContext): Triangles {
+            var result: Triangles = new Triangles();
 
             result.name = context.getAttributeAsString(node, "name", undefined, false);
             result.material = context.getAttributeAsString(node, "material", undefined, false);
@@ -35,7 +33,7 @@ import * as MathUtils from "../math"
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
                     case "input":
-                        result.inputs.push(Loader.Input.parse(child, true, context));
+                        result.inputs.push(Input.parse(child, true, context));
                         break;
                     case "vcount":
                         result.vcount = context.getUintsContent(child);

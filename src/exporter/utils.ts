@@ -1,6 +1,3 @@
-import * as Exporter from "./exporter"
-
-
 
     export class Utils {
 
@@ -28,7 +25,7 @@ import * as Exporter from "./exporter"
         }
 
         static bufferToDataURI(buf: Uint8Array, mime?: string): string {
-            var base64: string = Exporter.Utils.bufferToString(buf);
+            var base64: string = Utils.bufferToString(buf);
 
             if (!mime) {
                 mime = "application/octet-stream";

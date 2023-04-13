@@ -1,10 +1,11 @@
-import * as Loader from "./loader"
-import * as Utils from "./utils"
+import { LoaderContext } from "./context";
+import { EElement } from "./element";
+import * as Utils from "./utils";
 
     /**
     *   An <asset> element.
     */
-    export class Asset extends Loader.EElement {
+    export class Asset extends EElement {
         unit: number = 0;
         upAxis: string = "";
 
@@ -13,8 +14,8 @@ import * as Utils from "./utils"
             this._className += "Asset|";
         }
 
-        static parse(node: Node, context: Loader.LoaderContext): Loader.Asset {
-            var result: Loader.Asset = new Loader.Asset();
+        static parse(node: Node, context: LoaderContext): Asset {
+            var result: Asset = new Asset();
 
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {

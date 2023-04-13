@@ -1,24 +1,22 @@
-import {Context} from "../context"
-import {LogLevel} from "../log"
-import * as Loader from "./loader"
-import * as Converter from "../converter/converter"
-import * as Exporter from "../exporter/exporter"
+
+import { LoaderContext } from "./context";
+import { EElement } from "./element";
+import { Link } from "./link";
 import * as Utils from "./utils"
-import * as MathUtils from "../math"
 
     /**
     *   A <scene> element.
     */
-    export class Scene extends Loader.EElement {
-        instance: Loader.Link | undefined = undefined;
+    export class Scene extends EElement {
+        instance: Link | undefined = undefined;
 
         constructor() {
             super();
             this._className += "Scene|";
         }
 
-        static parse(node: Node, context: Loader.LoaderContext): Loader.Scene {
-            var result: Loader.Scene = new Loader.Scene();
+        static parse(node: Node, context: LoaderContext): Scene {
+            var result: Scene = new Scene();
 
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {

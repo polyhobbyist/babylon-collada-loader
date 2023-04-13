@@ -1,17 +1,18 @@
-import {Context} from "../context"
-import {LogLevel} from "../log"
-import * as Loader from "./loader"
-import * as Converter from "../converter/converter"
-import * as Exporter from "../exporter/exporter"
-import * as Utils from "./utils"
-import * as MathUtils from "../math"
+import { Context } from "../context"
+import { LogLevel } from "../log"
+import { LoaderContext } from "./context";
+import { EElement } from "./element";
+import { Input } from "./input";
+import { Link } from "./link";
 
-    export class Sampler extends Loader.EElement {
-        input: Loader.Input | undefined;
-        outputs: Loader.Input[];
-        inTangents: Loader.Input[];
-        outTangents: Loader.Input[];
-        interpolation: Loader.Input | undefined;
+import * as Utils from "./utils"
+
+    export class Sampler extends EElement {
+        input: Input | undefined;
+        outputs: Input[];
+        inTangents: Input[];
+        outTangents: Input[];
+        interpolation: Input | undefined;
 
         constructor() {
             super();
@@ -21,15 +22,15 @@ import * as MathUtils from "../math"
             this.outTangents = [];
         }
 
-        static fromLink(link: Loader.Link, context: Context): Loader.Sampler | undefined{
-            return Loader.EElement._fromLink<Loader.Sampler>(link, "Sampler", context);
+        static fromLink(link: Link, context: Context): Sampler | undefined{
+            return EElement._fromLink<Sampler>(link, "Sampler", context);
         }
 
         /**
         *   Parses a <sampler> element.
         */
-        static parse(node: Node, context: Loader.LoaderContext): Loader.Sampler {
-            var result: Loader.Sampler = new Loader.Sampler();
+        static parse(node: Node, context: LoaderContext): Sampler {
+            var result: Sampler = new Sampler();
 
             result.id = context.getAttributeAsString(node, "id", undefined, false);
             context.registerUrlTarget(result, false);
@@ -37,8 +38,8 @@ import * as MathUtils from "../math"
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
                     case "input":
-                        var input: Loader.Input = Loader.Input.parse(child, false, context);
-                        Loader.Sampler?.addInput(result, input, context);
+                        var input: Input = Input.parse(child, false, context);
+                        Sampler?.addInput(result, input, context);
                         break;
                     default:
                         context.reportUnexpectedChild(child);
@@ -48,7 +49,7 @@ import * as MathUtils from "../math"
             return result;
         }
 
-        static addInput(sampler: Loader.Sampler, input: Loader.Input, context: Loader.LoaderContext) {
+        static addInput(sampler: Sampler, input: Input, context: LoaderContext) {
             switch (input.semantic) {
                 case "INPUT":
                     sampler.input = input;

@@ -1,16 +1,14 @@
 
 import * as COLLADAContext from "../context"
-import {Log, LogLevel} from "../log"
-import * as Loader from "./loader"
-import * as Converter from "../converter/converter"
-import * as Exporter from "../exporter/exporter"
-import * as Utils from "./utils"
-import * as MathUtils from "../math"
+import { Log, LogLevel } from "../log"
+import { EElement } from "./element";
+import { Link, UrlLink, SidLink, FxLink } from "./link";
+
 
 
     export class LoaderContext extends COLLADAContext.Context {
-        ids: { [s: string]: Loader.EElement; }
-        links: Loader.Link[] | undefined;
+        ids: { [s: string]: EElement; }
+        links: Link[] | undefined;
         totalBytes: number = 0;
         loadedBytes: number = 0;
 
@@ -109,25 +107,25 @@ import * as MathUtils from "../math"
             }
         }
 
-        createUrlLink(url: string): Loader.UrlLink {
-            var link: Loader.UrlLink = new Loader.UrlLink(url);
+        createUrlLink(url: string): UrlLink {
+            var link: UrlLink = new UrlLink(url);
             this.links?.push(link);
             return link;
         }
 
-        createSidLink(url: string, parentId: string): Loader.SidLink {
-            var link: Loader.SidLink = new Loader.SidLink(url, parentId);
+        createSidLink(url: string, parentId: string): SidLink {
+            var link: SidLink = new SidLink(url, parentId);
             this.links?.push(link);
             return link;
         }
 
-        createFxLink(url: string, scope: Loader.EElement): Loader.FxLink {
-            var link: Loader.FxLink = new Loader.FxLink(url, scope);
+        createFxLink(url: string, scope: EElement): FxLink {
+            var link: FxLink = new FxLink(url, scope);
             this.links?.push(link);
             return link;
         }
 
-        getAttributeAsUrlLink(el: Node, name: string, required: boolean): Loader.UrlLink | undefined{
+        getAttributeAsUrlLink(el: Node, name: string, required: boolean): UrlLink | undefined{
             var attr = this.getAttributeNamed(el, name);
             if (attr) {
                 return this.createUrlLink(attr.value);
@@ -139,7 +137,7 @@ import * as MathUtils from "../math"
             }
         }
 
-        getAttributeAsSidLink(el: Node, name: string, parentId: string, required: boolean): Loader.SidLink | undefined {
+        getAttributeAsSidLink(el: Node, name: string, parentId: string, required: boolean): SidLink | undefined {
             var attr = this.getAttributeNamed(el, name);
             if (attr) {
                 return this.createSidLink(attr.value, parentId);
@@ -151,7 +149,7 @@ import * as MathUtils from "../math"
             }
         }
 
-        getAttributeAsFxLink(el: Node, name: string, scope: Loader.EElement, required: boolean): Loader.FxLink | undefined{
+        getAttributeAsFxLink(el: Node, name: string, scope: EElement, required: boolean): FxLink | undefined{
             var attr = this.getAttributeNamed(el, name);
             if (attr) {
                 return this.createFxLink(attr.value, scope);
@@ -239,7 +237,7 @@ import * as MathUtils from "../math"
             }
         }
 
-        registerUrlTarget(object: Loader.EElement, needsId: boolean) {
+        registerUrlTarget(object: EElement, needsId: boolean) {
             var id: string = object.id;
             // Abort if the object has no ID
             if (id == null) {
@@ -257,7 +255,7 @@ import * as MathUtils from "../math"
             this.ids[id] = object;
         }
 
-        registerFxTarget(object: Loader.EElement, scope: Loader.EElement) {
+        registerFxTarget(object: EElement, scope: EElement) {
             var sid: string = object.sid;
             if (sid == null) {
                 this.log?.write("Cannot add a FX target: object has no SID.", LogLevel.Error);
@@ -272,7 +270,7 @@ import * as MathUtils from "../math"
             scope.fxChildren[sid] = object;
         }
 
-        registerSidTarget(object: Loader.EElement, parent: Loader.EElement) {
+        registerSidTarget(object: EElement, parent: EElement) {
             // SID links are registered within the parent scope
             parent.sidChildren.push(object);
         }
@@ -308,7 +306,7 @@ import * as MathUtils from "../math"
             if (this.links) {
                 var linksLen: number = this.links.length;
                 for (var i = 0; i < linksLen; ++i) {
-                    var link: Loader.Link = this.links[i];
+                    var link: Link = this.links[i];
                     link.resolve(this);
                 }
             }

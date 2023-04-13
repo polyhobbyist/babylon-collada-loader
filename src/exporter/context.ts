@@ -1,16 +1,15 @@
 import * as COLLADAContext from "../context"
 import {Log, LogLevel} from "../log"
-import * as Loader from "../loader/loader"
-import * as Converter from "../converter/converter"
-import * as Exporter from "./exporter"
+
 import * as Utils from "./utils"
 import * as MathUtils from "../math"
 import {AnimationTrack} from "./animation_track"
+import { DataChunk } from "./data_chunk"
 
 
     export class ExporterContext extends COLLADAContext.Context {
         log: Log;
-        chunks: Exporter.DataChunk[];
+        chunks: DataChunk[];
         chunk_data: Uint8Array[];
         bytes_written: number;
 
@@ -22,7 +21,7 @@ import {AnimationTrack} from "./animation_track"
             this.bytes_written = 0;
         }
 
-        registerChunk(chunk: Exporter.DataChunk) {
+        registerChunk(chunk: DataChunk) {
             this.chunks.push(chunk);
             chunk.byte_offset = this.bytes_written;
             this.bytes_written += chunk.getBytesCount();
@@ -35,7 +34,7 @@ import {AnimationTrack} from "./animation_track"
 
             // Copy data from all chunks
             for (var i: number = 0; i < this.chunks.length; ++i) {
-                var chunk: Exporter.DataChunk = this.chunks[i];
+                var chunk: DataChunk = this.chunks[i];
                 var chunk_data: Uint8Array = chunk.getDataView();
                 var chunk_data_length: number = chunk_data.length;
                 var chunk_data_offet: number = chunk.byte_offset;

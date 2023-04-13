@@ -1,11 +1,21 @@
 import { promises as fs } from 'fs';
 import * as BABYLON from "babylonjs";
-import * as Exporter from "./exporter"
-import * as Converter from "../converter/converter"
 import {RMXModelLoader} from "../model-loader"
 import {RMXModel} from "../model"
 import * as Utils from "./utils"
 import {Log, LogLevel, LogConsole, LogCallback, LogFilter} from "../log"
+import { GeometryChunk } from '../converter/geometry_chunk';
+import { ExporterContext } from './context';
+import { MaterialJSON, GeometryJSON, InfoJSON, BoneJSON, AnimationJSON } from './format';
+import * as ConverterDocument from '../converter/file';
+import * as ExporterDocument from '../exporter/document';
+import { Geometry } from '../converter/geometry';
+import { Material } from './material';
+import { BoundingBox } from './geometry';
+import { Skeleton } from './skeleton';
+import { Animation } from './animation';
+import * as ExporterGeometry from "../exporter/geometry"
+import { Document } from './document';
 
     export class ColladaExporter {
         log: Log;
@@ -14,8 +24,8 @@ import {Log, LogLevel, LogConsole, LogCallback, LogFilter} from "../log"
             this.log = new LogConsole();
         }
 
-        export(doc: Converter.Document): Exporter.Document {
-            var context: Exporter.ExporterContext = new Exporter.ExporterContext(this.log);
+        export(doc: ConverterDocument.Document): ExporterDocument.Document {
+            var context: ExporterContext = new ExporterContext(this.log);
 
             if (!doc) {
                 context.log.write("No document to convert", LogLevel.Warning);
@@ -30,18 +40,18 @@ import {Log, LogLevel, LogConsole, LogCallback, LogFilter} from "../log"
             }
 
             // Geometry and materials
-            var converter_materials: Converter.Material[] = [];
-            var materials: Exporter.MaterialJSON[] = [];
-            var converter_geometry: Converter.Geometry = doc.geometries[0];
-            var chunks: Exporter.GeometryJSON[] = [];
+            var converter_materials: Material[] = [];
+            var materials: MaterialJSON[] = [];
+            var converter_geometry: Geometry = doc.geometries[0];
+            var chunks: GeometryJSON[] = [];
 
             for (var c: number = 0; c < converter_geometry.chunks.length; ++c) {
-                var chunk: Converter.GeometryChunk = converter_geometry.chunks[c];
+                var chunk: GeometryChunk = converter_geometry.chunks[c];
 
                 // Create the material, if it does not exist yet
                 var material_index: number = converter_materials.indexOf(chunk.material);
                 if (material_index === -1) {
-                    var material: Exporter.MaterialJSON = Exporter.Material.toJSON(chunk.material, context);
+                    var material: MaterialJSON = Material.toJSON(chunk.material, context);
                     material_index = materials.length;
 
                     converter_materials.push(chunk.material);
@@ -49,17 +59,17 @@ import {Log, LogLevel, LogConsole, LogCallback, LogFilter} from "../log"
                 }
 
                 // Create the geometry
-                chunks.push(Exporter.Geometry.toJSON(chunk, material_index, context));
+                chunks.push(ExporterGeometry.Geometry.toJSON(chunk, material_index, context));
             }
 
             // Result
-            var result: Exporter.Document = new Exporter.Document();
+            var result: Document = new Document();
 
-            var info: Exporter.InfoJSON = {
-                bounding_box: Exporter.BoundingBox.toJSON(converter_geometry.boundingBox)
+            var info: InfoJSON = {
+                bounding_box: BoundingBox.toJSON(converter_geometry.boundingBox)
             };
-            var bones: Exporter.BoneJSON[] = Exporter.Skeleton.toJSON(converter_geometry.getSkeleton(), context);
-            var animations: Exporter.AnimationJSON[] = doc.resampled_animations.map((e) => Exporter.Animation.toJSON(e, context));
+            var bones: BoneJSON[] = Skeleton.toJSON(converter_geometry.getSkeleton(), context);
+            var animations: AnimationJSON[] = doc.resampled_animations.map((e) => Animation.toJSON(e, context));
 
             // Assemble result: JSON part
             result.json = {
@@ -72,7 +82,7 @@ import {Log, LogLevel, LogConsole, LogCallback, LogFilter} from "../log"
 
             // Assemble result: Binary data part
             result.data = context.assembleData();
-            //result.json.data = Exporter.Utils.bufferToString(result.data);
+            //result.json.data = Utils.bufferToString(result.data);
 
             return result;
         }

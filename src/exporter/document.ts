@@ -1,7 +1,7 @@
-import * as Exporter from "./exporter"
+import { DocumentJSON } from "./format";
 
     export class Document {
-        json: Exporter.DocumentJSON;
+        json: DocumentJSON;
         data: Uint8Array;
 
         constructor() {

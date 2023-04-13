@@ -1,10 +1,7 @@
-import {Context} from "../context"
-import {LogLevel} from "../log"
-import * as Loader from "./loader"
-import * as Converter from "../converter/converter"
-import * as Exporter from "../exporter/exporter"
-import * as Utils from "./utils"
-import * as MathUtils from "../math"
+import { Context } from "../context"
+import { LogLevel } from "../log"
+import { Link } from "./link";
+
 
     /**
     *   Base class for any collada element.
@@ -20,11 +17,11 @@ import * as MathUtils from "../math"
         /** Collada SID/FX adressing: identifier */
         sid: string = "";
         /** Collada FX adressing: parent element */
-        fxParent: Loader.EElement | undefined;
+        fxParent: EElement | undefined;
         /** Collada FX adressing: child elements */
-        fxChildren: { [sid: string]: Loader.EElement; };
+        fxChildren: { [sid: string]: EElement; };
         /** Collada SID adressing: child elements */
-        sidChildren: Loader.EElement[];
+        sidChildren: EElement[];
         /** Name of the element. Not used for any adressing. */
         name: string = "";
 
@@ -35,11 +32,11 @@ import * as MathUtils from "../math"
             this._className = "|Element|";
         }
 
-        static fromLink(link: Loader.Link, context: Context): Loader.EElement | undefined{
-            return Loader.EElement._fromLink<Loader.EElement>(link, "Element", context);
+        static fromLink(link: Link, context: Context): EElement | undefined{
+            return EElement._fromLink<EElement>(link, "Element", context);
         }
 
-        static _fromLink<T extends Loader.EElement>(link: Loader.Link, typeName: string, context: Context): T | undefined{
+        static _fromLink<T extends EElement>(link: Link, typeName: string, context: Context): T | undefined{
             if (!link) {
                 return undefined;
             } else if (!link.target) {

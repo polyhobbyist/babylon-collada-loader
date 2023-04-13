@@ -1,9 +1,11 @@
-import * as Loader from "../loader/loader"
-import * as Utils from "./utils"
+import { CameraParam } from "./camera_param";
+import { LoaderContext } from "./context";
+import { EElement } from "./element";
+import * as Utils from "./utils";
 
-    export class Camera extends Loader.EElement {
+    export class Camera extends EElement {
         type: string = "";
-        params: { [s: string]: Loader.CameraParam; }
+        params: { [s: string]: CameraParam; }
 
         constructor() {
             super();
@@ -14,8 +16,8 @@ import * as Utils from "./utils"
         /**
         *   Parses a <camera> element.
         */
-        static parse(node: Node, context: Loader.LoaderContext): Loader.Camera {
-            var result: Loader.Camera = new Loader.Camera();
+        static parse(node: Node, context: LoaderContext): Camera {
+            var result: Camera = new Camera();
 
             result.id = context.getAttributeAsString(node, "id", undefined, true);
             result.name = context.getAttributeAsString(node, "name", undefined, false);
@@ -27,7 +29,7 @@ import * as Utils from "./utils"
                         context.reportUnhandledChild(child);
                         break;
                     case "optics":
-                        Loader.Camera.parseOptics(child, result, context);
+                        Camera.parseOptics(child, result, context);
                         break;
                     case "imager":
                         context.reportUnhandledChild(child);
@@ -46,12 +48,12 @@ import * as Utils from "./utils"
         /**
         *   Parses a <camera>/<optics> element.
         */
-        static parseOptics(node: Node, camera: Loader.Camera, context: Loader.LoaderContext) {
+        static parseOptics(node: Node, camera: Camera, context: LoaderContext) {
 
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
                     case "technique_common":
-                        Loader.Camera.parseTechniqueCommon(child, camera, context);
+                        Camera.parseTechniqueCommon(child, camera, context);
                         break;
                     case "technique":
                         context.reportUnhandledChild(child);
@@ -69,15 +71,15 @@ import * as Utils from "./utils"
         /**
         *   Parses a <camera>/<optics>/<technique_common> element.
         */
-        static parseTechniqueCommon(node: Node, camera: Loader.Camera, context: Loader.LoaderContext) {
+        static parseTechniqueCommon(node: Node, camera: Camera, context: LoaderContext) {
 
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
                     case "orthographic":
-                        Loader.Camera.parseParams(child, camera, context);
+                        Camera.parseParams(child, camera, context);
                         break;
                     case "perspective":
-                        Loader.Camera.parseParams(child, camera, context);
+                        Camera.parseParams(child, camera, context);
                         break;
                     default:
                         context.reportUnexpectedChild(child);
@@ -89,7 +91,7 @@ import * as Utils from "./utils"
         /**
         *   Parses a <camera>/<optics>/<technique_common>/(<orthographic>|<perspective>) element.
         */
-        static parseParams(node: Node, camera: Loader.Camera, context: Loader.LoaderContext) {
+        static parseParams(node: Node, camera: Camera, context: LoaderContext) {
 
             camera.type = node.nodeName;
 
@@ -102,7 +104,7 @@ import * as Utils from "./utils"
                     case "aspect_ratio":
                     case "znear":
                     case "zfar":
-                        var param: Loader.CameraParam = Loader.CameraParam.parse(child, context);
+                        var param: CameraParam = CameraParam.parse(child, context);
                         context.registerSidTarget(param, camera);
                         camera.params[param.name] = param;
                         break;
@@ -117,11 +119,11 @@ import * as Utils from "./utils"
         }
     }
 
-    export class CameraLibrary extends Loader.EElement {
+    export class CameraLibrary extends EElement {
         children: Camera[] = [];
 
 
-        static parse(node: Node, context: Loader.LoaderContext): CameraLibrary {
+        static parse(node: Node, context: LoaderContext): CameraLibrary {
             var result: CameraLibrary = new CameraLibrary();
 
             Utils.forEachChild(node, function (child: Node) {

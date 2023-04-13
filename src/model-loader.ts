@@ -1,8 +1,6 @@
 import {Context} from "./context"
+import { DataChunkJSON, GeometryJSON, DocumentJSON, BoneJSON, AnimationTrackJSON, AnimationJSON, MaterialJSON } from "./exporter/format";
 import {LogLevel} from "./log"
-import * as Loader from "./loader/loader"
-import * as Converter from "./converter/converter"
-import * as Exporter from "./exporter/exporter"
 import * as Model from "./model"
 import * as ModelAnimation from "./model-animation"
 
@@ -14,7 +12,7 @@ export class RMXModelLoader {
     constructor() {
     }
 
-    private loadFloatData(json: Exporter.DataChunkJSON, data: ArrayBuffer): Float32Array  | undefined{
+    private loadFloatData(json: DataChunkJSON, data: ArrayBuffer): Float32Array  | undefined{
         if (json) {
             return new Float32Array(data, json.byte_offset, json.count * json.stride);
         } else {
@@ -22,7 +20,7 @@ export class RMXModelLoader {
         }
     }
 
-    private loadUint8Data(json: Exporter.DataChunkJSON, data: ArrayBuffer): Uint8Array | undefined{
+    private loadUint8Data(json: DataChunkJSON, data: ArrayBuffer): Uint8Array | undefined{
         if (json) {
             return new Uint8Array(data, json.byte_offset, json.count * json.stride);
         } else {
@@ -30,7 +28,7 @@ export class RMXModelLoader {
         }
     }
 
-    private loadUint32Data(json: Exporter.DataChunkJSON, data: ArrayBuffer): Uint32Array {
+    private loadUint32Data(json: DataChunkJSON, data: ArrayBuffer): Uint32Array {
         if (json) {
             return new Uint32Array(data, json.byte_offset, json.count * json.stride);
         } else {
@@ -38,7 +36,7 @@ export class RMXModelLoader {
         }
     }
 
-    private loadModelChunk(json: Exporter.GeometryJSON, data: ArrayBuffer): Model.RMXModelChunk {
+    private loadModelChunk(json: GeometryJSON, data: ArrayBuffer): Model.RMXModelChunk {
         var result = new Model.RMXModelChunk;
 
         result.name = json.name;
@@ -60,7 +58,7 @@ export class RMXModelLoader {
         return result;
     }
 
-    loadModel(json: Exporter.DocumentJSON, data: ArrayBuffer): Model.RMXModel {
+    loadModel(json: DocumentJSON, data: ArrayBuffer): Model.RMXModel {
         var result = new Model.RMXModel;
 
         // Load geometry
@@ -78,7 +76,7 @@ export class RMXModelLoader {
         return result;
     }
 
-    private loadBone(json: Exporter.BoneJSON, data: ArrayBuffer): Model.RMXBone {
+    private loadBone(json: BoneJSON, data: ArrayBuffer): Model.RMXBone {
         if (json == null) {
             return null;
         }
@@ -96,7 +94,7 @@ export class RMXModelLoader {
         return result;
     }
 
-    private loadSkeleton(json: Exporter.DocumentJSON, data: ArrayBuffer): Model.RMXSkeleton {
+    private loadSkeleton(json: DocumentJSON, data: ArrayBuffer): Model.RMXSkeleton {
         if (json.bones == null || json.bones.length == 0) {
             return null;
         }
@@ -108,7 +106,7 @@ export class RMXModelLoader {
         return result;
     }
 
-    private loadAnimationTrack(json: Exporter.AnimationTrackJSON, data: ArrayBuffer): Model.RMXAnimationTrack {
+    private loadAnimationTrack(json: AnimationTrackJSON, data: ArrayBuffer): Model.RMXAnimationTrack {
         if (json == null) {
             return null;
         }
@@ -121,7 +119,7 @@ export class RMXModelLoader {
         return result;
     }
 
-    private loadAnimation(json: Exporter.AnimationJSON, data: ArrayBuffer): Model.RMXAnimation {
+    private loadAnimation(json: AnimationJSON, data: ArrayBuffer): Model.RMXAnimation {
         if (json == null) {
             return null;
         }
@@ -135,7 +133,7 @@ export class RMXModelLoader {
         return result;
     }
 
-    private loadMaterial(json: Exporter.MaterialJSON, data: ArrayBuffer): Model.RMXMaterial {
+    private loadMaterial(json: MaterialJSON, data: ArrayBuffer): Model.RMXMaterial {
         var result = new Model.RMXMaterial;
         result.diffuse = json.diffuse;
         result.specular = json.specular;

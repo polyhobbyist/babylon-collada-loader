@@ -1,7 +1,6 @@
 import {Log, LogLevel} from "../log"
-import * as Loader from "../loader/loader"
-import * as Converter from "../converter/converter"
-import * as Exporter from "./exporter"
+import { ExporterContext } from "./context";
+import { DataChunkJSON } from "./format";
 
 
 
@@ -26,12 +25,12 @@ import * as Exporter from "./exporter"
             return this.data.length * this.bytes_per_element;
         }
 
-        static toJSON(chunk: DataChunk): Exporter.DataChunkJSON {
+        static toJSON(chunk: DataChunk): DataChunkJSON {
             if (!chunk || !chunk.type) {
                 chunk.type = "";
             }
 
-            var result: Exporter.DataChunkJSON = {
+            var result: DataChunkJSON = {
                 type: chunk.type,
                 byte_offset: chunk.byte_offset,
                 stride: chunk.stride,
@@ -41,8 +40,8 @@ import * as Exporter from "./exporter"
             return result;
         }
 
-        static create(data: any, stride: number, context: Exporter.ExporterContext): Exporter.DataChunk{
-            var result: Exporter.DataChunk = new Exporter.DataChunk();
+        static create(data: any, stride: number, context: ExporterContext): DataChunk{
+            var result: DataChunk = new DataChunk();
             if (!data) {
                 return result;
             }

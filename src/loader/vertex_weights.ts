@@ -1,17 +1,16 @@
-import {Context} from "../context"
-import {LogLevel} from "../log"
-import * as Loader from "./loader"
-import * as Converter from "../converter/converter"
-import * as Exporter from "../exporter/exporter"
-import * as Utils from "./utils"
-import * as MathUtils from "../math"
+import { LogLevel } from "../log"
 
-    export class VertexWeights extends Loader.EElement {
-        inputs: Loader.Input[];
+import { LoaderContext } from "./context"
+import { EElement } from "./element"
+import { Input } from "./input"
+import * as Utils from "./utils"
+
+    export class VertexWeights extends EElement {
+        inputs: Input[];
         vcount: Int32Array = new Int32Array();
         v: Int32Array = new Int32Array();
-        joints: Loader.Input | undefined = undefined;
-        weights: Loader.Input | undefined = undefined;
+        joints: Input | undefined = undefined;
+        weights: Input | undefined = undefined;
         count: number = 0;
 
         constructor() {
@@ -23,16 +22,16 @@ import * as MathUtils from "../math"
         /**
         *   Parses a <vertex_weights> element.
         */
-        static parse(node: Node, context: Loader.LoaderContext): Loader.VertexWeights {
-            var result: Loader.VertexWeights = new Loader.VertexWeights();
+        static parse(node: Node, context: LoaderContext): VertexWeights {
+            var result: VertexWeights = new VertexWeights();
 
             result.count = context.getAttributeAsInt(node, "count", 0, true);
 
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
                     case "input":
-                        var input: Loader.Input = Loader.Input.parse(child, true, context);
-                        Loader.VertexWeights.addInput(result, input, context);
+                        var input: Input = Input.parse(child, true, context);
+                        VertexWeights.addInput(result, input, context);
                         break;
                     case "vcount":
                         result.vcount = context.getIntsContent(child);
@@ -48,7 +47,7 @@ import * as MathUtils from "../math"
             return result;
         }
 
-        static addInput(weights: Loader.VertexWeights, input: Loader.Input, context: Loader.LoaderContext) {
+        static addInput(weights: VertexWeights, input: Input, context: LoaderContext) {
             switch (input.semantic) {
                 case "JOINT":
                     weights.joints = input;

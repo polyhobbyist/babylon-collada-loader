@@ -1,13 +1,12 @@
 import {Context} from "./context"
+import { LoaderContext } from "./loader/context";
 import {Log, LogLevel, LogConsole} from "./log"
-import * as Loader from "./loader/loader"
-import * as Converter from "./converter/converter"
-import * as Exporter from "./exporter/exporter"
+import {Document} from "./loader/document"
 import * as BABYLON from "babylonjs";
 
 
 export class ColladaLoader {
-        onFinished: ((id: string, doc?: Loader.Document) => void) | undefined;
+        onFinished: ((id: string, doc?: Document) => void) | undefined;
         onProgress: ((id: string, loaded: number, total: number) => void) | undefined;
         log: Log;
 
@@ -15,36 +14,37 @@ export class ColladaLoader {
             this.log = new LogConsole();
         }
 
-        private _reportError(id: string, context: Loader.LoaderContext) {
+        private _reportError(id: string, context: LoaderContext) {
             if (this.onFinished) {
                 this.onFinished(id, undefined);
             }
         }
 
-        private _reportSuccess(id: string, doc: Loader.Document, context: Loader.LoaderContext) {
+        private _reportSuccess(id: string, doc: Document, context: LoaderContext) {
             if (this.onFinished) {
                 this.onFinished(id, doc);
             }
         }
 
-        private _reportProgress(id: string, context: Loader.LoaderContext) {
+        private _reportProgress(id: string, context: LoaderContext) {
             if (this.onProgress) {
                 this.onProgress(id, context.loadedBytes, context.totalBytes);
             }
         }
 
-        loadFromXML(id: string, doc: XMLDocument): Loader.Document {
-            var context: Loader.LoaderContext = new Loader.LoaderContext(this.log);
+        loadFromXML(id: string, doc: XMLDocument): Document {
+            var context: LoaderContext = new LoaderContext(this.log);
             return this._loadFromXML(id, doc, context);
         }
 
-        private _loadFromXML(id: string, doc: XMLDocument, context: Loader.LoaderContext): Loader.Document | undefined {
-            var result: Loader.Document | undefined = undefined;
+        private _loadFromXML(id: string, doc: XMLDocument, context: LoaderContext): Document | undefined {
+            var result: Document | undefined = undefined;
             try {
-                result = Loader.Document.parse(doc, context);
+                result = Document.parse(doc, context);
                 context.resolveAllLinks();
             } catch (err) {
-                context.log.write(err.message, LogLevel.Exception);
+                context.log.write(err.message + "\n" + err.stack, LogLevel.Exception);
+                context.log.write(err.message + "\n" + err.stack, LogLevel.Error);
                 this._reportError(id, context);
                 return undefined;
             }
@@ -53,7 +53,7 @@ export class ColladaLoader {
         }
 
         loadFromURL(id: string, url: string) {
-            var context: Loader.LoaderContext = new Loader.LoaderContext(this.log);
+            var context: LoaderContext = new LoaderContext(this.log);
             var loader: ColladaLoader = this;
 
             if (document != null && document.implementation != null && document.implementation.createDocument != null) {
@@ -67,7 +67,7 @@ export class ColladaLoader {
                     if (req.readyState === 4) {
                         if (req.status === 0 || req.status === 200) {
                             if (req.responseXML) {
-                                var result: Loader.Document = Loader.Document.parse(req.responseXML, context);
+                                var result: Document = Document.parse(req.responseXML, context);
                                 loader._reportSuccess(id, result, context);
                             } else {
                                 context.log.write("Empty or non-existing file " + url + ".", LogLevel.Error);

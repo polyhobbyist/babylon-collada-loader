@@ -1,11 +1,13 @@
 import {Context} from "../context"
 import {LogLevel} from "../log"
-import {AnimationTarget, Statistics} from "./animation"
-import * as Loader from "../loader/loader"
-import * as Converter from "./converter"
+import {Animation, AnimationTarget, AnimationTimeStatistics, Statistics} from "./animation"
 import * as Utils from "./utils"
 import * as MathUtils from "../math"
 import * as BABYLON from "babylonjs";
+import { AnimationChannel } from "./animation_channel"
+import { ConverterContext } from "./context"
+import { Skeleton } from "./skeleton"
+import { Bone } from "./bone"
 
     export interface AnimationLabel {
         name: string;
@@ -51,22 +53,22 @@ import * as BABYLON from "babylonjs";
         keyframes: number = 0;
         fps: number = 0;
         original_fps: number = 0;
-        tracks: Converter.AnimationDataTrack[];
+        tracks: AnimationDataTrack[];
 
         constructor() {
             this.name = "";
             this.tracks = [];
         }
 
-        static create(skeleton: Converter.Skeleton, animation: Converter.Animation, index_begin: number, index_end: number, fps: number, context: Converter.ConverterContext): Converter.AnimationData {
-            var result: Converter.AnimationData = new Converter.AnimationData();
+        static create(skeleton: Skeleton, animation: Animation, index_begin: number, index_end: number, fps: number, context: ConverterContext): AnimationData {
+            var result: AnimationData = new AnimationData();
             result.name = animation.name;
 
-            var src_channels: Converter.AnimationChannel[] = animation.channels;
+            var src_channels: AnimationChannel[] = animation.channels;
 
             // Get timeline statistics
-            var stat: Converter.AnimationTimeStatistics = new Converter.AnimationTimeStatistics();
-            Converter.Animation.getTimeStatistics(animation, index_begin, index_end, stat, context);
+            var stat: AnimationTimeStatistics = new AnimationTimeStatistics();
+            Animation.getTimeStatistics(animation, index_begin, index_end, stat, context);
 
 
             logStatistics("Original Duration", stat.duration, 3, context);
@@ -125,8 +127,8 @@ import * as BABYLON from "babylonjs";
 
             // Init result
             for (var i: number = 0; i < skeleton.bones.length; ++i) {
-                var bone: Converter.Bone = skeleton.bones[i];
-                var track: Converter.AnimationDataTrack = new Converter.AnimationDataTrack();
+                var bone: Bone = skeleton.bones[i];
+                var track: AnimationDataTrack = new AnimationDataTrack();
 
                 track.pos = new Float32Array(keyframes * 3);
                 track.rot = new Float32Array(keyframes * 4);
@@ -138,11 +140,11 @@ import * as BABYLON from "babylonjs";
 
                 result.tracks.push(track);
             }
-            var result_tracks: Converter.AnimationDataTrack[] = result.tracks;
+            var result_tracks: AnimationDataTrack[] = result.tracks;
 
             // Reset the bone poses
             for (var i: number = 0; i < skeleton.bones.length; ++i) {
-                var bone: Converter.Bone = skeleton.bones[i];
+                var bone: Bone = skeleton.bones[i];
                 bone.node.resetAnimation();
             }
 
@@ -156,7 +158,7 @@ import * as BABYLON from "babylonjs";
                 // Apply all channels to the scene nodes
                 // This might be expensive as it resamples the animation
                 for (var c: number = 0; c < src_channels.length; ++c) {
-                    var channel: Converter.AnimationChannel = src_channels[c];
+                    var channel: AnimationChannel = src_channels[c];
                     if (channel) {
                         channel.target.applyAnimation(channel, time, context);
                     }
@@ -164,8 +166,8 @@ import * as BABYLON from "babylonjs";
 
                 // Extract bone poses
                 for (var b: number = 0; b < skeleton.bones.length; ++b) {
-                    var bone: Converter.Bone = skeleton.bones[b];
-                    var track: Converter.AnimationDataTrack = result_tracks[b];
+                    var bone: Bone = skeleton.bones[b];
+                    var track: AnimationDataTrack = result_tracks[b];
 
                     var mat: BABYLON.Matrix = bone.node.getLocalMatrix(context);
                     mat.decompose(scl, rot, pos);
@@ -191,7 +193,7 @@ import * as BABYLON from "babylonjs";
 
             // Reset the bone poses
             for (var i: number = 0; i < skeleton.bones.length; ++i) {
-                var bone: Converter.Bone = skeleton.bones[i];
+                var bone: Bone = skeleton.bones[i];
                 bone.node.resetAnimation();
             }
 
@@ -204,8 +206,8 @@ import * as BABYLON from "babylonjs";
             var scl0 = new BABYLON.Vector3()
             var inv_scl0 = new BABYLON.Vector3()
             for (var b: number = 0; b < skeleton.bones.length; ++b) {
-                var bone: Converter.Bone = skeleton.bones[b];
-                var track: Converter.AnimationDataTrack = result_tracks[b];
+                var bone: Bone = skeleton.bones[b];
+                var track: AnimationDataTrack = result_tracks[b];
 
                 // Get rest pose transformation of the current bone
                 var mat0 = bone.node.getLocalMatrix(context);
@@ -293,19 +295,19 @@ import * as BABYLON from "babylonjs";
             return result;
         }
 
-        static createFromLabels(skeleton: Converter.Skeleton, animation: Converter.Animation,
-            labels: Converter.AnimationLabel[], defaultFps: number, context: Converter.ConverterContext): Converter.AnimationData[]{
+        static createFromLabels(skeleton: Skeleton, animation: Animation,
+            labels: AnimationLabel[], defaultFps: number, context: ConverterContext): AnimationData[]{
 
             if (!skeleton) {
                 context.log.write("No skeleton present, no animation data generated.", LogLevel.Warning);
                 return [];
             }
 
-            var result: Converter.AnimationData[] = [];
+            var result: AnimationData[] = [];
 
             for (var i: number = 0; i < labels.length; ++i) {
-                var label: Converter.AnimationLabel = labels[i];
-                var data: Converter.AnimationData = Converter.AnimationData.create(skeleton, animation, label.begin, label.end, label.fps || defaultFps, context);
+                var label: AnimationLabel = labels[i];
+                var data: AnimationData = AnimationData.create(skeleton, animation, label.begin, label.end, label.fps || defaultFps, context);
                 if (data !== null) {
                     data.name = label.name;
                     result.push(data);

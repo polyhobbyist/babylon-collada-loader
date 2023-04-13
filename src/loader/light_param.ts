@@ -1,12 +1,8 @@
-import {Context} from "../context"
-import {LogLevel} from "../log"
-import * as Loader from "./loader"
-import * as Converter from "../converter/converter"
-import * as Exporter from "../exporter/exporter"
-import * as Utils from "./utils"
-import * as MathUtils from "../math"
+import { LoaderContext } from "./context";
+import { EElement } from "./element";
 
-    export class LightParam extends Loader.EElement {
+
+    export class LightParam extends EElement {
         value: number| undefined;
 
         constructor() {
@@ -17,8 +13,8 @@ import * as MathUtils from "../math"
         /**
         *   Parses a light parameter element.
         */
-        static parse(node: Node, context: Loader.LoaderContext): Loader.LightParam {
-            var result: Loader.LightParam = new Loader.LightParam();
+        static parse(node: Node, context: LoaderContext): LightParam {
+            var result: LightParam = new LightParam();
 
             result.sid = context.getAttributeAsString(node, "sid", undefined, false);
             result.name = node.nodeName;

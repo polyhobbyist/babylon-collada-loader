@@ -1,4 +1,5 @@
-import * as Converter from "./converter"
+import { AnimationLabel } from "./animation_data";
+
 
 export interface Option {
         type: string;
@@ -77,7 +78,7 @@ export interface Option {
         useAnimationLabels: OptionBool;
         enableExtractGeometry: OptionBool;
         enableResampledAnimations: OptionBool;
-        animationLabels: OptionArray<Converter.AnimationLabel>;
+        animationLabels: OptionArray<AnimationLabel>;
         animationFps: OptionFloat;
         removeConstAnimationTracks: OptionBool;
         applyBindShape: OptionBool;
@@ -114,7 +115,7 @@ export interface Option {
             this.useAnimationLabels = new OptionBool("Animation labels", false,
                 "Enabled: animations labels are used to split the global animation into separete animations.<br/>" +
                 "Disabled: only one global animation is exported.");
-            this.animationLabels = new OptionArray<Converter.AnimationLabel>("Animation labels", [],
+            this.animationLabels = new OptionArray<AnimationLabel>("Animation labels", [],
                 "An array of animation labels ({name, begin, end, fps)} that describes how the global animation is split.<br/>" +
                 "Only has an effect if 'useAnimationLabels' is enabled.");
             this.animationFps = new OptionFloat("Animation samples per second", 10, 0, 100,

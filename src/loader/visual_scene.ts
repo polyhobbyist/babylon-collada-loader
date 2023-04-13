@@ -1,16 +1,16 @@
-import {Context} from "../context"
-import {LogLevel} from "../log"
-import * as Loader from "./loader"
-import * as Converter from "../converter/converter"
-import * as Exporter from "../exporter/exporter"
+import { Context } from "../context"
+
+import { LoaderContext } from "./context"
+import { EElement } from "./element"
+import { Link } from "./link"
 import * as Utils from "./utils"
-import * as MathUtils from "../math"
+import { VisualSceneNode } from "./visual_scene_node"
 
     /**
     *   An <visual_scene> element.
     */
-    export class VisualScene extends Loader.EElement {
-        children: Loader.VisualSceneNode[];
+    export class VisualScene extends EElement {
+        children: VisualSceneNode[];
 
         constructor() {
             super();
@@ -18,12 +18,12 @@ import * as MathUtils from "../math"
             this.children = [];
         }
 
-        static fromLink(link: Loader.Link, context: Context): Loader.VisualScene | undefined {
-            return Loader.EElement._fromLink<Loader.VisualScene>(link, "VisualScene", context);
+        static fromLink(link: Link, context: Context): VisualScene | undefined {
+            return EElement._fromLink<VisualScene>(link, "VisualScene", context);
         }
 
-        static parse(node: Node, context: Loader.LoaderContext): Loader.VisualScene {
-            var result: Loader.VisualScene = new Loader.VisualScene();
+        static parse(node: Node, context: LoaderContext): VisualScene {
+            var result: VisualScene = new VisualScene();
 
             result.id = context.getAttributeAsString(node, "id", "", false);
 
@@ -32,8 +32,8 @@ import * as MathUtils from "../math"
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
                     case "node":
-                        var childNode: Loader.VisualSceneNode = Loader.VisualSceneNode.parse(child, context);
-                        Loader.VisualSceneNode.registerParent(childNode, result, context);
+                        var childNode: VisualSceneNode = VisualSceneNode.parse(child, context);
+                        VisualSceneNode.registerParent(childNode, result, context);
                         result.children.push(childNode);
                         break;
                     default:
@@ -46,10 +46,10 @@ import * as MathUtils from "../math"
         }
     };
 
-    export class VisualSceneLibrary extends Loader.EElement {
+    export class VisualSceneLibrary extends EElement {
         children: VisualScene[] = [];
 
-        static parse(node: Node, context: Loader.LoaderContext): VisualSceneLibrary {
+        static parse(node: Node, context: LoaderContext): VisualSceneLibrary {
             var result: VisualSceneLibrary = new VisualSceneLibrary();
 
             Utils.forEachChild(node, function (child: Node) {

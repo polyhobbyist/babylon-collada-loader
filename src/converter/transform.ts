@@ -1,15 +1,19 @@
 import {Log, LogLevel} from "../log"
-import * as Loader from "../loader/loader"
-import * as Converter from "./converter"
+import { NodeTransform } from "../loader/node_transform"
+
+
 import * as Utils from "./utils"
 import * as MathUtils from "../math"
 import {Bone} from "./bone"
 import {Texture} from "./texture"
-import {AnimationTarget} from "./animation"
+import {Animation, AnimationTarget} from "./animation"
 import * as COLLADAContext from "../context"
 import {Options} from "./options"
 import {BoundingBox} from "./bounding_box"
 import * as BABYLON from 'babylonjs';
+import { AnimationChannel } from "./animation_channel"
+import { ConverterContext } from "./context"
+
 
     export enum TransformType {
         Translation = 1,
@@ -22,9 +26,9 @@ import * as BABYLON from 'babylonjs';
         original_data: Float32Array;
         rows: number;
         colums: number;
-        channels: Converter.AnimationChannel[] | undefined;
+        channels: AnimationChannel[] | undefined;
 
-        constructor(transform: Loader.NodeTransform, rows: number, columns: number) {
+        constructor(transform: NodeTransform, rows: number, columns: number) {
             this.rows = rows;
             this.colums = columns;
             this.channels = [];
@@ -42,20 +46,20 @@ import * as BABYLON from 'babylonjs';
         getTargetDataColumns(): number {
             return this.colums;
         }
-        applyAnimation(channel: Converter.AnimationChannel, time: number, context: Converter.ConverterContext) {
-            Converter.AnimationChannel?.applyToData(channel, this.data, time, context);
+        applyAnimation(channel: AnimationChannel, time: number, context: ConverterContext) {
+            AnimationChannel?.applyToData(channel, this.data, time, context);
             this.updateFromData();
         }
-        registerAnimation(channel: Converter.AnimationChannel): void {
+        registerAnimation(channel: AnimationChannel): void {
             this.channels?.push(channel);
         }
         isAnimated(): boolean {
             return this.channels?this.channels.length > 0:false;
         }
-        isAnimatedBy(animation: Converter.Animation): boolean {
+        isAnimatedBy(animation: Animation): boolean {
             if (animation !== null && this.channels) {
                 for (var i: number = 0; i < this.channels.length || 0; ++i) {
-                    var channel: Converter.AnimationChannel = this.channels[i];
+                    var channel: AnimationChannel = this.channels[i];
                     if (animation.channels.indexOf(channel) !== -1) {
                         return true;
                     }
@@ -77,14 +81,14 @@ import * as BABYLON from 'babylonjs';
         updateFromData() {
             throw new Error("Not implemented");
         }
-        hasTransformType(type: Converter.TransformType): boolean {
+        hasTransformType(type: TransformType): boolean {
             throw new Error("Not implemented");
         }
     }
 
-    export class TransformMatrix extends Transform implements Converter.AnimationTarget {
+    export class TransformMatrix extends Transform implements AnimationTarget {
         matrix: BABYLON.Matrix;
-        constructor(transform: Loader.NodeTransform) {
+        constructor(transform: NodeTransform) {
             super(transform, 4, 4);
             this.matrix = new BABYLON.Matrix();
             this.updateFromData();
@@ -95,17 +99,17 @@ import * as BABYLON from 'babylonjs';
         applyTransformation(mat: BABYLON.Matrix) {
             this.matrix.multiply(this.matrix);
         }
-        hasTransformType(type: Converter.TransformType): boolean {
+        hasTransformType(type: TransformType): boolean {
             return true;
         }
     }
 
-    export class TransformRotate extends Transform implements Converter.AnimationTarget {
+    export class TransformRotate extends Transform implements AnimationTarget {
         /** Source data: axis */
         axis: BABYLON.Vector3 = new BABYLON.Vector3;
         /** Source data: angle */
         radians: number;
-        constructor(transform: Loader.NodeTransform) {
+        constructor(transform: NodeTransform) {
             super(transform, 4, 1);
             this.axis = new BABYLON.Vector3;
             this.radians = 0;
@@ -120,15 +124,15 @@ import * as BABYLON from 'babylonjs';
             
             mat.multiply(r);
         }
-        hasTransformType(type: Converter.TransformType): boolean {
-            return (type === Converter.TransformType.Rotation);
+        hasTransformType(type: TransformType): boolean {
+            return (type === TransformType.Rotation);
         }
     }
 
-    export class TransformTranslate extends Transform implements Converter.AnimationTarget {
+    export class TransformTranslate extends Transform implements AnimationTarget {
         /** Source data: translation */
         pos: BABYLON.Vector3 = new BABYLON.Vector3();
-        constructor(transform: Loader.NodeTransform) {
+        constructor(transform: NodeTransform) {
             super(transform, 3, 1);
             this.updateFromData();
         }
@@ -139,15 +143,15 @@ import * as BABYLON from 'babylonjs';
             let t = BABYLON.Matrix.Translation(this.pos.x, this.pos.y, this.pos.z);
             mat.multiply(t);
         }
-        hasTransformType(type: Converter.TransformType): boolean {
-            return (type === Converter.TransformType.Translation);
+        hasTransformType(type: TransformType): boolean {
+            return (type === TransformType.Translation);
         }
     }
 
-    export class TransformScale extends Transform implements Converter.AnimationTarget {
+    export class TransformScale extends Transform implements AnimationTarget {
         /** Source data: scaling */
         scl: BABYLON.Vector3 = new BABYLON.Vector3();
-        constructor(transform: Loader.NodeTransform) {
+        constructor(transform: NodeTransform) {
             super(transform, 3, 1);
             this.updateFromData();
         }
@@ -158,7 +162,7 @@ import * as BABYLON from 'babylonjs';
             let t = BABYLON.Matrix.Scaling(this.scl.x, this.scl.y, this.scl.z);
             mat.multiply(t);
         }
-        hasTransformType(type: Converter.TransformType): boolean {
-            return (type === Converter.TransformType.Scale);
+        hasTransformType(type: TransformType): boolean {
+            return (type === TransformType.Scale);
         }
     }

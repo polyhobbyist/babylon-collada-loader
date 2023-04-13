@@ -1,12 +1,13 @@
 import { promises as fs } from 'fs';
 import * as BABYLON from "babylonjs";
 import * as Loader from "./loader"
-import * as Converter from "./converter/converter"
-import * as Exporter from "./exporter/exporter"
 import {RMXModelLoader} from "./model-loader"
 import * as BabylonLoader from "./babylon-loader"
 import {RMXModel} from "./model"
 import {LogLevel, LogCallback, LogFilter} from "./log"
+import { ColladaConverter } from './converter/colladaconverter';
+import { ColladaExporter } from './exporter/colladaexporter';
+import { Document } from './loader/document';
 
 
 export class DAEFileLoader implements BABYLON.ISceneLoaderPluginAsync, BABYLON.ISceneLoaderPluginFactory {
@@ -87,10 +88,10 @@ export class DAEFileLoader implements BABYLON.ISceneLoaderPluginAsync, BABYLON.I
 
       var colladaDoc = loader.loadFromXML("id", colladaXml);
 
-      var converter = new Converter.ColladaConverter();
+      var converter = new ColladaConverter();
       var convertedDoc = converter.convert(colladaDoc);
 
-      var exporter = new Exporter.ColladaExporter();
+      var exporter = new ColladaExporter();
       var exportedDoc = exporter.export(convertedDoc);
 
       var modelLoader = new RMXModelLoader;

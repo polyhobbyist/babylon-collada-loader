@@ -1,10 +1,16 @@
 import {ConverterContext} from "./context"
 import {LogLevel} from "../log"
 import {AnimationTarget} from "./animation"
-import * as Loader from "../loader/loader"
-import * as Converter from "./converter"
+
+
 import * as Utils from "./utils"
 import * as MathUtils from "../math"
+import * as SourceLoader from "../loader/source"
+import { Channel } from "../loader/channel"
+import { EElement } from "../loader/element"
+import { Input } from "../loader/input"
+import { SidLink } from "../loader/link"
+import { Sampler } from "../loader/sampler"
 
     export interface AnimationChannelIndices {
         /** left index */
@@ -76,14 +82,14 @@ import * as MathUtils from "../math"
             return { i0: 0, i1: 1 };
         }
 
-        static createInputData(input: Loader.Input, inputName: string, dataDim: number, context: ConverterContext): Float32Array {
+        static createInputData(input: Input, inputName: string, dataDim: number, context: ConverterContext): Float32Array {
             // Input
             if (!input) {
                 return null;
             }
 
             // Source
-            var source: Loader.Source = Loader.Source.fromLink(input.source, context);
+            var source: SourceLoader.Source = SourceLoader.Source.fromLink(input.source, context);
             if (!source) {
                 context.log.write("Animation channel has no " + inputName + " input data, data ignored", LogLevel.Warning);
                 return null;
@@ -97,7 +103,7 @@ import * as MathUtils from "../math"
             return Utils.createFloatArray(source, inputName, dataDim, context);
         }
 
-        static createInputDataFromArray(inputs: Loader.Input[], inputName: string, dataDim: number, context: ConverterContext): Float32Array {
+        static createInputDataFromArray(inputs: Input[], inputName: string, dataDim: number, context: ConverterContext): Float32Array {
             // Samplers can have more than one output if they describe multiple curves at once.
             // I don't understand from the spec how a single channel could describe the animation of multiple parameters,
             // since each channel references a single SID target
@@ -111,11 +117,11 @@ import * as MathUtils from "../math"
             }
         }
 
-        static create(channel: Loader.Channel, context: ConverterContext): AnimationChannel {
+        static create(channel: Channel, context: ConverterContext): AnimationChannel {
             var result: AnimationChannel = new AnimationChannel();
 
             // Element
-            var element: Loader.EElement = Loader.EElement.fromLink(channel.target, context);
+            var element: EElement = EElement.fromLink(channel.target, context);
             if (!element) {
                 context.log.write("Animation channel has an invalid target '" + channel.target.url + "', animation ignored", LogLevel.Warning);
                 return null;
@@ -130,7 +136,7 @@ import * as MathUtils from "../math"
             result.target = target;
 
             // Sampler
-            var sampler: Loader.Sampler = Loader.Sampler.fromLink(channel.source, context);
+            var sampler: Sampler = Sampler.fromLink(channel.source, context);
             if (!sampler) {
                 context.log.write("Animation channel has an invalid sampler '" + channel.source.url + "', animation ignored", LogLevel.Warning);
                 return null;
@@ -142,7 +148,7 @@ import * as MathUtils from "../math"
             var targetDataDim: number = targetDataRows * targetDataColumns;
 
             // Destination data offset and count
-            var targetLink: Loader.SidLink = channel.target;
+            var targetLink: SidLink = channel.target;
             if (targetLink.dotSyntax) {
                 // Member syntax: single named element
                 result.dataCount = 1;
@@ -235,7 +241,7 @@ import * as MathUtils from "../math"
                 context.log.write("Animation channel has no interpolation input, animation ignored", LogLevel.Warning);
                 return null;
             }
-            var interpolationSource: Loader.Source = Loader.Source.fromLink(interpolationInput.source, context);
+            var interpolationSource: SourceLoader.Source = SourceLoader.Source.fromLink(interpolationInput.source, context);
             if (!interpolationSource) {
                 context.log.write("Animation channel has no interpolation source, animation ignored", LogLevel.Warning);
                 return null;

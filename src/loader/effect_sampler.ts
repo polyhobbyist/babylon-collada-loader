@@ -1,17 +1,16 @@
-import {Context} from "../context"
-import {LogLevel} from "../log"
-import * as Loader from "./loader"
-import * as Converter from "../converter/converter"
-import * as Exporter from "../exporter/exporter"
+import { Context } from "../context"
+import { LoaderContext } from "./context";
+import { EElement } from "./element";
+import { Link } from "./link";
+
 import * as Utils from "./utils"
-import * as MathUtils from "../math"
 
     /**
     *   An <newparam> element.
     */
-    export class EffectSampler extends Loader.EElement {
-        surface: Loader.Link | undefined;
-        image: Loader.Link | undefined;
+    export class EffectSampler extends EElement {
+        surface: Link | undefined;
+        image: Link | undefined;
         wrapS: string = "";
         wrapT: string = "";
         minFilter: string = "";
@@ -25,15 +24,15 @@ import * as MathUtils from "../math"
             this._className += "EffectSampler|";
         }
 
-        static fromLink(link: Loader.Link, context: Context): Loader.EffectSampler | undefined {
-            return Loader.EElement._fromLink<Loader.EffectSampler>(link, "EffectSampler", context);
+        static fromLink(link: Link, context: Context): EffectSampler | undefined {
+            return EElement._fromLink<EffectSampler>(link, "EffectSampler", context);
         }
 
         /**
         *   Parses a <newparam> element.
         */
-        static parse(node: Node, parent: Loader.EElement, context: Loader.LoaderContext): Loader.EffectSampler {
-            var result: Loader.EffectSampler = new Loader.EffectSampler();
+        static parse(node: Node, parent: EElement, context: LoaderContext): EffectSampler {
+            var result: EffectSampler = new EffectSampler();
 
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {

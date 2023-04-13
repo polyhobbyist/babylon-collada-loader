@@ -1,9 +1,12 @@
-import * as Loader from "./loader"
-import * as Utils from "./utils"
 
-    export class ColorOrTexture extends Loader.EElement {
+import { LoaderContext } from "./context";
+import { EElement } from "./element";
+import { Link } from "./link";
+import * as Utils from "./utils";
+
+    export class ColorOrTexture extends EElement {
         color: Float32Array | undefined;
-        textureSampler: Loader.Link | undefined;
+        textureSampler: Link | undefined;
         texcoord: string = "";
         opaque: string = "";
         bumptype: string = "";
@@ -16,8 +19,8 @@ import * as Utils from "./utils"
         /**
         *   Parses a color or texture element  (<ambient>, <diffuse>, ...).
         */
-        static parse(node: Node, parent: Loader.EElement, context: Loader.LoaderContext): Loader.ColorOrTexture {
-            var result: Loader.ColorOrTexture = new Loader.ColorOrTexture();
+        static parse(node: Node, parent: EElement, context: LoaderContext): ColorOrTexture {
+            var result: ColorOrTexture = new ColorOrTexture();
 
             result.opaque = context.getAttributeAsString(node, "opaque", undefined, false);
             result.bumptype = context.getAttributeAsString(node, "bumptype", undefined, false);

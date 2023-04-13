@@ -1,23 +1,30 @@
 import {Context} from "../context"
 import {Log, LogLevel} from "../log"
-import * as Loader from "../loader/loader"
-import * as Converter from "./converter"
+
+
 import * as Utils from "./utils"
 import * as MathUtils from "../math"
 import {Material} from "./material"
 import {Texture} from "./texture"
-import {AnimationTarget} from "./animation"
+import {Animation, AnimationTarget} from "./animation"
 import * as COLLADAContext from "../context"
 import {Options} from "./options"
 import {BoundingBox} from "./bounding_box"
 import * as BABYLON from 'babylonjs';
+import { InstanceController } from "../loader/instance_controller"
+import { InstanceGeometry } from "../loader/instance_geometry"
+import { NodeTransform } from "../loader/node_transform"
+import { VisualSceneNode } from "../loader/visual_scene_node"
+import { ConverterContext } from "./context"
+import { Transform, TransformMatrix, TransformRotate, TransformTranslate, TransformScale } from "./transform"
+import {Geometry} from "./geometry"
 
     export class Node {
         name: string;
-        parent: Converter.Node | undefined;
-        children: Converter.Node[];
-        geometries: Converter.Geometry[];
-        transformations: Converter.Transform[];
+        parent: Node | undefined;
+        children: Node[];
+        geometries: Geometry[];
+        transformations: Transform[];
         transformation_pre: BABYLON.Matrix = new BABYLON.Matrix();
         transformation_post: BABYLON.Matrix = new BABYLON.Matrix();
         matrix: BABYLON.Matrix = new BABYLON.Matrix();
@@ -35,19 +42,19 @@ import * as BABYLON from 'babylonjs';
         }
 
         addTransform(mat: BABYLON.Matrix) {
-            var loader_transform = new Loader.NodeTransform();
+            var loader_transform = new NodeTransform();
             loader_transform.data = new Float32Array();
             mat.copyToArray(loader_transform.data);
             loader_transform.type = "matrix";
             loader_transform.name = "virtual static transform";
-            var transform = new Converter.TransformMatrix(loader_transform);
+            var transform = new TransformMatrix(loader_transform);
             this.transformations.unshift(transform);
         }
 
         /**
         * Returns the world transformation matrix of this node
         */
-        getWorldMatrix(context: Converter.ConverterContext): BABYLON.Matrix {
+        getWorldMatrix(context: ConverterContext): BABYLON.Matrix {
             if (this.parent != null) {
                 this.worldMatrix.multiply(this.parent.getWorldMatrix(context));
                 this.worldMatrix.multiply(this.getLocalMatrix(context));
@@ -60,14 +67,14 @@ import * as BABYLON from 'babylonjs';
         /**
         * Returns the local transformation matrix of this node
         */
-        getLocalMatrix(context: Converter.ConverterContext) {
+        getLocalMatrix(context: ConverterContext) {
             
             // Static pre-transform
             this.matrix.copyFrom(this.transformation_pre);
 
             // Original transformations
             for (var i: number = 0; i < this.transformations.length; i++) {
-                var transform: Converter.Transform = this.transformations[i];
+                var transform: Transform = this.transformations[i];
                 transform.applyTransformation(this.matrix);
             }
 
@@ -99,10 +106,10 @@ import * as BABYLON from 'babylonjs';
         /**
         * Returns whether there the given animation targets the transformation of this node
         */
-        isAnimatedBy(animation: Converter.Animation, recursive: boolean): boolean {
+        isAnimatedBy(animation: Animation, recursive: boolean): boolean {
 
             for (var i: number = 0; i < this.transformations.length; i++) {
-                var transform: Converter.Transform = this.transformations[i];
+                var transform: Transform = this.transformations[i];
                 if (transform.isAnimatedBy(animation)) return true;
             }
             if (recursive && this.parent) {
@@ -113,7 +120,7 @@ import * as BABYLON from 'babylonjs';
 
         resetAnimation(): void {
             for (var i: number = 0; i < this.transformations.length; i++) {
-                var transform: Converter.Transform = this.transformations[i];
+                var transform: Transform = this.transformations[i];
                 transform.resetAnimation();
             }
         }
@@ -121,24 +128,24 @@ import * as BABYLON from 'babylonjs';
         /**
         * Removes all nodes from that list that are not relevant for the scene graph
         */
-        static pruneNodes(nodes: Converter.Node[], context: Context) {
+        static pruneNodes(nodes: Node[], context: Context) {
             // Prune all children recursively
             for (var n: number = 0; n < nodes.length; ++n) {
-                var node: Converter.Node = nodes[n];
-                Converter.Node.pruneNodes(node.children, context);
+                var node: Node = nodes[n];
+                Node.pruneNodes(node.children, context);
             }
 
             // Remove all nodes from the list that are not relevant
-            nodes = nodes.filter((value: Converter.Node, index: number, array: Converter.Node[]) =>
+            nodes = nodes.filter((value: Node, index: number, array: Node[]) =>
                 (value.containsSceneGraphItems() || value.children.length > 0));
         }
 
         /**
         * Recursively creates a converter node tree from the given collada node root node
         */
-        static createNode(node: Loader.VisualSceneNode, parent: Converter.Node, context: Converter.ConverterContext): Converter.Node {
+        static createNode(node: VisualSceneNode, parent: Node, context: ConverterContext): Node {
             // Create new node
-            var converterNode: Converter.Node = new Converter.Node();
+            var converterNode: Node = new Node();
             converterNode.parent = parent;
             if (parent) {
                 parent.children.push(converterNode);
@@ -149,20 +156,20 @@ import * as BABYLON from 'babylonjs';
 
             // Node transform
             for (var i = 0; i < node.transformations.length; ++i) {
-                var transform: Loader.NodeTransform = node.transformations[i];
-                var converterTransform: Converter.Transform = null;
+                var transform: NodeTransform = node.transformations[i];
+                var converterTransform: Transform = null;
                 switch (transform.type) {
                     case "matrix":
-                        converterTransform = new Converter.TransformMatrix(transform);
+                        converterTransform = new TransformMatrix(transform);
                         break;
                     case "rotate":
-                        converterTransform = new Converter.TransformRotate(transform);
+                        converterTransform = new TransformRotate(transform);
                         break;
                     case "translate":
-                        converterTransform = new Converter.TransformTranslate(transform);
+                        converterTransform = new TransformTranslate(transform);
                         break;
                     case "scale":
-                        converterTransform = new Converter.TransformScale(transform);
+                        converterTransform = new TransformScale(transform);
                         break;
                     default:
                         context.log.write("Transformation type " + transform.type + " not supported, transform ignored", LogLevel.Warning);
@@ -177,14 +184,14 @@ import * as BABYLON from 'babylonjs';
             
             // Create children
             for (var i: number = 0; i < node.children.length; i++) {
-                var colladaChild: Loader.VisualSceneNode = node.children[i];
-                var converterChild: Converter.Node = Converter.Node.createNode(colladaChild, converterNode, context);
+                var colladaChild: VisualSceneNode = node.children[i];
+                var converterChild: Node = Node.createNode(colladaChild, converterNode, context);
             }
 
             return converterNode;
         }
 
-        static updateInitialMatrices(node: Converter.Node, context: Converter.ConverterContext) {
+        static updateInitialMatrices(node: Node, context: ConverterContext) {
             node.getLocalMatrix(context);
             node.initialLocalMatrix.copyFrom(node.matrix);
 
@@ -192,21 +199,21 @@ import * as BABYLON from 'babylonjs';
             node.initialWorldMatrix.copyFrom(node.worldMatrix);
         }
 
-        static createNodeData(converter_node: Converter.Node, context: Converter.ConverterContext) {
+        static createNodeData(converter_node: Node, context: ConverterContext) {
 
-            var collada_node: Loader.VisualSceneNode = context.nodes.findCollada(converter_node);
+            var collada_node: VisualSceneNode = context.nodes.findCollada(converter_node);
 
             // Static geometries (<instance_geometry>)
             for (var i: number = 0; i < collada_node.geometries.length; i++) {
-                var loaderGeometry: Loader.InstanceGeometry = collada_node.geometries[i];
-                var converterGeometry: Converter.Geometry = Converter.Geometry.createStatic(loaderGeometry, converter_node, context);
+                var loaderGeometry: InstanceGeometry = collada_node.geometries[i];
+                var converterGeometry: Geometry = Geometry.createStatic(loaderGeometry, converter_node, context);
                 converter_node.geometries.push(converterGeometry);
             }
 
             // Animated geometries (<instance_controller>)
             for (var i: number = 0; i < collada_node.controllers.length; i++) {
-                var loaderController: Loader.InstanceController = collada_node.controllers[i];
-                var converterGeometry: Converter.Geometry = Converter.Geometry.createAnimated(loaderController, converter_node, context);
+                var loaderController: InstanceController = collada_node.controllers[i];
+                var converterGeometry: Geometry = Geometry.createAnimated(loaderController, converter_node, context);
                 converter_node.geometries.push(converterGeometry);
             }
 
@@ -220,20 +227,20 @@ import * as BABYLON from 'babylonjs';
 
             // Children
             for (var i: number = 0; i < converter_node.children.length; i++) {
-                var child: Converter.Node = converter_node.children[i];
-                Converter.Node.createNodeData(child, context);
+                var child: Node = converter_node.children[i];
+                Node.createNodeData(child, context);
             }
         }
 
         /**
         * Calls the given function for all given nodes and their children (recursively)
         */
-        static forEachNode(nodes: Converter.Node[], fn: (node: Converter.Node) => void) {
+        static forEachNode(nodes: Node[], fn: (node: Node) => void) {
 
             for (var i: number = 0; i < nodes.length; ++i) {
-                var node: Converter.Node = nodes[i];
+                var node: Node = nodes[i];
                 fn(node);
-                Converter.Node.forEachNode(node.children, fn);
+                Node.forEachNode(node.children, fn);
             }
         }
 
@@ -241,12 +248,12 @@ import * as BABYLON from 'babylonjs';
         * Extracts all geometries in the given scene and merges them into a single geometry.
         * The geometries are detached from their original nodes in the process.
         */
-        static extractGeometries(scene_nodes: Converter.Node[], context: Converter.ConverterContext): Converter.Geometry[] {
+        static extractGeometries(scene_nodes: Node[], context: ConverterContext): Geometry[] {
 
             // Collect all geometries and the corresponding nodes
             // Detach geometries from nodes in the process
-            var result: { node: Converter.Node; geometry: Converter.Geometry }[] = [];
-            Converter.Node.forEachNode(scene_nodes, (node) => {
+            var result: { node: Node; geometry: Geometry }[] = [];
+            Node.forEachNode(scene_nodes, (node) => {
                 for (var i: number = 0; i < node.geometries.length; ++i) {
                     result.push({ node: node, geometry: node.geometries[i] });
                 }
@@ -255,7 +262,7 @@ import * as BABYLON from 'babylonjs';
 
             if (result.length === 0) {
                 context.log.write("No geometry found in the scene, returning an empty geometry", LogLevel.Warning);
-                var geometry: Converter.Geometry = new Converter.Geometry();
+                var geometry: Geometry = new Geometry();
                 geometry.name = "empty_geometry";
                 return [geometry];
             }
@@ -283,21 +290,21 @@ import * as BABYLON from 'babylonjs';
                         mat = BABYLON.Matrix.Invert(element.node.transformation_post);
                         world_matrix.multiply(mat);
                     }
-                    Converter.Geometry.transformGeometry(element.geometry, world_matrix, context);
+                    Geometry.transformGeometry(element.geometry, world_matrix, context);
                 });
             }
 
             // Merge all geometries
             if (context.options.singleGeometry) {
                 var geometries = result.map((element) => { return element.geometry });
-                var geometry: Converter.Geometry = Converter.Geometry.mergeGeometries(geometries, context);
+                var geometry: Geometry = Geometry.mergeGeometries(geometries, context);
                 return [geometry];
             } else {
                 return result.map((element) => { return element.geometry });
             }
         }
 
-        static setupWorldTransform(node: Converter.Node, context: Converter.ConverterContext) {
+        static setupWorldTransform(node: Node, context: ConverterContext) {
             var worldInvScale: BABYLON.Vector3 = Utils.getWorldInvScale(context);
             var worldTransform: BABYLON.Matrix = Utils.getWorldTransform(context);
 

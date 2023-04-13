@@ -1,10 +1,9 @@
-import {Context} from "../context"
-import {LogLevel} from "../log"
-import * as Loader from "./loader"
-import * as Converter from "../converter/converter"
-import * as Exporter from "../exporter/exporter"
+import { Context } from "../context"
+import { LoaderContext } from "./context";
+import { EElement } from "./element";
+import { Link } from "./link";
+
 import * as Utils from "./utils"
-import * as MathUtils from "../math"
 
 
 
@@ -12,9 +11,9 @@ import * as MathUtils from "../math"
     *   A <surface> element.
     *
     */
-    export class EffectSurface extends Loader.EElement {
+    export class EffectSurface extends EElement {
         type: string = "";
-        initFrom: Loader.Link | undefined;
+        initFrom: Link | undefined;
         format: string = "";
         size: Float32Array = new Float32Array();
         viewportRatio: Float32Array = new Float32Array();
@@ -26,15 +25,15 @@ import * as MathUtils from "../math"
             this._className += "EffectSurface|";
         }
 
-        static fromLink(link: Loader.Link, context: Context): Loader.EffectSurface | undefined{
-            return Loader.EElement._fromLink<Loader.EffectSurface>(link, "EffectSurface", context);
+        static fromLink(link: Link, context: Context): EffectSurface | undefined{
+            return EElement._fromLink<EffectSurface>(link, "EffectSurface", context);
         }
 
         /**
         *   Parses a <surface> element.
         */
-        static parse(node: Node, parent: Loader.EElement, context: Loader.LoaderContext): Loader.EffectSurface {
-            var result: Loader.EffectSurface = new Loader.EffectSurface();
+        static parse(node: Node, parent: EElement, context: LoaderContext): EffectSurface {
+            var result: EffectSurface = new EffectSurface();
 
             result.type = context.getAttributeAsString(node, "type", undefined, true);
 

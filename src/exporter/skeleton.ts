@@ -1,18 +1,19 @@
+import * as BABYLON from 'babylonjs';
 import * as COLLADAContext from "../context"
 import {Log, LogLevel} from "../log"
-import * as Loader from "../loader/loader"
-import * as Converter from "../converter/converter"
-import * as Exporter from "./exporter"
+
 import * as Utils from "./utils"
-import {BoundingBoxJSON} from "./format"
-import * as BABYLON from 'babylonjs';
+import {BoneJSON, BoundingBoxJSON} from "./format"
 import * as MathUtils from '../math'
+import { ExporterContext } from "./context";
+import { Bone } from "../converter/bone";
+import * as ConverterSkeleton from "../converter/skeleton";
 
 
 
     export class Skeleton {
 
-        static toJSON(skeleton: Converter.Skeleton, context: Exporter.ExporterContext): Exporter.BoneJSON[] | undefined{
+        static toJSON(skeleton: ConverterSkeleton.Skeleton, context: ExporterContext): BoneJSON[] | undefined{
             if (!skeleton) {
                 return undefined ;
             }
@@ -23,7 +24,7 @@ import * as MathUtils from '../math'
             var scl_tol: number = 3;
             var rot_tol: number = 6;
 
-            var result: Exporter.BoneJSON[] = [];
+            var result: BoneJSON[] = [];
             skeleton.bones.forEach((bone) => {
 
                 // Bone default transform

@@ -1,25 +1,29 @@
-import {Context} from "../context"
-import {LogLevel} from "../log"
-import * as Loader from "./loader"
-import * as Converter from "../converter/converter"
-import * as Exporter from "../exporter/exporter"
+import { Context } from "../context"
+
+import { LoaderContext } from "./context"
+import { EElement } from "./element"
+import { InstanceCamera } from "./instance_camera"
+import { InstanceController } from "./instance_controller"
+import { InstanceGeometry } from "./instance_geometry"
+import { InstanceLight } from "./instance_light"
+import { Link } from "./link"
+import { NodeTransform } from "./node_transform"
 import * as Utils from "./utils"
-import * as MathUtils from "../math"
 
 
     /**
     *   A <node> element (child of <visual_scene>, <library_nodes>, or another <node>).
     */
-    export class VisualSceneNode extends Loader.EElement {
+    export class VisualSceneNode extends EElement {
         type: string;
         layer: string;
-        children: Loader.VisualSceneNode[];
-        parent: Loader.EElement | undefined;
-        transformations: Loader.NodeTransform[];
-        geometries: Loader.InstanceGeometry[];
-        controllers: Loader.InstanceController[];
-        lights: Loader.InstanceLight[];
-        cameras: Loader.InstanceCamera[];
+        children: VisualSceneNode[];
+        parent: EElement | undefined;
+        transformations: NodeTransform[];
+        geometries: InstanceGeometry[];
+        controllers: InstanceController[];
+        lights: InstanceLight[];
+        cameras: InstanceCamera[];
 
         constructor() {
             super();
@@ -35,17 +39,17 @@ import * as MathUtils from "../math"
             this.cameras = [];
         }
 
-        static fromLink(link: Loader.Link, context: Context): Loader.VisualSceneNode | undefined {
-            return Loader.EElement._fromLink<Loader.VisualSceneNode>(link, "VisualSceneNode", context);
+        static fromLink(link: Link, context: Context): VisualSceneNode | undefined {
+            return EElement._fromLink<VisualSceneNode>(link, "VisualSceneNode", context);
         }
 
-        static registerParent(child: Loader.VisualSceneNode, parent: Loader.EElement, context: Loader.LoaderContext) {
+        static registerParent(child: VisualSceneNode, parent: EElement, context: LoaderContext) {
             child.parent = parent;
             context.registerSidTarget(child, parent);
         }
 
-        static parse(node: Node, context: Loader.LoaderContext): Loader.VisualSceneNode {
-            var result: Loader.VisualSceneNode = new Loader.VisualSceneNode();
+        static parse(node: Node, context: LoaderContext): VisualSceneNode {
+            var result: VisualSceneNode = new VisualSceneNode();
 
             result.id = context.getAttributeAsString(node, "id", undefined, false);
             result.sid = context.getAttributeAsString(node, "sid", undefined, false);
@@ -58,26 +62,26 @@ import * as MathUtils from "../math"
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
                     case "instance_geometry":
-                        result.geometries.push(Loader.InstanceGeometry.parse(child, result, context));
+                        result.geometries.push(InstanceGeometry.parse(child, result, context));
                         break;
                     case "instance_controller":
-                        result.controllers.push(Loader.InstanceController.parse(child, result, context));
+                        result.controllers.push(InstanceController.parse(child, result, context));
                         break;
                     case "instance_light":
-                        result.lights.push(Loader.InstanceLight.parse(child, result, context));
+                        result.lights.push(InstanceLight.parse(child, result, context));
                         break;
                     case "instance_camera":
-                        result.cameras.push(Loader.InstanceCamera.parse(child, result, context));
+                        result.cameras.push(InstanceCamera.parse(child, result, context));
                         break;
                     case "matrix":
                     case "rotate":
                     case "translate":
                     case "scale":
-                        result.transformations.push(Loader.NodeTransform.parse(child, result, context));
+                        result.transformations.push(NodeTransform.parse(child, result, context));
                         break;
                     case "node":
-                        var childNode: Loader.VisualSceneNode = Loader.VisualSceneNode.parse(child, context);
-                        Loader.VisualSceneNode.registerParent(childNode, result, context);
+                        var childNode: VisualSceneNode = VisualSceneNode.parse(child, context);
+                        VisualSceneNode.registerParent(childNode, result, context);
                         result.children.push(childNode);
                         break;
                     case "extra":
@@ -93,10 +97,10 @@ import * as MathUtils from "../math"
     };
 
 
-    export class VisualSceneNodeLibrary extends Loader.EElement {
+    export class VisualSceneNodeLibrary extends EElement {
         children: VisualSceneNode[] = [];
 
-        static parse(node: Node, context: Loader.LoaderContext): VisualSceneNodeLibrary {
+        static parse(node: Node, context: LoaderContext): VisualSceneNodeLibrary {
             var result: VisualSceneNodeLibrary = new VisualSceneNodeLibrary();
 
             Utils.forEachChild(node, function (child: Node) {

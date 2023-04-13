@@ -1,10 +1,9 @@
-import {Context} from "../context"
-import {LogLevel} from "../log"
-import * as Loader from "./loader"
-import * as Converter from "../converter/converter"
-import * as Exporter from "../exporter/exporter"
+import { LogLevel } from "../log"
+import { LoaderContext } from "./context";
+import { EElement } from "./element";
+import { SidLink, UrlLink } from "./link";
+
 import * as Utils from "./utils"
-import * as MathUtils from "../math"
 
     export interface InstanceMaterialVertexInput {
         inputSemantic: string;
@@ -12,20 +11,20 @@ import * as MathUtils from "../math"
     }
 
     export interface InstanceMaterialParam {
-        target: Loader.SidLink;
+        target: SidLink;
     }
 
-    export interface InstanceMaterialContainer extends Loader.EElement {
-        materials: Loader.InstanceMaterial[];
+    export interface InstanceMaterialContainer extends EElement {
+        materials: InstanceMaterial[];
     }
 
-    export class InstanceMaterial extends Loader.EElement {
-        material: Loader.UrlLink | undefined;
+    export class InstanceMaterial extends EElement {
+        material: UrlLink | undefined;
         symbol: string = "";
         /** Contains uniform parameters */
-        params: { [s: string]: Loader.InstanceMaterialParam; }
+        params: { [s: string]: InstanceMaterialParam; }
         /** Contains vertex paramters */
-        vertexInputs: { [s: string]: Loader.InstanceMaterialVertexInput; }
+        vertexInputs: { [s: string]: InstanceMaterialVertexInput; }
 
         constructor() {
             super();
@@ -37,8 +36,8 @@ import * as MathUtils from "../math"
         /**
         *   Parses a <instance_material> element.
         */
-        static parse(node: Node, parent: Loader.InstanceMaterialContainer, context: Loader.LoaderContext): Loader.InstanceMaterial {
-            var result: Loader.InstanceMaterial = new Loader.InstanceMaterial();
+        static parse(node: Node, parent: InstanceMaterialContainer, context: LoaderContext): InstanceMaterial {
+            var result: InstanceMaterial = new InstanceMaterial();
 
             result.symbol = context.getAttributeAsString(node, "symbol", undefined, false);
             result.material = context.getAttributeAsUrlLink(node, "target", true);
@@ -47,10 +46,10 @@ import * as MathUtils from "../math"
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
                     case "bind_vertex_input":
-                        Loader.InstanceMaterial.parseBindVertexInput(child, result, context);
+                        InstanceMaterial.parseBindVertexInput(child, result, context);
                         break;
                     case "bind":
-                        Loader.InstanceMaterial.parseBind(child, result, context);
+                        InstanceMaterial.parseBind(child, result, context);
                         break;
                     default:
                         context.reportUnexpectedChild(child);
@@ -63,7 +62,7 @@ import * as MathUtils from "../math"
         /**
         *   Parses a <instance_material>/<bind_vertex_input> element.
         */
-        static parseBindVertexInput(node: Node, instanceMaterial: Loader.InstanceMaterial, context: Loader.LoaderContext) {
+        static parseBindVertexInput(node: Node, instanceMaterial: InstanceMaterial, context: LoaderContext) {
             var semantic: string = context.getAttributeAsString(node, "semantic", undefined, true);
             var inputSemantic: string = context.getAttributeAsString(node, "input_semantic", undefined, true);
             var inputSet: number | undefined = context.getAttributeAsInt(node, "input_set", 0, false);
@@ -81,9 +80,9 @@ import * as MathUtils from "../math"
         /**
         *   Parses a <instance_material>/<bind> element.
         */
-        static parseBind(node: Node, instanceMaterial: Loader.InstanceMaterial, context: Loader.LoaderContext) {
+        static parseBind(node: Node, instanceMaterial: InstanceMaterial, context: LoaderContext) {
             var semantic: string = context.getAttributeAsString(node, "semantic", undefined, false);
-            var target: Loader.SidLink | undefined = context.getAttributeAsSidLink(node, "target", "", true);
+            var target: SidLink | undefined = context.getAttributeAsSidLink(node, "target", "", true);
 
             if (semantic != null && target) {
                 instanceMaterial.params[semantic] = {

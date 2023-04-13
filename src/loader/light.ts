@@ -1,15 +1,13 @@
-import {Context} from "../context"
-import {LogLevel} from "../log"
-import * as Loader from "./loader"
-import * as Converter from "../converter/converter"
-import * as Exporter from "../exporter/exporter"
-import * as Utils from "./utils"
-import * as MathUtils from "../math"
 
-export class Light extends Loader.EElement {
+import { LoaderContext } from "./context";
+import { EElement } from "./element";
+import { LightParam } from "./light_param";
+import * as Utils from "./utils"
+
+export class Light extends EElement {
         type: string | undefined;
         color: Float32Array | undefined;
-        params: { [s: string]: Loader.LightParam; }
+        params: { [s: string]: LightParam; }
 
         constructor() {
             super();
@@ -20,8 +18,8 @@ export class Light extends Loader.EElement {
         /**
         *   Parses a <light> element.
         */
-        static parse(node: Node, context: Loader.LoaderContext): Loader.Light {
-            var result: Loader.Light = new Loader.Light();
+        static parse(node: Node, context: LoaderContext): Light {
+            var result: Light = new Light();
 
             result.id = context.getAttributeAsString(node, "id", undefined, true);
             result.name = context.getAttributeAsString(node, "name", undefined, false);
@@ -30,7 +28,7 @@ export class Light extends Loader.EElement {
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
                     case "technique_common":
-                        Loader.Light.parseTechniqueCommon(child, result, context);
+                        Light.parseTechniqueCommon(child, result, context);
                         break;
                     case "extra":
                         context.reportUnhandledChild(child);
@@ -46,7 +44,7 @@ export class Light extends Loader.EElement {
         /**
         *   Parses a <light>/<technique_common> element.
         */
-        static parseTechniqueCommon(node: Node, light: Loader.Light, context: Loader.LoaderContext) {
+        static parseTechniqueCommon(node: Node, light: Light, context: LoaderContext) {
 
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
@@ -54,7 +52,7 @@ export class Light extends Loader.EElement {
                     case "directional":
                     case "point":
                     case "spot":
-                        Loader.Light.parseParams(child, light, "COMMON", context);
+                        Light.parseParams(child, light, "COMMON", context);
                         break;
                     default:
                         context.reportUnexpectedChild(child);
@@ -66,7 +64,7 @@ export class Light extends Loader.EElement {
         /**
         *   Parses a <light>/<technique_common>/(<ambient>|<directional>|<point>|<spot>) element.
         */
-        static parseParams(node: Node, light: Loader.Light, profile: string, context: Loader.LoaderContext) {
+        static parseParams(node: Node, light: Light, profile: string, context: LoaderContext) {
 
             light.type = node.nodeName;
 
@@ -80,7 +78,7 @@ export class Light extends Loader.EElement {
                     case "quadratic_attenuation":
                     case "falloff_angle":
                     case "falloff_exponent":
-                        var param: Loader.LightParam = Loader.LightParam.parse(child, context);
+                        var param: LightParam = LightParam.parse(child, context);
                         context.registerSidTarget(param, light);
                         light.params[param.name] = param;
                         break;
@@ -94,10 +92,10 @@ export class Light extends Loader.EElement {
     }
 
 
-    export class LightLibrary extends Loader.EElement {
+    export class LightLibrary extends EElement {
         children: Light[] = [];
 
-        static parse(node: Node, context: Loader.LoaderContext): LightLibrary {
+        static parse(node: Node, context: LoaderContext): LightLibrary {
             var result: LightLibrary = new LightLibrary();
 
             Utils.forEachChild(node, function (child: Node) {

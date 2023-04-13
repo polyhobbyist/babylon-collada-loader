@@ -1,15 +1,17 @@
-import {Context} from "../context"
-import {LogLevel} from "../log"
-import * as Loader from "./loader"
-import * as Converter from "../converter/converter"
-import * as Exporter from "../exporter/exporter"
+import { Context } from "../context"
+import { LogLevel } from "../log"
+import { LoaderContext } from "./context"
+import { EElement } from "./element"
+import { Link } from "./link"
+import * as SourceLoader from "./source"
+import { Triangles } from "./triangles"
 import * as Utils from "./utils"
-import * as MathUtils from "../math"
+import { Vertices } from "./vertices"
 
-    export class Geometry extends Loader.EElement {
-        sources: Loader.Source[];
-        vertices: Loader.Vertices[];
-        triangles: Loader.Triangles[];
+    export class Geometry extends EElement {
+        sources: SourceLoader.Source[];
+        vertices: Vertices[];
+        triangles: Triangles[];
 
         constructor() {
             super();
@@ -19,15 +21,15 @@ import * as MathUtils from "../math"
             this.triangles = [];
         }
 
-        static fromLink(link: Loader.Link, context: Context): Loader.Geometry | undefined{
-            return Loader.EElement._fromLink<Loader.Geometry>(link, "Geometry", context);
+        static fromLink(link: Link, context: Context): Geometry | undefined{
+            return EElement._fromLink<Geometry>(link, "Geometry", context);
         }
 
         /**
         *   Parses a <geometry> element
         */
-        static parse(node: Node, context: Loader.LoaderContext): Loader.Geometry {
-            var result: Loader.Geometry = new Loader.Geometry();
+        static parse(node: Node, context: LoaderContext): Geometry {
+            var result: Geometry = new Geometry();
 
             result.id = context.getAttributeAsString(node, "id", undefined, true);
             result.name = context.getAttributeAsString(node, "name", undefined, false);
@@ -36,14 +38,14 @@ import * as MathUtils from "../math"
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
                     case "mesh":
-                        Loader.Geometry.parseMesh(child, result, context);
+                        Geometry.parseMesh(child, result, context);
                         break;
                     case "convex_mesh":
                     case "spline":
                         context.log.write("Geometry type " + child.nodeName + " not supported.", LogLevel.Error);
                         break;
                     case "extra":
-                        Loader.Geometry.parseGeometryExtra(child, result, context);
+                        Geometry.parseGeometryExtra(child, result, context);
                         break;
                     default:
                         context.reportUnexpectedChild(child);
@@ -56,19 +58,19 @@ import * as MathUtils from "../math"
         /**
         *   Parses a <geometry>/<mesh> element
         */
-        static parseMesh(node: Node, geometry: Loader.Geometry, context: Loader.LoaderContext) {
+        static parseMesh(node: Node, geometry: Geometry, context: LoaderContext) {
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
                     case "source":
-                        geometry.sources.push(Loader.Source.parse(child, context));
+                        geometry.sources.push(SourceLoader.Source.parse(child, context));
                         break;
                     case "vertices":
-                        geometry.vertices.push(Loader.Vertices.parse(child, context));
+                        geometry.vertices.push(Vertices.parse(child, context));
                         break;
                     case "triangles":
                     case "polylist":
                     case "polygons":
-                        geometry.triangles.push(Loader.Triangles.parse(child, context));
+                        geometry.triangles.push(Triangles.parse(child, context));
                         break;
                     case "lines":
                     case "linestrips":
@@ -85,12 +87,12 @@ import * as MathUtils from "../math"
         /**
         *   Parses a <geometry>/<extra> element
         */
-        static parseGeometryExtra(node: Node, geometry: Loader.Geometry, context: Loader.LoaderContext) {
+        static parseGeometryExtra(node: Node, geometry: Geometry, context: LoaderContext) {
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
                     case "technique":
                         var profile: string = context.getAttributeAsString(child, "profile", undefined, true);
-                        Loader.Geometry.parseGeometryExtraTechnique(child, geometry, profile, context);
+                        Geometry.parseGeometryExtraTechnique(child, geometry, profile, context);
                         break;
                     default:
                         context.reportUnexpectedChild(child);
@@ -101,7 +103,7 @@ import * as MathUtils from "../math"
         /**
         *   Parses a <geometry>/<extra>/<technique> element
         */
-        static parseGeometryExtraTechnique(node: Node, geometry: Loader.Geometry, profile: string, context: Loader.LoaderContext) {
+        static parseGeometryExtraTechnique(node: Node, geometry: Geometry, profile: string, context: LoaderContext) {
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
                     default:
@@ -112,10 +114,10 @@ import * as MathUtils from "../math"
     };
 
 
-    export class GeometryLibrary extends Loader.EElement {
+    export class GeometryLibrary extends EElement {
         children: Geometry[] = [];
 
-        static parse(node: Node, context: Loader.LoaderContext): GeometryLibrary {
+        static parse(node: Node, context: LoaderContext): GeometryLibrary {
             var result: GeometryLibrary = new GeometryLibrary();
 
             Utils.forEachChild(node, function (child: Node) {

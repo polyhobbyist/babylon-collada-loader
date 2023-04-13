@@ -1,13 +1,13 @@
-import {Context} from "../context"
-import {LogLevel} from "../log"
-import * as Loader from "./loader"
-import * as Converter from "../converter/converter"
-import * as Exporter from "../exporter/exporter"
-import * as Utils from "./utils"
-import * as MathUtils from "../math"
+import { Context } from "../context"
 
-    export class Vertices extends Loader.EElement {
-        inputs: Loader.Input[];
+import { LoaderContext } from "./context"
+import { EElement } from "./element"
+import { Input } from "./input"
+import { Link } from "./link"
+import * as Utils from "./utils"
+
+    export class Vertices extends EElement {
+        inputs: Input[];
 
         constructor() {
             super();
@@ -15,15 +15,15 @@ import * as MathUtils from "../math"
             this.inputs = [];
         }
 
-        static fromLink(link: Loader.Link, context: Context): Loader.Vertices | undefined {
-            return Loader.EElement._fromLink<Loader.Vertices>(link, "Vertices", context);
+        static fromLink(link: Link, context: Context): Vertices | undefined {
+            return EElement._fromLink<Vertices>(link, "Vertices", context);
         }
 
         /**
         *   Parses a <vertices> element.
         */
-        static parse(node: Node, context: Loader.LoaderContext): Loader.Vertices {
-            var result: Loader.Vertices = new Loader.Vertices();
+        static parse(node: Node, context: LoaderContext): Vertices {
+            var result: Vertices = new Vertices();
 
             result.id = context.getAttributeAsString(node, "id", "", true);
             result.name = context.getAttributeAsString(node, "name", "", false);
@@ -32,7 +32,7 @@ import * as MathUtils from "../math"
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
                     case "input":
-                        result.inputs.push(Loader.Input.parse(child, false, context));
+                        result.inputs.push(Input.parse(child, false, context));
                         break;
                     default:
                         context.reportUnexpectedChild(child);

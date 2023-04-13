@@ -1,9 +1,10 @@
-import * as Converter from "../converter/converter"
-import * as Exporter from "./exporter"
+import { ExporterContext } from "./context";
+import { MaterialJSON } from "./format";
+import * as ConverterMaterial from "../converter/material";
 
     export class Material {
 
-        static toJSON(material: Converter.Material, context: Exporter.ExporterContext): Exporter.MaterialJSON | undefined{
+        static toJSON(material: ConverterMaterial.Material, context: ExporterContext): MaterialJSON | undefined{
             if (!material) {
                 return null;
             }

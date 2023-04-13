@@ -1,14 +1,17 @@
-import * as Converter from "../converter/converter"
+import { Geometry } from "./geometry";
+import { AnimationData } from "./animation_data";
+import { Node } from "./node";
+import { Animation } from "./animation";
 
 export class Document {
         /** The scene graph */
-        nodes: Converter.Node[];
+        nodes: Node[];
         /** Animations (all original animation curves) */
-        animations: Converter.Animation[];
+        animations: Animation[];
         /** Animations (resampled node animations) */
-        resampled_animations: Converter.AnimationData[];
+        resampled_animations: AnimationData[];
         /** Geometries (detached from the scene graph) */
-        geometries: Converter.Geometry[];
+        geometries: Geometry[];
 
         constructor() {
             this.nodes = [];

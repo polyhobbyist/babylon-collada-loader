@@ -1,13 +1,12 @@
-import {Context} from "../context"
-import {LogLevel} from "../log"
-import * as Loader from "./loader"
-import * as Converter from "../converter/converter"
-import * as Exporter from "../exporter/exporter"
+import { Context } from "../context"
+import { LoaderContext } from "./context";
+import { EElement } from "./element";
+import { Link } from "./link";
+
 import * as Utils from "./utils"
-import * as MathUtils from "../math"
 
 
-    export class Image extends Loader.EElement {
+    export class Image extends EElement {
         initFrom: string | undefined;
 
         constructor() {
@@ -15,15 +14,15 @@ import * as MathUtils from "../math"
             this._className += "Image|";
         }
 
-        static fromLink(link: Loader.Link, context: Context): Loader.Image  | undefined{
-            return Loader.EElement._fromLink<Loader.Image>(link, "Image", context);
+        static fromLink(link: Link, context: Context): Image  | undefined{
+            return EElement._fromLink<Image>(link, "Image", context);
         }
 
         /**
         *   Parses an <image> element.
         */
-        static parse(node: Node, context: Loader.LoaderContext): Loader.Image {
-            var result: Loader.Image = new Loader.Image();
+        static parse(node: Node, context: LoaderContext): Image {
+            var result: Image = new Image();
 
             result.id = context.getAttributeAsString(node, "id", undefined, true);
             context.registerUrlTarget(result, true);
@@ -43,10 +42,10 @@ import * as MathUtils from "../math"
 
     }
 
-    export class ImageLibrary extends Loader.EElement {
+    export class ImageLibrary extends EElement {
         children: Image[] = [];
 
-        static parse(node: Node, context: Loader.LoaderContext): ImageLibrary {
+        static parse(node: Node, context: LoaderContext): ImageLibrary {
             var result: ImageLibrary = new ImageLibrary();
 
             Utils.forEachChild(node, function (child: Node) {

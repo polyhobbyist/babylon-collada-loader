@@ -1,23 +1,23 @@
-import {Context} from "../context"
-import {LogLevel} from "../log"
-import * as Loader from "./loader"
-import * as Converter from "../converter/converter"
-import * as Exporter from "../exporter/exporter"
+import { Context } from "../context"
+import { LogLevel } from "../log"
+
+import { LoaderContext } from "./context"
+import { EElement } from "./element"
+import { Link } from "./link"
 import * as Utils from "./utils"
-import * as MathUtils from "../math"
 
     export interface SourceData {
         length: number;
         [index: number]: any;
     }
 
-    export class Source extends Loader.EElement {
+    export class Source extends EElement {
         sourceId: string | undefined;
         count: number = 0;
         stride: number = 0;
         offset: number = 0;
         /** Can be one of: Float32Array, Int32Array, Uint8Array, Array<string> */
-        data: Loader.SourceData | undefined;
+        data: SourceData | undefined;
         params: { [s: string]: string; }
 
         constructor() {
@@ -26,18 +26,18 @@ import * as MathUtils from "../math"
             this.params = {};
         }
 
-        static fromLink(link: Loader.Link | undefined, context: Context): Loader.Source | undefined {
+        static fromLink(link: Link | undefined, context: Context): Source | undefined {
             if (!link) {
                 return undefined;
             }
-            return Loader.EElement._fromLink<Loader.Source>(link, "Source", context);
+            return EElement._fromLink<Source>(link, "Source", context);
         }
 
         /**
         *   Parses a <source> element
         */
-        static parse(node: Node, context: Loader.LoaderContext): Loader.Source {
-            var result: Loader.Source = new Loader.Source();
+        static parse(node: Node, context: LoaderContext): Source {
+            var result: Source = new Source();
 
             result.id = context.getAttributeAsString(node, "id", undefined, true);
             result.name = context.getAttributeAsString(node, "name", undefined, false);
@@ -63,7 +63,7 @@ import * as MathUtils from "../math"
                         result.data = context.getStringsContent(child);
                         break;
                     case "technique_common":
-                        Loader.Source.parseSourceTechniqueCommon(child, result, context);
+                        Source.parseSourceTechniqueCommon(child, result, context);
                         break;
                     case "technique":
                         context.reportUnhandledChild(child);
@@ -79,11 +79,11 @@ import * as MathUtils from "../math"
         /**
         *   Parses a <source>/<technique_common> element
         */
-        static parseSourceTechniqueCommon(node: Node, source: Loader.Source, context: Loader.LoaderContext) {
+        static parseSourceTechniqueCommon(node: Node, source: Source, context: LoaderContext) {
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
                     case "accessor":
-                        Loader.Source.parseAccessor(child, source, context);
+                        Source.parseAccessor(child, source, context);
                         break;
                     default:
                         context.reportUnexpectedChild(child);
@@ -94,7 +94,7 @@ import * as MathUtils from "../math"
         /**
         *   Parses a <source>/<technique_common>/<accessor> element
         */
-        static parseAccessor(node: Node, source: Loader.Source, context: Loader.LoaderContext) {
+        static parseAccessor(node: Node, source: Source, context: LoaderContext) {
 
             var sourceId: string = context.getAttributeAsString(node, "source", undefined, true);
             source.count = context.getAttributeAsInt(node, "count", 0, true) || 0;
@@ -107,7 +107,7 @@ import * as MathUtils from "../math"
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
                     case "param":
-                        Loader.Source.parseAccessorParam(child, source, context);
+                        Source.parseAccessorParam(child, source, context);
                         break;
                     default:
                         context.reportUnexpectedChild(child);
@@ -118,7 +118,7 @@ import * as MathUtils from "../math"
         /**
         *   Parses a <source>/<technique_common>/<accessor>/<param> element
         */
-        static parseAccessorParam(node: Node, source: Loader.Source, context: Loader.LoaderContext) {
+        static parseAccessorParam(node: Node, source: Source, context: LoaderContext) {
 
             var name: string = context.getAttributeAsString(node, "name", undefined, false);
             var semantic: string = context.getAttributeAsString(node, "semantic", undefined, false);
