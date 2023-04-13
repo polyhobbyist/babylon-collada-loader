@@ -1,8 +1,8 @@
 {
-  "name": "@polyhobbyist/dae_babylonloader",
+  "name": "@polyhobbyist/babylon-collada-loader",
   "repository": {
     "type": "git",
-    "url": "https://github.com/polyhobbyist/dae_babylonloader.git"
+    "url": "https://github.com/polyhobbyist/babylon-collada-loader.git"
   },
   "description": "Babylon.JS Loader for Collada",
   "version": "0.0.1",
