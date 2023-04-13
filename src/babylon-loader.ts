@@ -172,7 +172,7 @@ export class BabylonModel {
     static identityMatrix: BABYLON.Matrix = new BABYLON.Matrix();
 
 
-    meshes: BABYLON.AbstractMesh[];
+    meshes: BABYLON.AbstractMesh[] = [];
 
     constructor() {
         this.chunks = [];

@@ -1,3 +1,4 @@
+import * as BABYLON from "babylonjs";
 import path from 'path';
 import { readFileSync } from 'fs';
 import * as Loader from "../src/loader"
@@ -6,28 +7,35 @@ import * as BabylonLoader from "../src/babylon-loader"
 import {RMXModel} from "../src/model"
 import { ColladaConverter } from '../src/converter/colladaconverter';
 import { ColladaExporter } from '../src/exporter/colladaexporter';
+import { DAEFileLoader } from '../src/daeFileLoader';
+let engine = undefined;
+let scene : BABYLON.Scene | undefined = undefined;
+
+beforeAll(() => {
+    // Needed for testing material loading
+    engine = new BABYLON.NullEngine();
+    scene = new BABYLON.Scene(engine);
+
+});
+
+afterAll(() => {
+    scene = undefined
+    engine = undefined;
+});
+
 
 describe("Testing Dae", () => {
   test('Test Parsing XML', () => {
-    var parser = new DOMParser();
-    var loader = new Loader.ColladaLoader();
+    if (BABYLON.SceneLoader) {
+      //Add this loader into the register plugin
+      BABYLON.SceneLoader.RegisterPlugin(new DAEFileLoader());
+    }
 
     var filePath = path.join(__dirname, "testdata/monkey.dae");
-    var meshdata = readFileSync(filePath).toString();
-
-    var colladaXml = parser.parseFromString(meshdata, "text/xml");
-
-    var colladaDoc = loader.loadFromXML("id", colladaXml);
-    expect(colladaDoc).toBeDefined();
-
-    var converter = new ColladaConverter();
-    var convertedDoc = converter.convert(colladaDoc);
-
-    var exporter = new ColladaExporter();
-    var exportedDoc = exporter.export(convertedDoc);
-
-    var modelLoader = new RMXModelLoader;
-    var model: RMXModel = modelLoader.loadModel(exportedDoc.json, exportedDoc.data.buffer);
+    var meshdata = readFileSync(filePath).toString('base64');
+      BABYLON.SceneLoader.ImportMesh(null, "", "data:;base64," + meshdata, scene, (mesh) => {
+        expect(mesh).toBeDefined();
+    }, null, null, ".dae");
 
   })
 })
