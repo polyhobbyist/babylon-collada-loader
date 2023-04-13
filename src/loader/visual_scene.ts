@@ -22,7 +22,7 @@ import * as MathUtils from "../math"
             return Loader.EElement._fromLink<Loader.VisualScene>(link, "VisualScene", context);
         }
 
-        static parse(node: Node, context: Loader.Context): Loader.VisualScene {
+        static parse(node: Node, context: Loader.LoaderContext): Loader.VisualScene {
             var result: Loader.VisualScene = new Loader.VisualScene();
 
             result.id = context.getAttributeAsString(node, "id", "", false);
@@ -45,3 +45,27 @@ import * as MathUtils from "../math"
             return result;
         }
     };
+
+    export class VisualSceneLibrary extends Loader.EElement {
+        children: VisualScene[] = [];
+
+        static parse(node: Node, context: Loader.LoaderContext): VisualSceneLibrary {
+            var result: VisualSceneLibrary = new VisualSceneLibrary();
+
+            Utils.forEachChild(node, function (child: Node) {
+                switch (child.nodeName) {
+                    case "visual_scene":
+                        result.children.push(VisualScene.parse(child, context));
+                        break;
+                    case "extra":
+                        context.reportUnhandledChild(child);
+                        break;
+                    default:
+                        context.reportUnexpectedChild(child);
+                        break;
+                }
+            });
+
+            return result;
+        }
+    }

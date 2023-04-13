@@ -12,7 +12,7 @@ import * as MathUtils from '../math'
 
     export class Skeleton {
 
-        static toJSON(skeleton: Converter.Skeleton, context: Exporter.Context): Exporter.BoneJSON[] | undefined{
+        static toJSON(skeleton: Converter.Skeleton, context: Exporter.ExporterContext): Exporter.BoneJSON[] | undefined{
             if (!skeleton) {
                 return undefined ;
             }
@@ -33,22 +33,19 @@ import * as MathUtils from '../math'
                 var scl= new BABYLON.Vector3(1, 1, 1);
                 mat.decompose(scl, rot, pos);
 
-                /* TODO Polyhobbyist
-
                 // Bone inverse bind matrix
                 var inv_bind_mat: number[] = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
-                MathUtils.copyNumberArray(bone.invBindMatrix, inv_bind_mat, 16);
+                bone.invBindMatrix = BABYLON.Matrix.FromArray(inv_bind_mat);
 
                 result.push({
                     name: bone.name,
                     parent: skeleton.bones.indexOf(bone.parent),
                     skinned: bone.attachedToSkin,
                     inv_bind_mat: inv_bind_mat.map((x) => MathUtils.round(x, mat_tol)),
-                    pos: pos.map((x) => MathUtils.round(x, pos_tol)),
-                    rot: rot.map((x) => MathUtils.round(x, rot_tol)),
-                    scl: scl.map((x) => MathUtils.round(x, scl_tol))
+                    pos: pos.asArray().map((x) => MathUtils.round(x, pos_tol)),
+                    rot: rot.asArray().map((x) => MathUtils.round(x, rot_tol)),
+                    scl: scl.asArray().map((x) => MathUtils.round(x, scl_tol))
                 });
-                */
             });
 
             return result;

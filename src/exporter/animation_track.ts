@@ -8,8 +8,8 @@ import * as MathUtils from "../math"
 
     export class AnimationTrack {
 
-        static toJSON(track: Converter.AnimationDataTrack, index: number, context: Exporter.Context): Exporter.AnimationTrackJSON {
-            if (track === null) {
+        static toJSON(track: Converter.AnimationDataTrack, index: number, context: Exporter.ExporterContext): Exporter.AnimationTrackJSON {
+            if (!track) {
                 return null;
             }
 

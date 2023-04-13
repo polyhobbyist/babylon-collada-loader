@@ -23,7 +23,7 @@ import * as MathUtils from "../math"
         /**
         *   Parses a <vertex_weights> element.
         */
-        static parse(node: Node, context: Loader.Context): Loader.VertexWeights {
+        static parse(node: Node, context: Loader.LoaderContext): Loader.VertexWeights {
             var result: Loader.VertexWeights = new Loader.VertexWeights();
 
             result.count = context.getAttributeAsInt(node, "count", 0, true);
@@ -48,7 +48,7 @@ import * as MathUtils from "../math"
             return result;
         }
 
-        static addInput(weights: Loader.VertexWeights, input: Loader.Input, context: Loader.Context) {
+        static addInput(weights: Loader.VertexWeights, input: Loader.Input, context: Loader.LoaderContext) {
             switch (input.semantic) {
                 case "JOINT":
                     weights.joints = input;

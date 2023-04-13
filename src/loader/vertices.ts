@@ -22,7 +22,7 @@ import * as MathUtils from "../math"
         /**
         *   Parses a <vertices> element.
         */
-        static parse(node: Node, context: Loader.Context): Loader.Vertices {
+        static parse(node: Node, context: Loader.LoaderContext): Loader.Vertices {
             var result: Loader.Vertices = new Loader.Vertices();
 
             result.id = context.getAttributeAsString(node, "id", "", true);

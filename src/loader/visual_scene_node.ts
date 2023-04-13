@@ -39,12 +39,12 @@ import * as MathUtils from "../math"
             return Loader.EElement._fromLink<Loader.VisualSceneNode>(link, "VisualSceneNode", context);
         }
 
-        static registerParent(child: Loader.VisualSceneNode, parent: Loader.EElement, context: Loader.Context) {
+        static registerParent(child: Loader.VisualSceneNode, parent: Loader.EElement, context: Loader.LoaderContext) {
             child.parent = parent;
             context.registerSidTarget(child, parent);
         }
 
-        static parse(node: Node, context: Loader.Context): Loader.VisualSceneNode {
+        static parse(node: Node, context: Loader.LoaderContext): Loader.VisualSceneNode {
             var result: Loader.VisualSceneNode = new Loader.VisualSceneNode();
 
             result.id = context.getAttributeAsString(node, "id", undefined, false);
@@ -91,3 +91,28 @@ import * as MathUtils from "../math"
             return result;
         }
     };
+
+
+    export class VisualSceneNodeLibrary extends Loader.EElement {
+        children: VisualSceneNode[] = [];
+
+        static parse(node: Node, context: Loader.LoaderContext): VisualSceneNodeLibrary {
+            var result: VisualSceneNodeLibrary = new VisualSceneNodeLibrary();
+
+            Utils.forEachChild(node, function (child: Node) {
+                switch (child.nodeName) {
+                    case "node":
+                        result.children.push(VisualSceneNode.parse(child, context));
+                        break;
+                    case "extra":
+                        context.reportUnhandledChild(child);
+                        break;
+                    default:
+                        context.reportUnexpectedChild(child);
+                        break;
+                }
+            });
+
+            return result;
+        }
+    }

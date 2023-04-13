@@ -29,7 +29,7 @@ import * as MathUtils from "../math"
         /**
         *   Parses a <newparam> element.
         */
-        static parse(node: Node, parent: Loader.EElement, context: Loader.Context): Loader.EffectParam {
+        static parse(node: Node, parent: Loader.EElement, context: Loader.LoaderContext): Loader.EffectParam {
             var result: Loader.EffectParam = new Loader.EffectParam();
 
             result.sid = context.getAttributeAsString(node, "sid", undefined, false);

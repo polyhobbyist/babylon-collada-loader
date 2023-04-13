@@ -22,7 +22,7 @@ import * as MathUtils from "../math"
         /**
         *   Parses an <image> element.
         */
-        static parse(node: Node, context: Loader.Context): Loader.Image {
+        static parse(node: Node, context: Loader.LoaderContext): Loader.Image {
             var result: Loader.Image = new Loader.Image();
 
             result.id = context.getAttributeAsString(node, "id", undefined, true);
@@ -41,4 +41,28 @@ import * as MathUtils from "../math"
             return result;
         }
 
+    }
+
+    export class ImageLibrary extends Loader.EElement {
+        children: Image[] = [];
+
+        static parse(node: Node, context: Loader.LoaderContext): ImageLibrary {
+            var result: ImageLibrary = new ImageLibrary();
+
+            Utils.forEachChild(node, function (child: Node) {
+                switch (child.nodeName) {
+                    case "image":
+                        result.children.push(Image.parse(child, context));
+                        break;
+                    case "extra":
+                        context.reportUnhandledChild(child);
+                        break;
+                    default:
+                        context.reportUnexpectedChild(child);
+                        break;
+                }
+            });
+
+            return result;
+        }
     }

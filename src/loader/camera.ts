@@ -14,7 +14,7 @@ import * as Utils from "./utils"
         /**
         *   Parses a <camera> element.
         */
-        static parse(node: Node, context: Loader.Context): Loader.Camera {
+        static parse(node: Node, context: Loader.LoaderContext): Loader.Camera {
             var result: Loader.Camera = new Loader.Camera();
 
             result.id = context.getAttributeAsString(node, "id", undefined, true);
@@ -46,7 +46,7 @@ import * as Utils from "./utils"
         /**
         *   Parses a <camera>/<optics> element.
         */
-        static parseOptics(node: Node, camera: Loader.Camera, context: Loader.Context) {
+        static parseOptics(node: Node, camera: Loader.Camera, context: Loader.LoaderContext) {
 
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
@@ -69,7 +69,7 @@ import * as Utils from "./utils"
         /**
         *   Parses a <camera>/<optics>/<technique_common> element.
         */
-        static parseTechniqueCommon(node: Node, camera: Loader.Camera, context: Loader.Context) {
+        static parseTechniqueCommon(node: Node, camera: Loader.Camera, context: Loader.LoaderContext) {
 
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
@@ -89,7 +89,7 @@ import * as Utils from "./utils"
         /**
         *   Parses a <camera>/<optics>/<technique_common>/(<orthographic>|<perspective>) element.
         */
-        static parseParams(node: Node, camera: Loader.Camera, context: Loader.Context) {
+        static parseParams(node: Node, camera: Loader.Camera, context: Loader.LoaderContext) {
 
             camera.type = node.nodeName;
 
@@ -114,5 +114,30 @@ import * as Utils from "./utils"
                 }
             });
 
+        }
+    }
+
+    export class CameraLibrary extends Loader.EElement {
+        children: Camera[] = [];
+
+
+        static parse(node: Node, context: Loader.LoaderContext): CameraLibrary {
+            var result: CameraLibrary = new CameraLibrary();
+
+            Utils.forEachChild(node, function (child: Node) {
+                switch (child.nodeName) {
+                    case "camera":
+                        result.children.push(Camera.parse(child, context));
+                        break;
+                    case "extra":
+                        context.reportUnhandledChild(child);
+                        break;
+                    default:
+                        context.reportUnexpectedChild(child);
+                        break;
+                }
+            });
+
+            return result;
         }
     }

@@ -20,7 +20,7 @@ export class Light extends Loader.EElement {
         /**
         *   Parses a <light> element.
         */
-        static parse(node: Node, context: Loader.Context): Loader.Light {
+        static parse(node: Node, context: Loader.LoaderContext): Loader.Light {
             var result: Loader.Light = new Loader.Light();
 
             result.id = context.getAttributeAsString(node, "id", undefined, true);
@@ -46,7 +46,7 @@ export class Light extends Loader.EElement {
         /**
         *   Parses a <light>/<technique_common> element.
         */
-        static parseTechniqueCommon(node: Node, light: Loader.Light, context: Loader.Context) {
+        static parseTechniqueCommon(node: Node, light: Loader.Light, context: Loader.LoaderContext) {
 
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
@@ -66,7 +66,7 @@ export class Light extends Loader.EElement {
         /**
         *   Parses a <light>/<technique_common>/(<ambient>|<directional>|<point>|<spot>) element.
         */
-        static parseParams(node: Node, light: Loader.Light, profile: string, context: Loader.Context) {
+        static parseParams(node: Node, light: Loader.Light, profile: string, context: Loader.LoaderContext) {
 
             light.type = node.nodeName;
 
@@ -91,4 +91,29 @@ export class Light extends Loader.EElement {
 
         }
 
+    }
+
+
+    export class LightLibrary extends Loader.EElement {
+        children: Light[] = [];
+
+        static parse(node: Node, context: Loader.LoaderContext): LightLibrary {
+            var result: LightLibrary = new LightLibrary();
+
+            Utils.forEachChild(node, function (child: Node) {
+                switch (child.nodeName) {
+                    case "effect": //"light": // Polyhobbyist - this is what it was called in the code.
+                        result.children.push(Light.parse(child, context));
+                        break;
+                    case "extra":
+                        context.reportUnhandledChild(child);
+                        break;
+                    default:
+                        context.reportUnexpectedChild(child);
+                        break;
+                }
+            });
+
+            return result;
+        }
     }

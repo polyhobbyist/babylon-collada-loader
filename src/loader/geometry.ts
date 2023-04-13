@@ -26,7 +26,7 @@ import * as MathUtils from "../math"
         /**
         *   Parses a <geometry> element
         */
-        static parse(node: Node, context: Loader.Context): Loader.Geometry {
+        static parse(node: Node, context: Loader.LoaderContext): Loader.Geometry {
             var result: Loader.Geometry = new Loader.Geometry();
 
             result.id = context.getAttributeAsString(node, "id", undefined, true);
@@ -56,7 +56,7 @@ import * as MathUtils from "../math"
         /**
         *   Parses a <geometry>/<mesh> element
         */
-        static parseMesh(node: Node, geometry: Loader.Geometry, context: Loader.Context) {
+        static parseMesh(node: Node, geometry: Loader.Geometry, context: Loader.LoaderContext) {
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
                     case "source":
@@ -85,7 +85,7 @@ import * as MathUtils from "../math"
         /**
         *   Parses a <geometry>/<extra> element
         */
-        static parseGeometryExtra(node: Node, geometry: Loader.Geometry, context: Loader.Context) {
+        static parseGeometryExtra(node: Node, geometry: Loader.Geometry, context: Loader.LoaderContext) {
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
                     case "technique":
@@ -101,7 +101,7 @@ import * as MathUtils from "../math"
         /**
         *   Parses a <geometry>/<extra>/<technique> element
         */
-        static parseGeometryExtraTechnique(node: Node, geometry: Loader.Geometry, profile: string, context: Loader.Context) {
+        static parseGeometryExtraTechnique(node: Node, geometry: Loader.Geometry, profile: string, context: Loader.LoaderContext) {
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
                     default:
@@ -110,3 +110,28 @@ import * as MathUtils from "../math"
             });
         }
     };
+
+
+    export class GeometryLibrary extends Loader.EElement {
+        children: Geometry[] = [];
+
+        static parse(node: Node, context: Loader.LoaderContext): GeometryLibrary {
+            var result: GeometryLibrary = new GeometryLibrary();
+
+            Utils.forEachChild(node, function (child: Node) {
+                switch (child.nodeName) {
+                    case "geometry":
+                        result.children.push(Geometry.parse(child, context));
+                        break;
+                    case "extra":
+                        context.reportUnhandledChild(child);
+                        break;
+                    default:
+                        context.reportUnexpectedChild(child);
+                        break;
+                }
+            });
+
+            return result;
+        }
+    }

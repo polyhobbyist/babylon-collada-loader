@@ -17,7 +17,7 @@ import * as MathUtils from "../math"
         /**
         *   Parses a light parameter element.
         */
-        static parse(node: Node, context: Loader.Context): Loader.LightParam {
+        static parse(node: Node, context: Loader.LoaderContext): Loader.LightParam {
             var result: Loader.LightParam = new Loader.LightParam();
 
             result.sid = context.getAttributeAsString(node, "sid", undefined, false);

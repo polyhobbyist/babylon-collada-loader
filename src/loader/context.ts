@@ -8,7 +8,7 @@ import * as Utils from "./utils"
 import * as MathUtils from "../math"
 
 
-    export class Context extends COLLADAContext.Context {
+    export class LoaderContext extends COLLADAContext.Context {
         ids: { [s: string]: Loader.EElement; }
         links: Loader.Link[] | undefined;
         totalBytes: number = 0;

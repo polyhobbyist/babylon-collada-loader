@@ -53,7 +53,7 @@ import * as BABYLON from 'babylonjs';
         *
         * This de-indexes the COLLADA data, so that it is usable by GPUs.
         */
-        static createChunk(geometry: Loader.Geometry, triangles: Loader.Triangles, context: Converter.Context): Converter.GeometryChunk | undefined{
+        static createChunk(geometry: Loader.Geometry, triangles: Loader.Triangles, context: Converter.ConverterContext): Converter.GeometryChunk | undefined{
             if (!triangles?.inputs) {
                 return undefined;
             }
@@ -174,7 +174,7 @@ import * as BABYLON from 'babylonjs';
             var triangleVertexStride = triangleStride / 3;
             var indices = Utils.compactIndices(colladaIndices, triangleVertexStride, inputTriVertices.offset);
 
-            if ((indices === null) || (indices.length === 0)) {
+            if ((!indices) || (indices.length === 0)) {
                 context.log.write("Geometry " + geometry.id + " does not contain any indices, geometry ignored", LogLevel.Error);
                 return undefined;
             }
@@ -243,7 +243,7 @@ import * as BABYLON from 'babylonjs';
         /**
         * Computes the bounding box of the static (unskinned) geometry
         */
-        static computeBoundingBox(chunk: Converter.GeometryChunk, context: Converter.Context) {
+        static computeBoundingBox(chunk: Converter.GeometryChunk, context: Converter.ConverterContext) {
             chunk.boundingBox.fromPositions(chunk.data.position, chunk.vertexBufferOffset, chunk.vertexCount);
         }
 
@@ -264,7 +264,7 @@ import * as BABYLON from 'babylonjs';
         /**
         * Transforms the positions and normals of the given Chunk by the given matrices
         */
-        static transformChunk(chunk: Converter.GeometryChunk, positionMatrix: BABYLON.Matrix, normalMatrix: BABYLON.Matrix, context: Converter.Context) {
+        static transformChunk(chunk: Converter.GeometryChunk, positionMatrix: BABYLON.Matrix, normalMatrix: BABYLON.Matrix, context: Converter.ConverterContext) {
             var position: Float32Array = chunk.data.position;
             if (position !== null) {
                 GeometryChunk.transformEachVector(position, positionMatrix);
@@ -279,7 +279,7 @@ import * as BABYLON from 'babylonjs';
         /**
         * Scales the positions of the given Chunk
         */
-        static scaleChunk(chunk: Converter.GeometryChunk, scale: number, context: Converter.Context) {
+        static scaleChunk(chunk: Converter.GeometryChunk, scale: number, context: Converter.ConverterContext) {
             var position: Float32Array = chunk.data.position;
             if (position !== null) {
                 for (var i = 0; i < position.length; ++i) {
@@ -295,7 +295,7 @@ import * as BABYLON from 'babylonjs';
         * Each chunk then uses the same buffers, but uses a different portion of the buffers, according to the triangleCount and triangleOffset.
         * A single new chunk containing all the geometry is returned.
         */
-        static mergeChunkData(chunks: Converter.GeometryChunk[], context: Converter.Context) {
+        static mergeChunkData(chunks: Converter.GeometryChunk[], context: Converter.ConverterContext) {
 
             if (chunks.length < 2) {
                 return;

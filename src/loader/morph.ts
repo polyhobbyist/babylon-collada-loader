@@ -16,7 +16,7 @@ import * as MathUtils from "../math"
         /**
         *   Parses a <morph> element.
         */
-        static parse(node: Node, context: Loader.Context): Loader.Morph {
+        static parse(node: Node, context: Loader.LoaderContext): Loader.Morph {
             var result: Loader.Morph = new Loader.Morph();
 
             context.log.write("Morph controllers not implemented", LogLevel.Error);

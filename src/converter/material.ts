@@ -30,7 +30,7 @@ import {BoundingBox} from "./bounding_box"
             this.normal = null;
         }
 
-        static createDefaultMaterial(context: Converter.Context): Converter.Material {
+        static createDefaultMaterial(context: Converter.ConverterContext): Converter.Material {
             var result: Converter.Material = context.materials.findConverter(null);
             if (result) {
                 return result;
@@ -41,22 +41,22 @@ import {BoundingBox} from "./bounding_box"
             }
         }
 
-        static createMaterial(instanceMaterial: Loader.InstanceMaterial, context: Converter.Context): Converter.Material {
+        static createMaterial(instanceMaterial: Loader.InstanceMaterial, context: Converter.ConverterContext): Converter.Material {
 
             var material: Loader.Material = Loader.Material.fromLink(instanceMaterial.material, context);
-            if (material === null) {
+            if (!material) {
                 context.log.write("Material not found, material skipped.", LogLevel.Warning);
                 return Converter.Material.createDefaultMaterial(context);
             }
 
             var effect: Loader.Effect = Loader.Effect.fromLink(material.effect, context);
-            if (effect === null) {
+            if (!effect) {
                 context.log.write("Material effect not found, using default material", LogLevel.Warning);
                 return Converter.Material.createDefaultMaterial(context);
             }
 
             var technique: Loader.EffectTechnique = effect.technique;
-            if (technique === null) {
+            if (!technique) {
                 context.log.write("Material effect not found, using default material", LogLevel.Warning);
                 return Converter.Material.createDefaultMaterial(context);
             }
@@ -82,7 +82,7 @@ import {BoundingBox} from "./bounding_box"
             return result;
         }
 
-        static getMaterialMap(instanceMaterials: Loader.InstanceMaterial[], context: Converter.Context): Converter.MaterialMap {
+        static getMaterialMap(instanceMaterials: Loader.InstanceMaterial[], context: Converter.ConverterContext): Converter.MaterialMap {
             var result: Converter.MaterialMap = new Converter.MaterialMap();
 
             var numMaterials: number = 0;
@@ -90,7 +90,7 @@ import {BoundingBox} from "./bounding_box"
                 var instanceMaterial: Loader.InstanceMaterial = instanceMaterials[i];
 
                 var symbol: string = instanceMaterial.symbol;
-                if (symbol === null) {
+                if (!symbol) {
                     context.log.write("Material instance has no symbol, material skipped.", LogLevel.Warning);
                     continue;
                 }

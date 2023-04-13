@@ -1,5 +1,6 @@
 *.d.ts
 types/**
+reports/**
 
 # Logs
 logs

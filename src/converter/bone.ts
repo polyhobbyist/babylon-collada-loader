@@ -15,7 +15,7 @@ import * as BABYLON from 'babylonjs';
 
         constructor(node: Converter.Node) {
             this.node = node;
-            this.name = node.name;
+            this.name = node.name || "";
             this.attachedToSkin = false;
         }
 
@@ -40,7 +40,7 @@ import * as BABYLON from 'babylonjs';
         * Finds the visual scene node that is referenced by the joint SID.
         * The skin element contains the skeleton root nodes.
         */
-        static findBoneNode(boneSid: string, skeletonRootNodes: Loader.VisualSceneNode[], context: Converter.Context): Loader.VisualSceneNode | undefined {
+        static findBoneNode(boneSid: string, skeletonRootNodes: Loader.VisualSceneNode[], context: Converter.ConverterContext): Loader.VisualSceneNode | undefined {
             // The spec is inconsistent here.
             // The joint ids do not seem to be real scoped identifiers(chapter 3.3, "COLLADA Target Addressing"), since they lack the first part (the anchor id)
             // The skin element(chapter 5, "skin" element) *implies* that the joint ids are scoped identifiers relative to the skeleton root node,
@@ -70,7 +70,7 @@ import * as BABYLON from 'babylonjs';
         }
 
         static sameInvBindMatrix(a: Converter.Bone, b: Converter.Bone, tolerance: number): boolean {
-            if (a === null || b === null) {
+            if (!a || !b) {
                 return false;
             }
             for (var i = 0; i < 16; ++i) {
@@ -92,7 +92,7 @@ import * as BABYLON from 'babylonjs';
             if (a === b) {
                 return true;
             }
-            if (a === null || b === null) {
+            if (!a || !b) {
                 return false;
             }
             if (a.node !== b.node) {

@@ -1,6 +1,11 @@
 import { promises as fs } from 'fs';
 import * as BABYLON from "babylonjs";
 import * as Loader from "./loader"
+import * as Converter from "./converter/converter"
+import * as Exporter from "./exporter/exporter"
+import {RMXModelLoader} from "./model-loader"
+import * as BabylonLoader from "./babylon-loader"
+import {RMXModel} from "./model"
 import {LogLevel, LogCallback, LogFilter} from "./log"
 
 
@@ -69,28 +74,40 @@ export class DAEFileLoader implements BABYLON.ISceneLoaderPluginAsync, BABYLON.I
     }
 
     private async _parseSolid(meshesNames: any, scene: BABYLON.Scene, data: string, rootUrl: string): Promise<Array<BABYLON.AbstractMesh>> {
-      let fileToLoad: string = "";
       const materialToUse = new Array<string>();
       const babylonMeshesArray: Array<BABYLON.Mesh> = []; //The mesh for babylon
 
       var loader = new Loader.ColladaLoader();
       var loaderlog = new LogCallback;
-      loaderlog.onmessage = (message: string, level: LogLevel) => { console.log(message); }      
+      //loaderlog.onmessage = (message: string, level: LogLevel) => { console.log(message); }      
       loader.log = new LogFilter(loaderlog, LogLevel.Debug);
       
       var parser = new DOMParser();
-      var meshdata = await fs.readFile(fileToLoad).toString();
-      var colladaXml = parser.parseFromString(meshdata, "text/xml");
+      var colladaXml = parser.parseFromString(data, "text/xml");
 
       var colladaDoc = loader.loadFromXML("id", colladaXml);
 
+      var converter = new Converter.ColladaConverter();
+      var convertedDoc = converter.convert(colladaDoc);
+
+      var exporter = new Exporter.ColladaExporter();
+      var exportedDoc = exporter.export(convertedDoc);
+
+      var modelLoader = new RMXModelLoader;
+      var model: RMXModel = modelLoader.loadModel(exportedDoc.json, exportedDoc.data.buffer);
+
+      var loader2 = new BabylonLoader.BabylonModelLoader;
+      var model2 = loader2.createModel(model, scene);
+
 
       //Return an array with all Mesh
-        return babylonMeshesArray;
+        return model2.meshes;
   }    
 }
 
-if (BABYLON.SceneLoader) {
-  //Add this loader into the register plugin
-  BABYLON.SceneLoader.RegisterPlugin(new DAEFileLoader());
+export function Register() {
+  if (BABYLON.SceneLoader) {
+    //Add this loader into the register plugin
+    BABYLON.SceneLoader.RegisterPlugin(new DAEFileLoader());
+  }
 }

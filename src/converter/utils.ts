@@ -87,7 +87,7 @@ import {Context} from "../context"
         * Returns the maximum element of a list of non-negative integers
         */
         export function maxIndex(indices: Uint32Array): number {
-            if (indices === null) {
+            if (!indices) {
                 return 0;
             }
             var result: number = -1;
@@ -99,7 +99,7 @@ import {Context} from "../context"
         }
 
         export function createFloatArray(source: Loader.Source, name: string, outDim: number, context: Context): Float32Array {
-            if (source === null) {
+            if (!source) {
                 return new Float32Array();
             }
 
@@ -139,7 +139,7 @@ import {Context} from "../context"
         }
 
         export function createStringArray(source: Loader.Source, name: string, outDim: number, context: Context): string[] {
-            if (source === null) {
+            if (!source) {
                 return [];
             }
             if (source.stride > outDim) {
@@ -202,7 +202,7 @@ import {Context} from "../context"
         }
 
         var worldTransform: BABYLON.Matrix = new BABYLON.Matrix();
-        export function getWorldTransform(context: Converter.Context): BABYLON.Matrix {
+        export function getWorldTransform(context: Converter.ConverterContext): BABYLON.Matrix {
             var mat: BABYLON.Matrix = worldTransform;
             mat.copyFrom(getWorldRotation(context));
             var s = getWorldScale(context);
@@ -212,7 +212,7 @@ import {Context} from "../context"
         }
 
         var worldInvTransform: BABYLON.Matrix = new BABYLON.Matrix();
-        export function getWorldInvTransform(context: Converter.Context): BABYLON.Matrix {
+        export function getWorldInvTransform(context: Converter.ConverterContext): BABYLON.Matrix {
             var mat: BABYLON.Matrix = getWorldTransform(context);
             mat.copyFrom(getWorldRotation(context));
             mat.invert();
@@ -220,21 +220,21 @@ import {Context} from "../context"
         }
 
         var worldScale: BABYLON.Vector3 = new BABYLON.Vector3();
-        export function getWorldScale(context: Converter.Context): BABYLON.Vector3 {
+        export function getWorldScale(context: Converter.ConverterContext): BABYLON.Vector3 {
             var scale: number = context.options.worldTransformScale.value;
             worldScale = new BABYLON.Vector3(scale, scale, scale);
             return worldScale;
         }
 
         var worldInvScale: BABYLON.Vector3 = new BABYLON.Vector3();
-        export function getWorldInvScale(context: Converter.Context): BABYLON.Vector3 {
+        export function getWorldInvScale(context: Converter.ConverterContext): BABYLON.Vector3 {
             var invScale: number = 1 / context.options.worldTransformScale.value;
             worldInvScale = new BABYLON.Vector3(invScale, invScale, invScale);
             return worldInvScale;
         }
 
         var worldRotation: BABYLON.Matrix = new BABYLON.Matrix();
-        export function getWorldRotation(context: Converter.Context): BABYLON.Matrix {
+        export function getWorldRotation(context: Converter.ConverterContext): BABYLON.Matrix {
             var rotationAxis: string = context.options.worldTransformRotationAxis.value;
             var rotationAngle: number = context.options.worldTransformRotationAngle.value * Math.PI / 180;
 

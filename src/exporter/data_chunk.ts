@@ -27,7 +27,7 @@ import * as Exporter from "./exporter"
         }
 
         static toJSON(chunk: DataChunk): Exporter.DataChunkJSON {
-            if (chunk === null || !chunk.type) {
+            if (!chunk || !chunk.type) {
                 chunk.type = "";
             }
 
@@ -41,9 +41,9 @@ import * as Exporter from "./exporter"
             return result;
         }
 
-        static create(data: any, stride: number, context: Exporter.Context): Exporter.DataChunk{
+        static create(data: any, stride: number, context: Exporter.ExporterContext): Exporter.DataChunk{
             var result: Exporter.DataChunk = new Exporter.DataChunk();
-            if (data === null) {
+            if (!data) {
                 return result;
             }
 

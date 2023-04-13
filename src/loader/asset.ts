@@ -13,7 +13,7 @@ import * as Utils from "./utils"
             this._className += "Asset|";
         }
 
-        static parse(node: Node, context: Loader.Context): Loader.Asset {
+        static parse(node: Node, context: Loader.LoaderContext): Loader.Asset {
             var result: Loader.Asset = new Loader.Asset();
 
             Utils.forEachChild(node, function (child: Node) {

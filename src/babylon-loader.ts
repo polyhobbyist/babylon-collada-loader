@@ -83,6 +83,13 @@ export class BabylonModelLoader {
             chunk.geometry = this.createGeometry(rmx_chunk, scene);
             chunk.material = this.createMaterial(model.materials[rmx_chunk.material_index], skinned, scene);
             result.chunks.push(chunk);
+
+            if (chunk.geometry) {
+                var m = new BABYLON.Mesh("", scene);
+                chunk.geometry.applyToMesh(m);
+
+                result.meshes.push(m);
+            }
         }
 
         // Skeleton - use custom object
@@ -167,34 +174,12 @@ export class BabylonModel {
     animations: Model.RMXAnimation[];
     static identityMatrix: BABYLON.Matrix = new BABYLON.Matrix();
 
+
+    meshes: BABYLON.AbstractMesh[];
+
     constructor() {
         this.chunks = [];
         this.skeleton = undefined;
         this.animations = [];
-    }
-
-    instanciate(scene : BABYLON.Scene): BABYLON.Mesh {
-        // Create one container object.
-        var result = new BABYLON.Mesh("", scene);
-
-        // Create one custom skeleton object.
-        var skeleton: BabylonSkeleton | undefined = undefined;
-        if (this.skeleton) {
-            skeleton = new BabylonSkeleton(this.skeleton);
-        }
-
-        for (var i = 0; i < this.chunks.length; ++i) {
-            var chunk = this.chunks[i];
-            if (chunk.geometry) {
-                chunk.geometry.applyToMesh(result);
-            }
-            // chunk.material;
-            // BABYLON.MultiMaterial
-        }
-
-        // Store the custom skeleton in the container object.
-        result.metadata = new BabylonModelInstance(this, skeleton);
-
-        return result;
     }
 }

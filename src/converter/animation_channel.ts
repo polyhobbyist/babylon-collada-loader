@@ -1,4 +1,4 @@
-import {Context} from "./context"
+import {ConverterContext} from "./context"
 import {LogLevel} from "../log"
 import {AnimationTarget} from "./animation"
 import * as Loader from "../loader/loader"
@@ -35,7 +35,7 @@ import * as MathUtils from "../math"
         }
 
         // TODO: This is the most expensive function in the whole project. Use a binary search or find out why it's so slow.
-        findInputIndices(t: number, context: Context): AnimationChannelIndices {
+        findInputIndices(t: number, context: ConverterContext): AnimationChannelIndices {
             var input: Float32Array = this.input;
 
             var warnInvalidTime = (str: string) => {
@@ -76,15 +76,15 @@ import * as MathUtils from "../math"
             return { i0: 0, i1: 1 };
         }
 
-        static createInputData(input: Loader.Input, inputName: string, dataDim: number, context: Context): Float32Array {
+        static createInputData(input: Loader.Input, inputName: string, dataDim: number, context: ConverterContext): Float32Array {
             // Input
-            if (input === null) {
+            if (!input) {
                 return null;
             }
 
             // Source
             var source: Loader.Source = Loader.Source.fromLink(input.source, context);
-            if (source === null) {
+            if (!source) {
                 context.log.write("Animation channel has no " + inputName + " input data, data ignored", LogLevel.Warning);
                 return null;
             }
@@ -97,7 +97,7 @@ import * as MathUtils from "../math"
             return Utils.createFloatArray(source, inputName, dataDim, context);
         }
 
-        static createInputDataFromArray(inputs: Loader.Input[], inputName: string, dataDim: number, context: Context): Float32Array {
+        static createInputDataFromArray(inputs: Loader.Input[], inputName: string, dataDim: number, context: ConverterContext): Float32Array {
             // Samplers can have more than one output if they describe multiple curves at once.
             // I don't understand from the spec how a single channel could describe the animation of multiple parameters,
             // since each channel references a single SID target
@@ -111,19 +111,19 @@ import * as MathUtils from "../math"
             }
         }
 
-        static create(channel: Loader.Channel, context: Context): AnimationChannel {
+        static create(channel: Loader.Channel, context: ConverterContext): AnimationChannel {
             var result: AnimationChannel = new AnimationChannel();
 
             // Element
             var element: Loader.EElement = Loader.EElement.fromLink(channel.target, context);
-            if (element === null) {
+            if (!element) {
                 context.log.write("Animation channel has an invalid target '" + channel.target.url + "', animation ignored", LogLevel.Warning);
                 return null;
             }
 
             // Target
             var target: AnimationTarget = context.animationTargets.findConverter(element);
-            if (target === null) {
+            if (!target) {
                 context.log.write("Animation channel has no converter target '" + channel.target.url + "', animation ignored", LogLevel.Warning);
                 return null;
             }
@@ -131,7 +131,7 @@ import * as MathUtils from "../math"
 
             // Sampler
             var sampler: Loader.Sampler = Loader.Sampler.fromLink(channel.source, context);
-            if (sampler === null) {
+            if (!sampler) {
                 context.log.write("Animation channel has an invalid sampler '" + channel.source.url + "', animation ignored", LogLevel.Warning);
                 return null;
             }
@@ -220,23 +220,23 @@ import * as MathUtils from "../math"
             result.inTangent = AnimationChannel.createInputDataFromArray(sampler.inTangents, "intangent", result.dataCount + 1, context);
             result.outTangent = AnimationChannel.createInputDataFromArray(sampler.outTangents, "outtangent", result.dataCount + 1, context);
 
-            if (result.input === null) {
+            if (!result.input) {
                 context.log.write("Animation channel has no input data, animation ignored", LogLevel.Warning);
                 return null;
             }
-            if (result.output === null) {
+            if (!result.output) {
                 context.log.write("Animation channel has no output data, animation ignored", LogLevel.Warning);
                 return null;
             }
 
             // Interpolation type
             var interpolationInput = sampler.interpolation;
-            if (interpolationInput === null) {
+            if (!interpolationInput) {
                 context.log.write("Animation channel has no interpolation input, animation ignored", LogLevel.Warning);
                 return null;
             }
             var interpolationSource: Loader.Source = Loader.Source.fromLink(interpolationInput.source, context);
-            if (interpolationSource === null) {
+            if (!interpolationSource) {
                 context.log.write("Animation channel has no interpolation source, animation ignored", LogLevel.Warning);
                 return null;
             }
@@ -299,9 +299,9 @@ import * as MathUtils from "../math"
             }
         }
 
-        static applyToData(channel: AnimationChannel, destData: Float32Array, time: number, context: Context) {
+        static applyToData(channel: AnimationChannel, destData: Float32Array, time: number, context: ConverterContext) {
             // Do nothing if the channel does not contain a minimum of information
-            if (channel.input === null || channel.output === null) {
+            if (!channel.input || !channel.output) {
                 return;
             }
 

@@ -15,30 +15,30 @@ export class ColladaLoader {
             this.log = new LogConsole();
         }
 
-        private _reportError(id: string, context: Loader.Context) {
+        private _reportError(id: string, context: Loader.LoaderContext) {
             if (this.onFinished) {
                 this.onFinished(id, undefined);
             }
         }
 
-        private _reportSuccess(id: string, doc: Loader.Document, context: Loader.Context) {
+        private _reportSuccess(id: string, doc: Loader.Document, context: Loader.LoaderContext) {
             if (this.onFinished) {
                 this.onFinished(id, doc);
             }
         }
 
-        private _reportProgress(id: string, context: Loader.Context) {
+        private _reportProgress(id: string, context: Loader.LoaderContext) {
             if (this.onProgress) {
                 this.onProgress(id, context.loadedBytes, context.totalBytes);
             }
         }
 
         loadFromXML(id: string, doc: XMLDocument): Loader.Document {
-            var context: Loader.Context = new Loader.Context(this.log);
+            var context: Loader.LoaderContext = new Loader.LoaderContext(this.log);
             return this._loadFromXML(id, doc, context);
         }
 
-        private _loadFromXML(id: string, doc: XMLDocument, context: Loader.Context): Loader.Document | undefined {
+        private _loadFromXML(id: string, doc: XMLDocument, context: Loader.LoaderContext): Loader.Document | undefined {
             var result: Loader.Document | undefined = undefined;
             try {
                 result = Loader.Document.parse(doc, context);
@@ -53,7 +53,7 @@ export class ColladaLoader {
         }
 
         loadFromURL(id: string, url: string) {
-            var context: Loader.Context = new Loader.Context(this.log);
+            var context: Loader.LoaderContext = new Loader.LoaderContext(this.log);
             var loader: ColladaLoader = this;
 
             if (document != null && document.implementation != null && document.implementation.createDocument != null) {

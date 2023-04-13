@@ -24,7 +24,7 @@ import * as MathUtils from "../math"
         /**
         *   Parses a <controller> element.
         */
-        static parse(node: Node, context: Loader.Context): Loader.Controller {
+        static parse(node: Node, context: Loader.LoaderContext): Loader.Controller {
             var result: Loader.Controller = new Loader.Controller();
 
             result.id = context.getAttributeAsString(node, "id", undefined, true);
@@ -53,4 +53,29 @@ import * as MathUtils from "../math"
             return result;
         }
 
+    }
+
+    export class ControllerLibrary extends Loader.EElement {
+        children: Controller[];
+
+
+        static parse(node: Node, context: Loader.LoaderContext): ControllerLibrary {
+            var result: ControllerLibrary = new ControllerLibrary();
+
+            Utils.forEachChild(node, function (child: Node) {
+                switch (child.nodeName) {
+                    case "controller":
+                        result.children.push(Controller.parse(child, context));
+                        break;
+                    case "extra":
+                        context.reportUnhandledChild(child);
+                        break;
+                    default:
+                        context.reportUnexpectedChild(child);
+                        break;
+                }
+            });
+
+            return result;
+        }
     }

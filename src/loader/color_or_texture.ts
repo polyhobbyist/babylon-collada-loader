@@ -16,7 +16,7 @@ import * as Utils from "./utils"
         /**
         *   Parses a color or texture element  (<ambient>, <diffuse>, ...).
         */
-        static parse(node: Node, parent: Loader.EElement, context: Loader.Context): Loader.ColorOrTexture {
+        static parse(node: Node, parent: Loader.EElement, context: Loader.LoaderContext): Loader.ColorOrTexture {
             var result: Loader.ColorOrTexture = new Loader.ColorOrTexture();
 
             result.opaque = context.getAttributeAsString(node, "opaque", undefined, false);

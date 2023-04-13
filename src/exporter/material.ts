@@ -3,8 +3,8 @@ import * as Exporter from "./exporter"
 
     export class Material {
 
-        static toJSON(material: Converter.Material, context: Exporter.Context): Exporter.MaterialJSON | undefined{
-            if (material === null) {
+        static toJSON(material: Converter.Material, context: Exporter.ExporterContext): Exporter.MaterialJSON | undefined{
+            if (!material) {
                 return null;
             }
 

@@ -33,7 +33,7 @@ import * as MathUtils from "../math"
         /**
         *   Parses an <animation> element.
         */
-        static parse(node: Node, context: Loader.Context): Loader.Animation {
+        static parse(node: Node, context: Loader.LoaderContext): Loader.Animation {
             var result: Loader.Animation = new Loader.Animation();
 
             result.id = context.getAttributeAsString(node, "id", undefined, false);
@@ -66,3 +66,28 @@ import * as MathUtils from "../math"
         }
 
     };
+
+    
+    export class AnimationLibrary extends Loader.EElement {
+        children: Animation[] = [];
+
+        static parse(node: Node, context: Loader.LoaderContext): AnimationLibrary {
+            var result: AnimationLibrary = new AnimationLibrary();
+
+            Utils.forEachChild(node, function (child: Node) {
+                switch (child.nodeName) {
+                    case "animation":
+                        result.children.push(Animation.parse(child, context));
+                        break;
+                    case "extra":
+                        context.reportUnhandledChild(child);
+                        break;
+                    default:
+                        context.reportUnexpectedChild(child);
+                        break;
+                }
+            });
+
+            return result;
+        }
+    }

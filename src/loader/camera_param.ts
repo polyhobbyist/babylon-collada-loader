@@ -11,7 +11,7 @@ import * as Loader from "../loader/loader"
         /**
         *   Parses a camera parameter element.
         */
-        static parse(node: Node, context: Loader.Context): Loader.CameraParam {
+        static parse(node: Node, context: Loader.LoaderContext): Loader.CameraParam {
             var result: Loader.CameraParam = new Loader.CameraParam();
 
             result.sid = context.getAttributeAsString(node, "sid", undefined, false);

@@ -14,8 +14,8 @@ import * as MathUtils from "../math"
             this.children = [];
         }
 
-        static parse<T extends Loader.EElement>(node: Node, parser: (child: Node, context: Loader.Context) => T, childName: string, context: Loader.Context): Loader.Library<T> {
-            var result: Loader.Library<T> = new Loader.Library<T>();
+        static parse<T extends Loader.EElement>(node: Node, parser: (child: Node, context: Loader.LoaderContext) => T, childName: string, context: Loader.LoaderContext): Library<T> {
+            var result: Library<T> = new Library<T>();
 
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {

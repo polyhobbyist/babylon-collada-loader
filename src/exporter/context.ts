@@ -8,7 +8,7 @@ import * as MathUtils from "../math"
 import {AnimationTrack} from "./animation_track"
 
 
-    export class Context extends COLLADAContext.Context {
+    export class ExporterContext extends COLLADAContext.Context {
         log: Log;
         chunks: Exporter.DataChunk[];
         chunk_data: Uint8Array[];

@@ -18,20 +18,17 @@ export class Texture {
             this.url = "";
         }
 
-        static createTexture(colorOrTexture: Loader.ColorOrTexture, context: Converter.Context): Converter.Texture {
-            if (colorOrTexture === null) {
-                return null;
-            }
-            if (colorOrTexture.textureSampler === null) {
+        static createTexture(colorOrTexture: Loader.ColorOrTexture, context: Converter.ConverterContext): Converter.Texture {
+            if (!colorOrTexture || !colorOrTexture.textureSampler) {
                 return null;
             }
             var textureSamplerParam: Loader.EffectParam = Loader.EffectParam.fromLink(colorOrTexture.textureSampler, context);
-            if (textureSamplerParam === null) {
+            if (!textureSamplerParam) {
                 context.log.write("Texture sampler not found, texture will be missing", LogLevel.Warning);
                 return null;
             }
             var textureSampler: Loader.EffectSampler = textureSamplerParam.sampler;
-            if (textureSampler === null) {
+            if (!textureSampler) {
                 context.log.write("Texture sampler param has no sampler, texture will be missing", LogLevel.Warning);
                 return null;
             }
@@ -39,24 +36,24 @@ export class Texture {
             if (textureSampler.image != null) {
                 // Collada 1.5 path: texture -> sampler -> image
                 textureImage = Loader.Image.fromLink(textureSampler.image, context);
-                if (textureImage === null) {
+                if (!textureImage) {
                     context.log.write("Texture image not found, texture will be missing", LogLevel.Warning);
                     return null;
                 }
             } else if (textureSampler.surface != null) {
                 // Collada 1.4 path: texture -> sampler -> surface -> image
                 var textureSurfaceParam: Loader.EffectParam = Loader.EffectParam.fromLink(textureSampler.surface, context);
-                if (textureSurfaceParam === null) {
+                if (!textureSurfaceParam) {
                     context.log.write("Texture surface not found, texture will be missing", LogLevel.Warning);
                     return null;
                 }
                 var textureSurface: Loader.EffectSurface = textureSurfaceParam.surface;
-                if (textureSurface === null) {
+                if (!textureSurface) {
                     context.log.write("Texture surface param has no surface, texture will be missing", LogLevel.Warning);
                     return null;
                 }
                 textureImage = Loader.Image.fromLink(textureSurface.initFrom, context);
-                if (textureImage === null) {
+                if (!textureImage) {
                     context.log.write("Texture image not found, texture will be missing", LogLevel.Warning);
                     return null;
                 }

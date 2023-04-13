@@ -36,7 +36,7 @@ import * as MathUtils from "../math"
         /**
         *   Parses a <source> element
         */
-        static parse(node: Node, context: Loader.Context): Loader.Source {
+        static parse(node: Node, context: Loader.LoaderContext): Loader.Source {
             var result: Loader.Source = new Loader.Source();
 
             result.id = context.getAttributeAsString(node, "id", undefined, true);
@@ -79,7 +79,7 @@ import * as MathUtils from "../math"
         /**
         *   Parses a <source>/<technique_common> element
         */
-        static parseSourceTechniqueCommon(node: Node, source: Loader.Source, context: Loader.Context) {
+        static parseSourceTechniqueCommon(node: Node, source: Loader.Source, context: Loader.LoaderContext) {
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
                     case "accessor":
@@ -94,7 +94,7 @@ import * as MathUtils from "../math"
         /**
         *   Parses a <source>/<technique_common>/<accessor> element
         */
-        static parseAccessor(node: Node, source: Loader.Source, context: Loader.Context) {
+        static parseAccessor(node: Node, source: Loader.Source, context: Loader.LoaderContext) {
 
             var sourceId: string = context.getAttributeAsString(node, "source", undefined, true);
             source.count = context.getAttributeAsInt(node, "count", 0, true) || 0;
@@ -118,7 +118,7 @@ import * as MathUtils from "../math"
         /**
         *   Parses a <source>/<technique_common>/<accessor>/<param> element
         */
-        static parseAccessorParam(node: Node, source: Loader.Source, context: Loader.Context) {
+        static parseAccessorParam(node: Node, source: Loader.Source, context: Loader.LoaderContext) {
 
             var name: string = context.getAttributeAsString(node, "name", undefined, false);
             var semantic: string = context.getAttributeAsString(node, "semantic", undefined, false);

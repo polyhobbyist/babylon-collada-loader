@@ -12,7 +12,7 @@ import * as MathUtils from "../math"
         count: number = 0;
         /** A material "symbol", bound by <bind_material> */
         material: string = "";
-        inputs: Loader.Input[] | undefined = undefined;
+        inputs: Loader.Input[] = [];
         indices: Uint32Array = new Uint32Array();
         vcount: Uint32Array = new Uint32Array();
 
@@ -24,7 +24,7 @@ import * as MathUtils from "../math"
         /**
         *   Parses a <triangles> element.
         */
-        static parse(node: Node, context: Loader.Context): Loader.Triangles {
+        static parse(node: Node, context: Loader.LoaderContext): Loader.Triangles {
             var result: Loader.Triangles = new Loader.Triangles();
 
             result.name = context.getAttributeAsString(node, "name", undefined, false);
@@ -35,7 +35,7 @@ import * as MathUtils from "../math"
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
                     case "input":
-                        result.inputs?.push(Loader.Input.parse(child, true, context));
+                        result.inputs.push(Loader.Input.parse(child, true, context));
                         break;
                     case "vcount":
                         result.vcount = context.getUintsContent(child);

@@ -36,7 +36,7 @@ import * as BABYLON from 'babylonjs';
         * Find the parent bone of the given bone
         */
         static findParent(bones: Bone[], bone: Bone): Bone {
-            if (bone.parent === null) {
+            if (!bone.parent) {
                 return null;
             }
             for (var i = 0; i < bones.length; ++i) {
@@ -48,6 +48,10 @@ import * as BABYLON from 'babylonjs';
         }
 
         static checkConsistency(skeleton: Skeleton, context: Context): void {
+            if (!skeleton.bones) {
+                return;
+            }
+
             skeleton.bones.forEach((b1, i1) => {
                 skeleton.bones.forEach((b2, i2) => {
                     if (i1 !== i2 && Bone.safeToMerge(b1, b2)) {
@@ -57,13 +61,13 @@ import * as BABYLON from 'babylonjs';
             });
 
             skeleton.bones.forEach((b) => {
-                if (b.parent !== null && b.node.parent === null) {
+                if (b.parent && !b.node.parent) {
                     throw new Error("Missing parent");
                 }
             });
 
             skeleton.bones.forEach((b) => {
-                if (b.parent !== null && skeleton.bones.indexOf(b.parent) === -1) {
+                if (b.parent && skeleton.bones.indexOf(b.parent) === -1) {
                     throw new Error("Invalid parent");
                 }
             });
@@ -73,19 +77,19 @@ import * as BABYLON from 'babylonjs';
         * Creates a skeleton from a skin
         */
         static createFromSkin(jointSids: string[], skeletonRootNodes: Loader.VisualSceneNode[], bindShapeMatrix: BABYLON.Matrix,
-            invBindMatrices: Float32Array, context: Converter.Context): Converter.Skeleton {
+            invBindMatrices: Float32Array, context: Converter.ConverterContext): Converter.Skeleton {
             var bones: Converter.Bone[] = [];
 
             // Add all bones referenced by the skin
             for (var i: number = 0; i < jointSids.length; i++) {
                 var jointSid: string = jointSids[i];
-                var jointNode: Loader.VisualSceneNode = Converter.Bone.findBoneNode(jointSid, skeletonRootNodes, context);
-                if (jointNode === null) {
+                var jointNode = Converter.Bone.findBoneNode(jointSid, skeletonRootNodes, context);
+                if (!jointNode) {
                     context.log.write("Joint " + jointSid + " not found for skeleton, no bones created", LogLevel.Warning);
                     return new Skeleton([]);
                 }
-                var converterNode: Converter.Node = context.nodes.findConverter(jointNode);
-                if (converterNode === null) {
+                var converterNode = context.nodes.findConverter(jointNode);
+                if (!converterNode) {
                     context.log.write("Joint " + jointSid + " not converted for skeleton, no bones created", LogLevel.Warning);
                     return new Skeleton([]);
                 }
@@ -114,7 +118,7 @@ import * as BABYLON from 'babylonjs';
         /**
         * Creates a skeleton from a node
         */
-        static createFromNode(node: Converter.Node, context: Converter.Context): Converter.Skeleton {
+        static createFromNode(node: Converter.Node, context: Converter.ConverterContext): Converter.Skeleton {
             // Create a single node
             var colladaNode: Loader.VisualSceneNode = context.nodes.findCollada(node);
             var bone: Converter.Bone = Converter.Bone.create(node);
@@ -189,12 +193,12 @@ import * as BABYLON from 'babylonjs';
         /**
         * Assembles a list of skeleton root nodes
         */
-        static getSkeletonRootNodes(skeletonLinks: Loader.Link[], context: Converter.Context): Loader.VisualSceneNode[] {
+        static getSkeletonRootNodes(skeletonLinks: Loader.Link[], context: Converter.ConverterContext): Loader.VisualSceneNode[] {
             var skeletonRootNodes: Loader.VisualSceneNode[] = [];
             for (var i: number = 0; i < skeletonLinks.length; i++) {
                 var skeletonLink: Loader.Link = skeletonLinks[i];
                 var skeletonRootNode: Loader.VisualSceneNode = Loader.VisualSceneNode.fromLink(skeletonLink, context);
-                if (skeletonRootNode === null) {
+                if (!skeletonRootNode) {
                     context.log.write("Skeleton root node " + skeletonLink.getUrl() + " not found, skeleton root ignored", LogLevel.Warning);
                     continue;
                 }
@@ -214,7 +218,7 @@ import * as BABYLON from 'babylonjs';
         * The skeleton(s) may contain more bones than referenced by the skin
         * This function also adds all bones that are not referenced but used for the skeleton transformation
         */
-        static addBoneParents(skeleton: Converter.Skeleton, context: Converter.Context): Converter.Skeleton {
+        static addBoneParents(skeleton: Converter.Skeleton, context: Converter.ConverterContext): Converter.Skeleton {
             var bones = skeleton.bones.slice(0);
 
             var i: number = 0;
@@ -234,7 +238,7 @@ import * as BABYLON from 'babylonjs';
                 }
 
                 // If no parent bone found, add it to the list
-                if ((bone.node.parent != null) && (bone.parent == null)) {
+                if (bone.node.parent && !bone.parent) {
                     bone.parent = Converter.Bone.create(bone.node.parent);
                     bones.push(bone.parent);
                 }

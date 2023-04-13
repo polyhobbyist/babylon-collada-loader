@@ -19,7 +19,7 @@ import * as MathUtils from "../math"
         /**
         *   Parses a <instance_geometry> element.
         */
-        static parse(node: Node, parent: Loader.EElement, context: Loader.Context): Loader.InstanceGeometry {
+        static parse(node: Node, parent: Loader.EElement, context: Loader.LoaderContext): Loader.InstanceGeometry {
             var result: Loader.InstanceGeometry = new Loader.InstanceGeometry();
 
             result.geometry = context.getAttributeAsUrlLink(node, "url", true);

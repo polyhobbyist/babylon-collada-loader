@@ -17,7 +17,7 @@ import * as MathUtils from "../math"
         /**
         *   Parses a <instance_light> element.
         */
-        static parse(node: Node, parent: Loader.VisualSceneNode, context: Loader.Context): Loader.InstanceLight {
+        static parse(node: Node, parent: Loader.VisualSceneNode, context: Loader.LoaderContext): Loader.InstanceLight {
             var result: Loader.InstanceLight = new Loader.InstanceLight();
 
             result.light = context.getAttributeAsUrlLink(node, "url", true);

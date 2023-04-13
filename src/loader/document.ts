@@ -5,37 +5,46 @@ import * as Converter from "../converter/converter"
 import * as Exporter from "../exporter/exporter"
 import * as Utils from "./utils"
 import * as MathUtils from "../math"
-
+import {MaterialLibrary} from "./material"
+import {EffectLibrary} from "./effect"
+import {GeometryLibrary} from "./geometry"
+import {ImageLibrary} from "./image"
+import {VisualSceneLibrary} from "./visual_scene"
+import {ControllerLibrary} from "./controller"
+import {AnimationLibrary} from "./animation"
+import {LightLibrary} from "./light"
+import {CameraLibrary} from "./camera"
+import {VisualSceneNodeLibrary} from "./visual_scene_node"
 
 
     export class Document {
         scene: Loader.Scene | undefined;
         asset: Loader.Asset | undefined;
-        libEffects: Loader.Library<Loader.Effect>;
-        libMaterials: Loader.Library<Loader.Material>;
-        libGeometries: Loader.Library<Loader.Geometry>;
-        libControllers: Loader.Library<Loader.Controller>;
-        libLights: Loader.Library<Loader.Light>;
-        libCameras: Loader.Library<Loader.Camera>;
-        libImages: Loader.Library<Loader.Image>;
-        libVisualScenes: Loader.Library<Loader.VisualScene>;
-        libAnimations: Loader.Library<Loader.Animation>;
-        libNodes: Loader.Library<Loader.VisualSceneNode>;
+        libEffects: EffectLibrary;
+        libMaterials: MaterialLibrary;
+        libGeometries: GeometryLibrary;
+        libControllers: ControllerLibrary;
+        libLights: LightLibrary;
+        libCameras: CameraLibrary;
+        libImages: ImageLibrary;
+        libVisualScenes: VisualSceneLibrary;
+        libAnimations: AnimationLibrary;
+        libNodes: VisualSceneNodeLibrary;
 
         constructor() {
-            this.libEffects = new Loader.Library<Loader.Effect>();
-            this.libMaterials = new Loader.Library<Loader.Material>();
-            this.libGeometries = new Loader.Library<Loader.Geometry>();
-            this.libControllers = new Loader.Library<Loader.Controller>();
-            this.libLights = new Loader.Library<Loader.Light>();
-            this.libCameras = new Loader.Library<Loader.Camera>();
-            this.libImages = new Loader.Library<Loader.Image>();
-            this.libVisualScenes = new Loader.Library<Loader.VisualScene>();
-            this.libAnimations = new Loader.Library<Loader.Animation>();
-            this.libNodes = new Loader.Library<Loader.VisualSceneNode>();
+            this.libEffects = new EffectLibrary();
+            this.libMaterials = new MaterialLibrary();
+            this.libGeometries = new GeometryLibrary();
+            this.libControllers = new ControllerLibrary();
+            this.libLights = new LightLibrary();
+            this.libCameras = new CameraLibrary;
+            this.libImages = new ImageLibrary;
+            this.libVisualScenes = new VisualSceneLibrary;
+            this.libAnimations = new AnimationLibrary;
+            this.libNodes = new VisualSceneNodeLibrary();
         }
 
-        static parse(doc: XMLDocument, context: Loader.Context): Loader.Document {
+        static parse(doc: XMLDocument, context: Loader.LoaderContext): Loader.Document {
 
             // There should be one top level <COLLADA> element
             var colladaNodes = doc.getElementsByTagName("COLLADA");
@@ -50,7 +59,7 @@ import * as MathUtils from "../math"
             return Loader.Document.parseCOLLADA(colladaNodes[0] || colladaNodes.item(0), context);
         }
 
-        static parseCOLLADA(node: Node, context: Loader.Context): Loader.Document {
+        static parseCOLLADA(node: Node, context: Loader.LoaderContext): Loader.Document {
             var result: Loader.Document = new Loader.Document();
 
             Utils.forEachChild(node, function (child: Node) {
@@ -62,34 +71,34 @@ import * as MathUtils from "../math"
                         result.scene = Loader.Scene.parse(child, context);
                         break;
                     case "library_effects":
-                        result.libEffects = Loader.Library.parse<Loader.Effect>(child, Loader.Effect.parse, "effect", context);
+                        result.libEffects = EffectLibrary.parse(child, context);
                         break;
                     case "library_materials":
-                        result.libMaterials = Loader.Library.parse<Loader.Material>(child, Loader.Material.parse, "material", context);
+                        result.libMaterials = MaterialLibrary.parse(child, context);
                         break;
                     case "library_geometries":
-                        result.libGeometries = Loader.Library.parse<Loader.Geometry>(child, Loader.Geometry.parse, "geometry", context);
+                        result.libGeometries = GeometryLibrary.parse(child, context);
                         break;
                     case "library_images":
-                        result.libImages = Loader.Library.parse<Loader.Image>(child, Loader.Image.parse, "image", context);
+                        result.libImages = ImageLibrary.parse(child, context);
                         break;
                     case "library_visual_scenes":
-                        result.libVisualScenes = Loader.Library.parse<Loader.VisualScene>(child, Loader.VisualScene.parse, "visual_scene", context);
+                        result.libVisualScenes = VisualSceneLibrary.parse(child, context);
                         break;
                     case "library_controllers":
-                        result.libControllers = Loader.Library.parse<Loader.Controller>(child, Loader.Controller.parse, "controller", context);
+                        result.libControllers = ControllerLibrary.parse(child, context);
                         break;
                     case "library_animations":
-                        result.libAnimations = Loader.Library.parse<Loader.Animation>(child, Loader.Animation.parse, "animation", context);
+                        result.libAnimations = AnimationLibrary.parse(child, context);
                         break;
                     case "library_lights":
-                        result.libLights = Loader.Library.parse<Loader.Light>(child, Loader.Light.parse, "effect", context);
+                        result.libLights = LightLibrary.parse(child, context);
                         break;
                     case "library_cameras":
-                        result.libCameras = Loader.Library.parse<Loader.Camera>(child, Loader.Camera.parse, "camera", context);
+                        result.libCameras = CameraLibrary.parse(child, context);
                         break;
                     case "library_nodes":
-                        result.libNodes = Loader.Library.parse<Loader.VisualSceneNode>(child, Loader.VisualSceneNode.parse, "node", context);
+                        result.libNodes = VisualSceneNodeLibrary.parse(child, context);
                         break;
                     default:
                         context.reportUnexpectedChild(child);

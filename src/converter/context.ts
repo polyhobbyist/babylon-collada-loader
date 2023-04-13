@@ -4,6 +4,7 @@ import * as Converter from "./converter"
 import * as Utils from "./utils"
 import * as MathUtils from "../math"
 import {Material} from "./material"
+import * as LoaderMaterial from "../loader/material"
 import {Texture} from "./texture"
 import {AnimationTarget} from "./animation"
 import * as COLLADAContext from "../context"
@@ -44,8 +45,8 @@ import {Options} from "./options"
         }
     }
 
-    export class Context extends COLLADAContext.Context {
-        materials: ObjectMap<Loader.Material, Material>;
+    export class ConverterContext extends COLLADAContext.Context {
+        materials: ObjectMap<LoaderMaterial.Material, Material>;
         textures: ObjectMap<Loader.Image, Texture>;
         nodes: ObjectMap<Loader.VisualSceneNode, Converter.Node>;
         animationTargets: ObjectMap<Loader.EElement, AnimationTarget>;
@@ -57,7 +58,7 @@ import {Options} from "./options"
             super(log);
             this.log = log;
             this.options = options;
-            this.materials = new ObjectMap<Loader.Material, Material>();
+            this.materials = new ObjectMap<LoaderMaterial.Material, Material>();
             this.textures = new ObjectMap<Loader.Image, Texture>();
             this.nodes = new ObjectMap<Loader.VisualSceneNode, Converter.Node>();
             this.animationTargets = new ObjectMap<Loader.EElement, AnimationTarget>();

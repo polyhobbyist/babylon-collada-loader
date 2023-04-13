@@ -18,7 +18,7 @@ import * as MathUtils from "../math"
         /**
         *   Parses a transformation element.
         */
-        static parse(node: Node, parent: Loader.VisualSceneNode, context: Loader.Context): Loader.NodeTransform {
+        static parse(node: Node, parent: Loader.VisualSceneNode, context: Loader.LoaderContext): Loader.NodeTransform {
             var result: Loader.NodeTransform = new Loader.NodeTransform();
 
             result.sid = context.getAttributeAsString(node, "sid", undefined, false);

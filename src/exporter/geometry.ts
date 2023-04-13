@@ -9,7 +9,7 @@ import {BoundingBoxJSON} from "./format"
     export class BoundingBox {
 
         static toJSON(box: Converter.BoundingBox): BoundingBoxJSON {
-            if (box === null) {
+            if (!box) {
                 return {
                     min: [0, 0, 0],
                     max: [0, 0, 0]
@@ -25,7 +25,7 @@ import {BoundingBoxJSON} from "./format"
 
     export class Geometry {
 
-        static toJSON(chunk: Converter.GeometryChunk, material_index: number, context: Exporter.Context): Exporter.GeometryJSON {
+        static toJSON(chunk: Converter.GeometryChunk, material_index: number, context: Exporter.ExporterContext): Exporter.GeometryJSON {
 
             var indices: Exporter.DataChunk = Exporter.DataChunk.create(chunk.data.indices, 3, context);
             var position: Exporter.DataChunk = Exporter.DataChunk.create(chunk.data.position, 3, context);

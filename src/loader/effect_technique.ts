@@ -39,7 +39,7 @@ import * as MathUtils from "../math"
         /**
         *   Parses a <technique> element.
         */
-        static parse(node: Node, parent: Loader.EElement, context: Loader.Context): Loader.EffectTechnique {
+        static parse(node: Node, parent: Loader.EElement, context: Loader.LoaderContext): Loader.EffectTechnique {
             var result: Loader.EffectTechnique = new Loader.EffectTechnique();
 
             result.sid = context.getAttributeAsString(node, "sid", undefined, false);
@@ -69,7 +69,7 @@ import * as MathUtils from "../math"
         *   Parses a <technique>/(<blinn>|<phong>|<lambert>|<constant>) element.
         *   In addition to <technique>, node may also be child of <technique>/<extra>
         */
-        static parseParam(node: Node, technique: Loader.EffectTechnique, profile: string, context: Loader.Context) {
+        static parseParam(node: Node, technique: Loader.EffectTechnique, profile: string, context: Loader.LoaderContext) {
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
                     case "newparam":
@@ -122,7 +122,7 @@ import * as MathUtils from "../math"
         /**
         *   Parses a <technique>/<extra> element.
         */
-        static parseExtra(node: Node, technique: Loader.EffectTechnique, context: Loader.Context) {
+        static parseExtra(node: Node, technique: Loader.EffectTechnique, context: Loader.LoaderContext) {
             if (technique == null) {
                 context.log.write("Ignored element <extra>, because there is no <technique>.", LogLevel.Warning);
                 return;

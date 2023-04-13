@@ -21,7 +21,7 @@ import * as MathUtils from "../math"
         /**
         *   Parses a <skin> element.
         */
-        static parse(node: Node, context: Loader.Context): Loader.Skin {
+        static parse(node: Node, context: Loader.LoaderContext): Loader.Skin {
             var result: Loader.Skin = new Loader.Skin();
 
             result.source = context.getAttributeAsUrlLink(node, "source", true);

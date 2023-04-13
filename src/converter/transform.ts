@@ -42,7 +42,7 @@ import * as BABYLON from 'babylonjs';
         getTargetDataColumns(): number {
             return this.colums;
         }
-        applyAnimation(channel: Converter.AnimationChannel, time: number, context: Converter.Context) {
+        applyAnimation(channel: Converter.AnimationChannel, time: number, context: Converter.ConverterContext) {
             Converter.AnimationChannel?.applyToData(channel, this.data, time, context);
             this.updateFromData();
         }

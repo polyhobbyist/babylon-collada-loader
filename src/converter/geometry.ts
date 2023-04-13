@@ -31,7 +31,7 @@ import * as BABYLON from 'babylonjs';
         /**
         * Creates a static (non-animated) geometry
         */
-        static createStatic(instanceGeometry: Loader.InstanceGeometry, node: Converter.Node, context: Converter.Context): Converter.Geometry | undefined{
+        static createStatic(instanceGeometry: Loader.InstanceGeometry, node: Converter.Node, context: Converter.ConverterContext): Converter.Geometry | undefined{
             if (!instanceGeometry || !instanceGeometry.geometry) {
                 return undefined;
             }
@@ -51,7 +51,7 @@ import * as BABYLON from 'babylonjs';
         /**
         * Creates an animated (skin or morph) geometry
         */
-        static createAnimated(instanceController: Loader.InstanceController, node: Converter.Node, context: Converter.Context): Converter.Geometry | undefined{
+        static createAnimated(instanceController: Loader.InstanceController, node: Converter.Node, context: Converter.ConverterContext): Converter.Geometry | undefined{
             if (!instanceController || !instanceController.controller) {
                 return undefined;
             }
@@ -73,7 +73,7 @@ import * as BABYLON from 'babylonjs';
         /**
         * Creates a skin-animated geometry
         */
-        static createSkin(instanceController: Loader.InstanceController, controller: Loader.Controller, context: Converter.Context): Converter.Geometry | undefined{
+        static createSkin(instanceController: Loader.InstanceController, controller: Loader.Controller, context: Converter.ConverterContext): Converter.Geometry | undefined{
             if (!instanceController || !instanceController.controller) {
                 return undefined;
             }
@@ -241,7 +241,7 @@ import * as BABYLON from 'babylonjs';
         }
 
         static compactSkinningData(skin: Loader.Skin, weightsData: Float32Array, bonesPerVertex: number,
-            context: Converter.Context): { weights: Float32Array; indices:Uint8Array} {
+            context: Converter.ConverterContext): { weights: Float32Array; indices:Uint8Array} {
             var weightsIndices: Int32Array | undefined = skin.vertexWeights?.v;
             var weightsCounts: Int32Array | undefined = skin.vertexWeights?.vcount;
             var skinVertexCount: number = weightsCounts?.length || 0;
@@ -302,7 +302,7 @@ import * as BABYLON from 'babylonjs';
             return { weights: skinWeights, indices: skinIndices };
         }
 
-        static getSkeletonRootNodes(skeletonLinks: Loader.Link[], context: Converter.Context): Loader.VisualSceneNode[] {
+        static getSkeletonRootNodes(skeletonLinks: Loader.Link[], context: Converter.ConverterContext): Loader.VisualSceneNode[] {
             var skeletonRootNodes: Loader.VisualSceneNode[] = [];
             for (var i: number = 0; i < skeletonLinks.length; i++) {
                 var skeletonLink: Loader.Link = skeletonLinks[i];
@@ -320,12 +320,12 @@ import * as BABYLON from 'babylonjs';
             return skeletonRootNodes;
         }
 
-        static createMorph(instanceController: Loader.InstanceController, controller: Loader.Controller, context: Converter.Context): Converter.Geometry | undefined{
+        static createMorph(instanceController: Loader.InstanceController, controller: Loader.Controller, context: Converter.ConverterContext): Converter.Geometry | undefined{
             context.log.write("Morph animated meshes not supported, mesh ignored", LogLevel.Warning);
             return undefined;
         }
 
-        static createGeometry(geometry: Loader.Geometry, instanceMaterials: Loader.InstanceMaterial[], context: Converter.Context): Converter.Geometry {
+        static createGeometry(geometry: Loader.Geometry, instanceMaterials: Loader.InstanceMaterial[], context: Converter.ConverterContext): Converter.Geometry {
             var materialMap: Converter.MaterialMap = Converter.Material.getMaterialMap(instanceMaterials, context);
 
             var result: Converter.Geometry = new Converter.Geometry();
@@ -340,7 +340,7 @@ import * as BABYLON from 'babylonjs';
                 var material: Converter.Material;
                 if (triangles.material !== null) {
                     material = materialMap.symbols[triangles.material];
-                    if (material === null) {
+                    if (!material) {
                         context.log.write("Material symbol " + triangles.material + " has no bound material instance, using default material", LogLevel.Warning);
                         material = Converter.Material.createDefaultMaterial(context);
                     }
@@ -350,8 +350,8 @@ import * as BABYLON from 'babylonjs';
                 }
 
                 // Create a geometry chunk
-                var chunk: Converter.GeometryChunk = Converter.GeometryChunk.createChunk(geometry, triangles, context);
-                if (chunk !== null) {
+                var chunk = Converter.GeometryChunk.createChunk(geometry, triangles, context);
+                if (chunk) {
                     chunk.name = result.name;
                     if (trianglesList.length > 1) {
                         chunk.name += (" #" + i)
@@ -367,7 +367,7 @@ import * as BABYLON from 'babylonjs';
         /**
         * Transforms the given geometry (position and normals) by the given matrix
         */
-        static transformGeometry(geometry: Converter.Geometry, transformMatrix: BABYLON.Matrix, context: Converter.Context) {
+        static transformGeometry(geometry: Converter.Geometry, transformMatrix: BABYLON.Matrix, context: Converter.ConverterContext) {
             // Create the normal transformation matrix
             var normalMatrix: BABYLON.Matrix = new BABYLON.Matrix;
             transformMatrix.toNormalMatrix(normalMatrix);
@@ -383,8 +383,8 @@ import * as BABYLON from 'babylonjs';
         /**
         * Adapts inverse bind matrices to account for any additional transformations due to the world transform
         */
-        static setupWorldTransform(geometry: Converter.Geometry, context: Converter.Context) {
-            if (geometry.skeleton === null) return;
+        static setupWorldTransform(geometry: Converter.Geometry, context: Converter.ConverterContext) {
+            if (!geometry.skeleton) return;
 
             // Skinning equation:                [worldMatrix]     * [invBindMatrix]        * [pos]
             // Same with transformation A added: [worldMatrix]     * [invBindMatrix * A^-1] * [A * pos]
@@ -407,7 +407,7 @@ import * as BABYLON from 'babylonjs';
         /**
         * Scales the given geometry
         */
-        static scaleGeometry(geometry: Converter.Geometry, scale: number, context: Converter.Context) {
+        static scaleGeometry(geometry: Converter.Geometry, scale: number, context: Converter.ConverterContext) {
             for (var i = 0; i < geometry.chunks.length; ++i) {
                 var chunk: Converter.GeometryChunk = geometry.chunks[i];
                 Converter.GeometryChunk.scaleChunk(chunk, scale, context);
@@ -427,7 +427,7 @@ import * as BABYLON from 'babylonjs';
         *
         * This transforms the geometry by the bind shape matrix, and resets the bind shape matrix to identity.
         */
-        static applyBindShapeMatrices(geometry: Converter.Geometry, context: Converter.Context) {
+        static applyBindShapeMatrices(geometry: Converter.Geometry, context: Converter.ConverterContext) {
 
             // Transform normals and positions of all chunks by the corresponding bind shape matrix
             for (var i = 0; i < geometry.chunks.length; ++i) {
@@ -450,7 +450,7 @@ import * as BABYLON from 'babylonjs';
         /**
         * Computes the bounding box of the static (unskinned) geometry
         */
-        static computeBoundingBox(geometry: Converter.Geometry, context: Converter.Context) {
+        static computeBoundingBox(geometry: Converter.Geometry, context: Converter.ConverterContext) {
             geometry.boundingBox.reset();
 
             for (var i: number = 0; i < geometry.chunks.length; ++i) {
@@ -460,7 +460,7 @@ import * as BABYLON from 'babylonjs';
             }
         }
 
-        static addSkeleton(geometry: Converter.Geometry, node: Converter.Node, context: Converter.Context) {
+        static addSkeleton(geometry: Converter.Geometry, node: Converter.Node, context: Converter.ConverterContext) {
             // Create a skeleton from a single node
             var skeleton = Converter.Skeleton.createFromNode(node, context);
             Converter.Geometry.setSkeleton(geometry, skeleton, context);
@@ -496,7 +496,7 @@ import * as BABYLON from 'babylonjs';
         * Moves all data from given geometries into one merged geometry.
         * The original geometries will be empty after this operation (lazy design to avoid data duplication).
         */
-        static mergeGeometries(geometries: Converter.Geometry[], context: Converter.Context): Converter.Geometry | undefined {
+        static mergeGeometries(geometries: Converter.Geometry[], context: Converter.ConverterContext): Converter.Geometry | undefined {
             if (geometries.length === 0) {
                 context.log.write("No geometries to merge", LogLevel.Warning);
                 return undefined;
@@ -543,19 +543,19 @@ import * as BABYLON from 'babylonjs';
         * Set the new skeleton for the given geometry.
         * Changes all vertex bone indices so that they point to the given skeleton bones, instead of the current geometry.skeleton bones
         */
-        static setSkeleton(geometry: Converter.Geometry, skeleton: Converter.Skeleton, context: Converter.Context) {
+        static setSkeleton(geometry: Converter.Geometry, skeleton: Converter.Skeleton, context: Converter.ConverterContext) {
 
             // Adapt bone indices
-            if (geometry.skeleton !== null) {
+            if (geometry.skeleton) {
                 // Compute the index map
                 var index_map: Uint32Array = Converter.Skeleton.getBoneIndexMap(geometry.skeleton, skeleton);
 
                 // Recode indices
                 for (var i = 0; i < geometry.chunks.length; ++i) {
                     var chunk: Converter.GeometryChunk = geometry.chunks[i];
-                    var boneindex: Uint8Array = chunk.data.boneindex;
+                    var boneindex = chunk.data.boneindex;
 
-                    if (boneindex !== null) {
+                    if (boneindex) {
                         for (var j = 0; j < boneindex.length; ++j) {
                             boneindex[j] = index_map[boneindex[j]];
                         }

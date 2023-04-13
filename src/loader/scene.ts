@@ -17,7 +17,7 @@ import * as MathUtils from "../math"
             this._className += "Scene|";
         }
 
-        static parse(node: Node, context: Loader.Context): Loader.Scene {
+        static parse(node: Node, context: Loader.LoaderContext): Loader.Scene {
             var result: Loader.Scene = new Loader.Scene();
 
             Utils.forEachChild(node, function (child: Node) {

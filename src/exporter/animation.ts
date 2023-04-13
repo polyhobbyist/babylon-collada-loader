@@ -9,8 +9,8 @@ import {AnimationTrack} from "./animation_track"
 
     export class Animation {
 
-        static toJSON(animation: Converter.AnimationData, context: Exporter.Context): Exporter.AnimationJSON {
-            if (animation === null) {
+        static toJSON(animation: Converter.AnimationData, context: Exporter.ExporterContext): Exporter.AnimationJSON {
+            if (!animation) {
                 return {
                     name: "",
                     frames: 0,

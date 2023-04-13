@@ -14,15 +14,15 @@ import * as MathUtils from "../math"
             this._className += "Material|";
         }
 
-        static fromLink(link: Loader.Link, context: Context): Loader.Material | undefined {
-            return Loader.EElement._fromLink<Loader.Material>(link, "Material", context);
+        static fromLink(link: Loader.Link, context: Context): Material | undefined {
+            return Loader.EElement._fromLink<Material>(link, "Material", context);
         }
 
         /**
         *   Parses a <material> element.
         */
-        static parse(node: Node, context: Loader.Context): Loader.Material {
-            var result: Loader.Material = new Loader.Material();
+        static parse(node: Node, context: Loader.LoaderContext): Material {
+            var result: Material = new Material();
 
             result.id = context.getAttributeAsString(node, "id", undefined, true);
             result.name = context.getAttributeAsString(node, "name", undefined, false);
@@ -41,3 +41,28 @@ import * as MathUtils from "../math"
             return result;
         }
     };
+
+    
+export class MaterialLibrary extends Loader.EElement {
+    children: Material[] = [];
+
+    static parse(node: Node, context: Loader.LoaderContext): MaterialLibrary {
+        var result: MaterialLibrary = new MaterialLibrary();
+
+        Utils.forEachChild(node, function (child: Node) {
+            switch (child.nodeName) {
+                case "material":
+                    result.children.push(Material.parse(child, context));
+                    break;
+                case "extra":
+                    context.reportUnhandledChild(child);
+                    break;
+                default:
+                    context.reportUnexpectedChild(child);
+                    break;
+            }
+        });
+
+        return result;
+    }
+}

@@ -25,7 +25,7 @@ import * as MathUtils from "../math"
         /**
         *   Parses a <instance_controller> element.
         */
-        static parse(node: Node, parent: Loader.InstanceControllerContainer, context: Loader.Context): Loader.InstanceController {
+        static parse(node: Node, parent: Loader.InstanceControllerContainer, context: Loader.LoaderContext): Loader.InstanceController {
             var result: Loader.InstanceController = new Loader.InstanceController();
 
             result.controller = context.getAttributeAsUrlLink(node, "url", true);

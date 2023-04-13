@@ -47,7 +47,7 @@ import * as BABYLON from 'babylonjs';
         /**
         * Returns the world transformation matrix of this node
         */
-        getWorldMatrix(context: Converter.Context): BABYLON.Matrix {
+        getWorldMatrix(context: Converter.ConverterContext): BABYLON.Matrix {
             if (this.parent != null) {
                 this.worldMatrix.multiply(this.parent.getWorldMatrix(context));
                 this.worldMatrix.multiply(this.getLocalMatrix(context));
@@ -60,7 +60,7 @@ import * as BABYLON from 'babylonjs';
         /**
         * Returns the local transformation matrix of this node
         */
-        getLocalMatrix(context: Converter.Context) {
+        getLocalMatrix(context: Converter.ConverterContext) {
             
             // Static pre-transform
             this.matrix.copyFrom(this.transformation_pre);
@@ -136,7 +136,7 @@ import * as BABYLON from 'babylonjs';
         /**
         * Recursively creates a converter node tree from the given collada node root node
         */
-        static createNode(node: Loader.VisualSceneNode, parent: Converter.Node, context: Converter.Context): Converter.Node {
+        static createNode(node: Loader.VisualSceneNode, parent: Converter.Node, context: Converter.ConverterContext): Converter.Node {
             // Create new node
             var converterNode: Converter.Node = new Converter.Node();
             converterNode.parent = parent;
@@ -184,7 +184,7 @@ import * as BABYLON from 'babylonjs';
             return converterNode;
         }
 
-        static updateInitialMatrices(node: Converter.Node, context: Converter.Context) {
+        static updateInitialMatrices(node: Converter.Node, context: Converter.ConverterContext) {
             node.getLocalMatrix(context);
             node.initialLocalMatrix.copyFrom(node.matrix);
 
@@ -192,7 +192,7 @@ import * as BABYLON from 'babylonjs';
             node.initialWorldMatrix.copyFrom(node.worldMatrix);
         }
 
-        static createNodeData(converter_node: Converter.Node, context: Converter.Context) {
+        static createNodeData(converter_node: Converter.Node, context: Converter.ConverterContext) {
 
             var collada_node: Loader.VisualSceneNode = context.nodes.findCollada(converter_node);
 
@@ -241,7 +241,7 @@ import * as BABYLON from 'babylonjs';
         * Extracts all geometries in the given scene and merges them into a single geometry.
         * The geometries are detached from their original nodes in the process.
         */
-        static extractGeometries(scene_nodes: Converter.Node[], context: Converter.Context): Converter.Geometry[] {
+        static extractGeometries(scene_nodes: Converter.Node[], context: Converter.ConverterContext): Converter.Geometry[] {
 
             // Collect all geometries and the corresponding nodes
             // Detach geometries from nodes in the process
@@ -297,7 +297,7 @@ import * as BABYLON from 'babylonjs';
             }
         }
 
-        static setupWorldTransform(node: Converter.Node, context: Converter.Context) {
+        static setupWorldTransform(node: Converter.Node, context: Converter.ConverterContext) {
             var worldInvScale: BABYLON.Vector3 = Utils.getWorldInvScale(context);
             var worldTransform: BABYLON.Matrix = Utils.getWorldTransform(context);
 

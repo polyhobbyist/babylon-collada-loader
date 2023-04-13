@@ -27,7 +27,7 @@ import * as MathUtils from "../math"
         /**
         *   Parses an <effect> element.
         */
-        static parse(node: Node, context: Loader.Context): Loader.Effect {
+        static parse(node: Node, context: Loader.LoaderContext): Loader.Effect {
             var result: Loader.Effect = new Loader.Effect();
 
             result.id = context.getAttributeAsString(node, "id", undefined, true);
@@ -57,7 +57,7 @@ import * as MathUtils from "../math"
         /**
         *   Parses an <effect>/<profile_COMMON> element.
         */
-        static parseProfileCommon(node: Node, effect: Loader.Effect, context: Loader.Context) {
+        static parseProfileCommon(node: Node, effect: Loader.Effect, context: Loader.LoaderContext) {
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
                     case "newparam":
@@ -77,3 +77,28 @@ import * as MathUtils from "../math"
             });
         }
     };
+
+    export class EffectLibrary extends Loader.EElement {
+        children: Effect[] = [];
+
+
+        static parse(node: Node, context: Loader.LoaderContext): EffectLibrary {
+            var result: EffectLibrary = new EffectLibrary();
+
+            Utils.forEachChild(node, function (child: Node) {
+                switch (child.nodeName) {
+                    case "effect":
+                        result.children.push(Effect.parse(child, context));
+                        break;
+                    case "extra":
+                        context.reportUnhandledChild(child);
+                        break;
+                    default:
+                        context.reportUnexpectedChild(child);
+                        break;
+                }
+            });
+
+            return result;
+        }
+    }

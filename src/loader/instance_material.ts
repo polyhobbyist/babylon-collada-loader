@@ -37,7 +37,7 @@ import * as MathUtils from "../math"
         /**
         *   Parses a <instance_material> element.
         */
-        static parse(node: Node, parent: Loader.InstanceMaterialContainer, context: Loader.Context): Loader.InstanceMaterial {
+        static parse(node: Node, parent: Loader.InstanceMaterialContainer, context: Loader.LoaderContext): Loader.InstanceMaterial {
             var result: Loader.InstanceMaterial = new Loader.InstanceMaterial();
 
             result.symbol = context.getAttributeAsString(node, "symbol", undefined, false);
@@ -63,7 +63,7 @@ import * as MathUtils from "../math"
         /**
         *   Parses a <instance_material>/<bind_vertex_input> element.
         */
-        static parseBindVertexInput(node: Node, instanceMaterial: Loader.InstanceMaterial, context: Loader.Context) {
+        static parseBindVertexInput(node: Node, instanceMaterial: Loader.InstanceMaterial, context: Loader.LoaderContext) {
             var semantic: string = context.getAttributeAsString(node, "semantic", undefined, true);
             var inputSemantic: string = context.getAttributeAsString(node, "input_semantic", undefined, true);
             var inputSet: number | undefined = context.getAttributeAsInt(node, "input_set", 0, false);
@@ -81,7 +81,7 @@ import * as MathUtils from "../math"
         /**
         *   Parses a <instance_material>/<bind> element.
         */
-        static parseBind(node: Node, instanceMaterial: Loader.InstanceMaterial, context: Loader.Context) {
+        static parseBind(node: Node, instanceMaterial: Loader.InstanceMaterial, context: Loader.LoaderContext) {
             var semantic: string = context.getAttributeAsString(node, "semantic", undefined, false);
             var target: Loader.SidLink | undefined = context.getAttributeAsSidLink(node, "target", "", true);
 

@@ -25,7 +25,7 @@ import * as MathUtils from "../math"
             throw new Error("not implemented");
         }
 
-        resolve(context: Loader.Context) {
+        resolve(context: Loader.LoaderContext) {
             throw new Error("not implemented");
         }
 
@@ -51,7 +51,7 @@ import * as MathUtils from "../math"
             return this.url;
         }
 
-        resolve(context: Loader.Context): void {
+        resolve(context: Loader.LoaderContext): void {
             // IDs are globally unique
             var object: Loader.EElement = context.ids[this.url];
             if (object != null) {
@@ -85,7 +85,7 @@ import * as MathUtils from "../math"
             return this.url;
         }
 
-        resolve(context: Loader.Context): void {
+        resolve(context: Loader.LoaderContext): void {
             var scope: Loader.EElement | undefined = this.scope;
             var object: Loader.EElement | undefined = undefined;
             // FX targets have a unique SID within a scope
@@ -241,7 +241,7 @@ import * as MathUtils from "../math"
             return result;
         }
 
-        resolve(context: Loader.Context): void {
+        resolve(context: Loader.LoaderContext): void {
             var object: Loader.EElement | undefined;
             if (this.id == null) {
                 context.log?.write("Could not resolve SID #" + this.url + ", link has no root ID", LogLevel.Warning);

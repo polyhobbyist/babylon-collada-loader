@@ -28,7 +28,7 @@ import * as MathUtils from "../math"
         /**
         *   Parses a <sampler> element.
         */
-        static parse(node: Node, context: Loader.Context): Loader.Sampler {
+        static parse(node: Node, context: Loader.LoaderContext): Loader.Sampler {
             var result: Loader.Sampler = new Loader.Sampler();
 
             result.id = context.getAttributeAsString(node, "id", undefined, false);
@@ -48,7 +48,7 @@ import * as MathUtils from "../math"
             return result;
         }
 
-        static addInput(sampler: Loader.Sampler, input: Loader.Input, context: Loader.Context) {
+        static addInput(sampler: Loader.Sampler, input: Loader.Input, context: Loader.LoaderContext) {
             switch (input.semantic) {
                 case "INPUT":
                     sampler.input = input;

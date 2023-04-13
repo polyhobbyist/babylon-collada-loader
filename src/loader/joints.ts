@@ -18,7 +18,7 @@ import * as MathUtils from "../math"
         /**
         *   Parses a <joints> element.
         */
-        static parse(node: Node, context: Loader.Context): Loader.Joints {
+        static parse(node: Node, context: Loader.LoaderContext): Loader.Joints {
             var result: Loader.Joints = new Loader.Joints();
 
             var inputs: Loader.Input[] = [];
@@ -38,7 +38,7 @@ import * as MathUtils from "../math"
             return result;
         }
 
-        static addInput(joints: Loader.Joints, input: Loader.Input, context: Loader.Context) {
+        static addInput(joints: Loader.Joints, input: Loader.Input, context: Loader.LoaderContext) {
             switch (input.semantic) {
                 case "JOINT":
                     joints.joints = input;

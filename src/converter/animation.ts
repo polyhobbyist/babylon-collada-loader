@@ -113,7 +113,7 @@ import * as MathUtils from "../math"
             this.channels = [];
         }
 
-        static create(animation: Loader.Animation, context: Converter.Context): Converter.Animation {
+        static create(animation: Loader.Animation, context: Converter.ConverterContext): Converter.Animation {
             var result: Converter.Animation = new Converter.Animation();
             result.id = animation.id;
             result.name = animation.name;
@@ -123,7 +123,7 @@ import * as MathUtils from "../math"
             return result;
         }
 
-        static addChannelsToAnimation(collada_animation: Loader.Animation, converter_animation: Converter.Animation, context: Converter.Context) {
+        static addChannelsToAnimation(collada_animation: Loader.Animation, converter_animation: Converter.Animation, context: Converter.ConverterContext) {
             // Channels
             for (var i: number = 0; i < collada_animation.channels.length; ++i) {
                 var channel: Converter.AnimationChannel = Converter.AnimationChannel.create(collada_animation.channels[i], context);
@@ -140,7 +140,7 @@ import * as MathUtils from "../math"
         /**
         * Returns the time and fps statistics of this animation
         */
-        static getTimeStatistics(animation: Converter.Animation, index_begin: number, index_end: number, result: Converter.AnimationTimeStatistics, context: Converter.Context) {
+        static getTimeStatistics(animation: Converter.Animation, index_begin: number, index_end: number, result: Converter.AnimationTimeStatistics, context: Converter.ConverterContext) {
             // Channels
             for (var i: number = 0; i < animation.channels.length; ++i) {
                 var channel: Converter.AnimationChannel = animation.channels[i];

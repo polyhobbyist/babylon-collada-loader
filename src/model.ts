@@ -86,11 +86,11 @@ export class RMXBone {
     /** Inverse bind matrix */
     inv_bind_mat: Float32Array | undefined;
     /** Rest pose position (3D vector) */
-    pos: BABYLON.Vector3  | undefined;
+    pos: BABYLON.Vector3 = new BABYLON.Vector3();
     /** Rest pose rotation (quaternion) */
-    rot: BABYLON.Quaternion | undefined;
+    rot: BABYLON.Quaternion = new BABYLON.Quaternion();
     /** Rest pose scale (3D vector) */
-    scl: BABYLON.Vector3 | undefined;
+    scl: BABYLON.Vector3 = new BABYLON.Vector3();
 }
 
 /**

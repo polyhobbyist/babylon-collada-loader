@@ -6,7 +6,7 @@ import * as Utils from "./utils"
         /**
         *   Parses a <bind_material> element. Can be child of <instance_geometry> or <instance_controller>
         */
-        static parse(node: Node, parent: Loader.InstanceMaterialContainer, context: Loader.Context) {
+        static parse(node: Node, parent: Loader.InstanceMaterialContainer, context: Loader.LoaderContext) {
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
                     case "technique_common":
@@ -21,7 +21,7 @@ import * as Utils from "./utils"
         /**
         *   Parses a <instance_geometry>/<bind_material>/<technique_common> element.
         */
-        static parseTechniqueCommon(node: Node, parent: Loader.InstanceMaterialContainer, context: Loader.Context) {
+        static parseTechniqueCommon(node: Node, parent: Loader.InstanceMaterialContainer, context: Loader.LoaderContext) {
             Utils.forEachChild(node, function (child: Node) {
                 switch (child.nodeName) {
                     case "instance_material":

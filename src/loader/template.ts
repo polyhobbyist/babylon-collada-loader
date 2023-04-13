@@ -21,7 +21,7 @@ import * as MathUtils from "../math"
         /**
         *   Parses a <...> element.
         */
-        static parse(node: Node, context: Loader.Context): Loader.ElementTemplate {
+        static parse(node: Node, context: Loader.LoaderContext): Loader.ElementTemplate {
             var result: Loader.ElementTemplate = new Loader.ElementTemplate();
 
             result.id = context.getAttributeAsString(node, "id", undefined, true);

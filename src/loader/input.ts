@@ -25,7 +25,7 @@ import * as MathUtils from "../math"
         /**
         *   Parses an <input> element.
         */
-        static parse(node: Node, shared: boolean, context: Loader.Context): Loader.Input {
+        static parse(node: Node, shared: boolean, context: Loader.LoaderContext): Loader.Input {
             var result: Loader.Input = new Loader.Input();
 
             result.semantic = context.getAttributeAsString(node, "semantic", undefined, true);

@@ -13,7 +13,7 @@ import * as Utils from "./utils"
         /**
         *   Parses a <channel> element.
         */
-        static parse(node: Node, parent: Loader.Animation, context: Loader.Context): Loader.Channel {
+        static parse(node: Node, parent: Loader.Animation, context: Loader.LoaderContext): Loader.Channel {
             var result: Loader.Channel = new Loader.Channel();
 
             result.source = context.getAttributeAsUrlLink(node, "source", true);

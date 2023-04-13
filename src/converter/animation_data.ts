@@ -58,7 +58,7 @@ import * as BABYLON from "babylonjs";
             this.tracks = [];
         }
 
-        static create(skeleton: Converter.Skeleton, animation: Converter.Animation, index_begin: number, index_end: number, fps: number, context: Converter.Context): Converter.AnimationData {
+        static create(skeleton: Converter.Skeleton, animation: Converter.Animation, index_begin: number, index_end: number, fps: number, context: Converter.ConverterContext): Converter.AnimationData {
             var result: Converter.AnimationData = new Converter.AnimationData();
             result.name = animation.name;
 
@@ -76,10 +76,10 @@ import * as BABYLON from "babylonjs";
             logStatistics("Original FPS", stat.fps, 3, context);
 
             // Default fps if none give: median fps of source data
-            if (fps === null) {
+            if (!fps) {
                 fps = stat.fps.median();
             }
-            if (fps === null || fps <= 0) {
+            if (!fps || fps <= 0) {
                 context.log.write("Could not determine FPS for animation, skipping animation", LogLevel.Warning);
                 return result;
             }
@@ -294,9 +294,9 @@ import * as BABYLON from "babylonjs";
         }
 
         static createFromLabels(skeleton: Converter.Skeleton, animation: Converter.Animation,
-            labels: Converter.AnimationLabel[], defaultFps: number, context: Converter.Context): Converter.AnimationData[]{
+            labels: Converter.AnimationLabel[], defaultFps: number, context: Converter.ConverterContext): Converter.AnimationData[]{
 
-            if (skeleton === null) {
+            if (!skeleton) {
                 context.log.write("No skeleton present, no animation data generated.", LogLevel.Warning);
                 return [];
             }

@@ -33,7 +33,7 @@ import * as MathUtils from "../math"
         /**
         *   Parses a <surface> element.
         */
-        static parse(node: Node, parent: Loader.EElement, context: Loader.Context): Loader.EffectSurface {
+        static parse(node: Node, parent: Loader.EElement, context: Loader.LoaderContext): Loader.EffectSurface {
             var result: Loader.EffectSurface = new Loader.EffectSurface();
 
             result.type = context.getAttributeAsString(node, "type", undefined, true);

@@ -32,7 +32,7 @@ import * as MathUtils from "../math"
         /**
         *   Parses a <newparam> element.
         */
-        static parse(node: Node, parent: Loader.EElement, context: Loader.Context): Loader.EffectSampler {
+        static parse(node: Node, parent: Loader.EElement, context: Loader.LoaderContext): Loader.EffectSampler {
             var result: Loader.EffectSampler = new Loader.EffectSampler();
 
             Utils.forEachChild(node, function (child: Node) {
