@@ -206,7 +206,7 @@ import { ConverterContext } from "./context";
             mat.copyFrom(getWorldRotation(context));
             var s = getWorldScale(context);
             var matScale = BABYLON.Matrix.Scaling(s.x, s.y, s.z);
-            mat = mat.multiply(mat, );
+            mat = mat.multiply(matScale);
             return mat;
         }
 
