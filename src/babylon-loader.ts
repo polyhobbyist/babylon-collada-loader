@@ -38,6 +38,13 @@ export class BabylonModelLoader {
         }
         if (chunk.data_indices) {
             vertexData.indices = chunk.data_indices;
+
+            // reverse the winding order
+            for (var i = 0; i < vertexData.indices.length; i += 3) {
+                var tmp = vertexData.indices[i];
+                vertexData.indices[i] = vertexData.indices[i + 2];
+                vertexData.indices[i + 2] = tmp;
+            }
         }
 
         return vertexData;
@@ -98,7 +105,7 @@ export class BabylonModelLoader {
             if (chunk.geometry) {
                 var m = new BABYLON.Mesh("", scene);
                 chunk.geometry.applyToMesh(m);
-                m.material = chunk.material; 
+                m.material = chunk.material;
 
                 result.meshes.push(m);
             }
