@@ -28,6 +28,9 @@ import * as MaterialLoader from "../loader/material"
         specular: Texture;
         normal: Texture;
 
+        diffuseColor: number[] | undefined;
+        specularColor: number[] | undefined;
+
         constructor() {
             this.name = null;
             this.diffuse = null;
@@ -66,21 +69,25 @@ import * as MaterialLoader from "../loader/material"
                 return Material.createDefaultMaterial(context);
             }
 
-            if (technique.diffuse !== null && technique.diffuse.color !== null) {
-                context.log.write("Material " + material.id + " contains constant diffuse colors, colors ignored", LogLevel.Warning);
-            }
-
-            if (technique.specular !== null && technique.specular.color !== null) {
-                context.log.write("Material " + material.id + " contains constant specular colors, colors ignored", LogLevel.Warning);
-            }
-
             var result: Material = context.materials.findConverter(material);
             if (result) return result;
 
             result = new Material();
             result.name = material.id;
-            result.diffuse = Texture.createTexture(technique.diffuse, context);
-            result.specular = Texture.createTexture(technique.specular, context);
+            if (technique.diffuse != undefined && technique.diffuse.color != undefined) {
+                // convert Float32Array to number[]
+                result.diffuseColor = Array.prototype.slice.call(technique.diffuse.color);
+            } else {
+                result.diffuse = Texture.createTexture(technique.diffuse, context);
+
+            }
+
+            if (technique.specular != undefined && technique.specular.color != undefined) {
+                result.specularColor = Array.prototype.slice.call(technique.specular.color);
+            } else {
+                result.specular = Texture.createTexture(technique.specular, context);
+            }
+
             result.normal = Texture.createTexture(technique.bump, context);
             context.materials.register(material, result);
 

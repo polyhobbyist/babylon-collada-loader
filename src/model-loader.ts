@@ -139,6 +139,9 @@ export class RMXModelLoader {
         result.specular = json.specular;
         result.normal = json.normal;
 
+        result.diffuseColor = json.diffuseColor;
+        result.specularColor = json.specularColor;
+
         return result;
     }
 }

@@ -57,7 +57,7 @@ export class BabylonModelLoader {
 
         // TODO Polyhobbyist
 
-        return new BABYLON.Texture("url", scene);
+        return new BABYLON.Texture(url, scene);
     }
 
     private parseColor(color: string) : BABYLON.Color3 {
@@ -80,9 +80,22 @@ export class BabylonModelLoader {
         } else {
             var result = new BABYLON.StandardMaterial(hash, scene);
             //result.skinning = skinned;
-            result.diffuseColor  = this.parseColor(material.diffuse);
             result.ambientColor = this.parseColor(material.normal);
-            result.specularColor = this.parseColor(material.specular);
+            if (material.diffuse) {
+                result.diffuseTexture = this.createTexture(material.diffuse, scene);
+            }
+
+            if (material.specular) {
+                result.specularTexture = this.createTexture(material.specular, scene);
+            }
+
+            if (material.diffuseColor != undefined && material.diffuseColor.length == 4) {
+                result.diffuseColor  = new BABYLON.Color3(material.diffuseColor[0], material.diffuseColor[1], material.diffuseColor[2]);
+            }
+
+            if (material.specularColor != undefined && material.specularColor.length == 4) {
+                result.specularColor = new BABYLON.Color3(material.specularColor[0], material.specularColor[1], material.specularColor[2])
+            }
 
             this.materialCache[hash] = result;
             return result;
@@ -110,8 +123,6 @@ export class BabylonModelLoader {
                 result.meshes.push(m);
             }
         }
-
-
 
         // Skeleton - use custom object
         result.skeleton = model.skeleton;

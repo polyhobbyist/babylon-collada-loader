@@ -54,11 +54,14 @@ export class RMXMaterial {
     specular: string = "";
     normal: string = "";
 
+    diffuseColor: number[] | undefined;
+    specularColor: number[] | undefined;
+
     constructor() {
     }
 
     hash(): string {
-        return "material|" + (this.diffuse || "") + "|" + (this.specular || "") + "|" + (this.normal || "");
+        return "material|" + (this.diffuse || "") + "|" + (this.specular || "") + "|" + (this.normal || "") + "|" + (this.diffuseColor || "") + "|" + (this.specularColor || "");
     }
 }
 

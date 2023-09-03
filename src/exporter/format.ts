@@ -38,6 +38,13 @@
         specular: string;
         /** Normal map */
         normal: string;
+
+        /** Diffuse color */
+        diffuseColor: number[];
+        
+        /** Specular color */
+        specularColor: number[];
+
     };
 
     /**

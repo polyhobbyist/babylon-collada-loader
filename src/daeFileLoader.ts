@@ -47,7 +47,9 @@ export class DAEFileLoader implements BABYLON.ISceneLoaderPluginAsync, BABYLON.I
 
         return this.importMeshAsync(undefined, scene, data, rootUrl)
             .then((result) => {
-                result.meshes.forEach((mesh) => container.meshes.push(mesh));
+                result.meshes.forEach((mesh) => {
+                  container.meshes.push(mesh)
+                });
                 result.meshes.forEach((mesh) => {
                     const material = mesh.material;
                     if (material) {
@@ -76,11 +78,10 @@ export class DAEFileLoader implements BABYLON.ISceneLoaderPluginAsync, BABYLON.I
 
     private async _parseSolid(meshesNames: any, scene: BABYLON.Scene, data: string, rootUrl: string): Promise<Array<BABYLON.AbstractMesh>> {
       const materialToUse = new Array<string>();
-      const babylonMeshesArray: Array<BABYLON.Mesh> = []; //The mesh for babylon
 
       var loader = new Loader.ColladaLoader();
       var loaderlog = new LogCallback;
-      //loaderlog.onmessage = (message: string, level: LogLevel) => { console.log(message); }      
+      loaderlog.onmessage = (message: string, level: LogLevel) => { console.log(message); }      
       loader.log = new LogFilter(loaderlog, LogLevel.Debug);
       
       var parser = new DOMParser();
@@ -100,6 +101,9 @@ export class DAEFileLoader implements BABYLON.ISceneLoaderPluginAsync, BABYLON.I
       var loader2 = new BabylonLoader.BabylonModelLoader;
       var model2 = loader2.createModel(model, scene);
 
+      
+//      model2.meshes[0].rotationQuaternion = new BABYLON.Quaternion(0, 1, 0, 0);
+//      model2.meshes[0].scaling = new BABYLON.Vector3(1, 1, -1);
 
       //Return an array with all Mesh
         return model2.meshes;

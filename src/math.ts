@@ -44,11 +44,11 @@ import * as BABYLON from 'babylonjs';
     * Extracts a 4D matrix from an array of matrices (stored as an array of numbers)
     */
     export function mat4Extract(src: NumberArray, srcOff: number, dest: BABYLON.Matrix) {
-        let d = new Float32Array(16);
-        for (var i: number = 0; i < 16; ++i) {
-            d[i] = src[srcOff * 16 + i];
-        }
-        dest = BABYLON.Matrix.FromArray(d);
+//        let d = new Float32Array(16);
+//        for (var i: number = 0; i < 16; ++i) {
+//            d[i] = src[srcOff * 16 + i];
+//        }
+        dest = BABYLON.Matrix.FromArray(src);
 
         // Collada matrices are row major
         // glMatrix matrices are column major
