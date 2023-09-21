@@ -81,8 +81,6 @@
   </library_geometries>
   <library_visual_scenes>
     <visual_scene id="Scene" name="Scene">
-      <node id="Chassis_v3_002" name="Chassis v3.002" type="NODE">
-        <matrix sid="transform">1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</matrix>
         <node id="Chassis_v3_001" name="Chassis v3.001" type="NODE">
           <matrix sid="transform">-0.1 0 0 -1.17 0 0.1 0 -15.6 0 0 -0.1 12.2 0 0 0 1</matrix>
             <instance_geometry url="#Body1_023-mesh" name="Body1.087">
@@ -94,7 +92,6 @@
                 </technique_common>
               </bind_material>
             </instance_geometry>
-        </node>
       </node>
     </visual_scene>
   </library_visual_scenes>
