@@ -21,7 +21,7 @@ import * as ConverterSkeleton from "../converter/skeleton";
             // TODO: options for this
             var mat_tol: number = 6;
             var pos_tol: number = 6;
-            var scl_tol: number = 3;
+            var scl_tol: number = 6;
             var rot_tol: number = 6;
 
             var result: BoneJSON[] = [];
@@ -42,10 +42,11 @@ import * as ConverterSkeleton from "../converter/skeleton";
                     name: bone.name,
                     parent: skeleton.bones.indexOf(bone.parent),
                     skinned: bone.attachedToSkin,
-                    inv_bind_mat: inv_bind_mat.map((x) => MathUtils.round(x, mat_tol)),
-                    pos: pos.asArray().map((x) => MathUtils.round(x, pos_tol)),
-                    rot: rot.asArray().map((x) => MathUtils.round(x, rot_tol)),
-                    scl: scl.asArray().map((x) => MathUtils.round(x, scl_tol))
+                    inv_bind_mat: inv_bind_mat,
+                    matrix: mat.asArray() as number[],
+                    pos: pos.asArray(),
+                    rot: rot.asArray(),
+                    scl: scl.asArray()
                 });
             });
 

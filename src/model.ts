@@ -88,6 +88,8 @@ export class RMXBone {
     skinned: boolean = false;
     /** Inverse bind matrix */
     inv_bind_mat: Float32Array | undefined;
+
+    matrix: Float32Array | undefined;
     /** Rest pose position (3D vector) */
     pos: BABYLON.Vector3 = new BABYLON.Vector3();
     /** Rest pose rotation (quaternion) */

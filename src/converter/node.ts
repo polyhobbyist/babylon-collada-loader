@@ -56,8 +56,7 @@ import {Geometry} from "./geometry"
         */
         getWorldMatrix(context: ConverterContext): BABYLON.Matrix {
             if (this.parent != null) {
-                this.worldMatrix.multiply(this.parent.getWorldMatrix(context));
-                this.worldMatrix.multiply(this.getLocalMatrix(context));
+                this.worldMatrix = this.parent.getWorldMatrix(context).multiply(this.getLocalMatrix(context));
             } else {
                 this.worldMatrix.copyFrom(this.getLocalMatrix(context));
             }
@@ -79,8 +78,7 @@ import {Geometry} from "./geometry"
             }
 
             // Static post-transform
-            this.matrix.multiply(this.matrix);
-            this.matrix.multiply(this.transformation_post);
+           this.matrix = this.matrix.multiply(this.transformation_post);
 
             return this.matrix;
         }
@@ -288,7 +286,7 @@ import {Geometry} from "./geometry"
                     if (context.options.worldTransformUnitScale) {
                         var mat: BABYLON.Matrix = new BABYLON.Matrix()
                         mat = BABYLON.Matrix.Invert(element.node.transformation_post);
-                        world_matrix.multiply(mat);
+                        world_matrix = world_matrix.multiply(mat);
                     }
                     Geometry.transformGeometry(element.geometry, world_matrix, context);
                 });

@@ -85,6 +85,9 @@
         parent: number;
         /** Indicates whether this bone is used by the geometry */
         skinned: boolean;
+        
+        matrix: number[];
+
         /** Inverse bind matrix */
         inv_bind_mat: number[];
         /** Rest pose position (3D vector) */

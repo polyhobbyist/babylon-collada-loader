@@ -12,7 +12,6 @@ import * as BABYLON from 'babylonjs';
 export class BabylonModelLoader {
 
     private materialCache: { [hash: string]: BABYLON.Material };
-    //private imageLoader: THREE.ImageLoader;
 
     constructor() {
         this.materialCache = {};
@@ -80,7 +79,6 @@ export class BabylonModelLoader {
         } else {
             var result = new BABYLON.StandardMaterial(hash, scene);
             //result.skinning = skinned;
-            result.ambientColor = this.parseColor(material.normal);
             if (material.diffuse) {
                 result.diffuseTexture = this.createTexture(material.diffuse, scene);
             }
@@ -90,7 +88,7 @@ export class BabylonModelLoader {
             }
 
             if (material.diffuseColor != undefined && material.diffuseColor.length == 4) {
-                result.diffuseColor  = new BABYLON.Color3(material.diffuseColor[0], material.diffuseColor[1], material.diffuseColor[2]);
+                result.diffuseColor = result.emissiveColor = new BABYLON.Color3(material.diffuseColor[0], material.diffuseColor[1], material.diffuseColor[2]);
             }
 
             if (material.specularColor != undefined && material.specularColor.length == 4) {
@@ -102,11 +100,31 @@ export class BabylonModelLoader {
         }
     }
 
-    createModel(model: Model.RMXModel, scene : BABYLON.Scene): BabylonModel {
+    createBabylonModel(model: Model.RMXModel, scene : BABYLON.Scene): BabylonModel {
         var result = new BabylonModel();
         var skinned = model.skeleton? true : false;
+        var bones : BABYLON.Bone[] = [];
 
-        // Geometry - create THREE objects
+       // Convert RMX skeleton to BABYLON.Skeleton
+        if (model.skeleton) {
+            result.skeleton = new BABYLON.Skeleton("Skeleton", "", scene);
+            for (var i = 0; i < model.skeleton.bones.length; ++i) {
+                var bone = model.skeleton.bones[i];
+                var parentBone = undefined;
+                if (bone.parent >= 0 && bone.parent < bones.length) {
+                    parentBone = bones[bone.parent];
+                }
+
+                let boneMatrix = BABYLON.Matrix.FromArray(bone.matrix);
+
+                var babylon_bone = new BABYLON.Bone(bone.name, result.skeleton, parentBone, boneMatrix);
+                bones.push(babylon_bone);
+            }
+
+            result.skeleton.bones = bones;
+        }
+
+        // Geometry
         for (var i = 0; i < model.chunks.length; ++i) {
             var rmx_chunk = model.chunks[i];
 
@@ -120,12 +138,30 @@ export class BabylonModelLoader {
                 chunk.geometry.applyToMesh(m);
                 m.material = chunk.material;
 
+                // Attach mesh m to bones in the skeleton
+                if (result.skeleton) {
+                    // for each index in the bone index buffer, find the corresponding bone
+                    // and add the mesh to the list of meshes that are influenced by that bone
+                    var bone_indices = rmx_chunk.data_boneindex;
+                    var bone_weights = rmx_chunk.data_boneweight;
+                    var bone_count = bone_indices.length / 4;
+                    for (var j = 0; j < bone_count; ++j) {
+                        var bone_index = bone_indices[j * 4];
+                        var bone_weight = bone_weights[j * 4];
+                        if (bone_index >= 0 && bone_index < bones.length) {
+                            var bbone = bones[bone_index];
+                            m.attachToBone(bbone, bbone.getTransformNode());
+                        }
+                    }
+                }
+
                 result.meshes.push(m);
             }
         }
 
-        // Skeleton - use custom object
-        result.skeleton = model.skeleton;
+        result.skeleton.prepare();
+        result.skeleton.returnToRest();
+        
 
         // Animation - use custom object
         result.animations = model.animations;
@@ -152,19 +188,6 @@ export class BabylonSkeleton {
 
         // The bone texture stores the bone matrices for the use on the GPU
         this.boneTexture = new ModelAnimation.RMXBoneMatrixTexture(skeleton.bones.length);
-
-        /* 
-        // Trick three.js into thinking this is a THREE.Skeleton object
-        Object.defineProperty(this, "useVertexTexture", { get: function () { return true; } });
-        Object.defineProperty(this, "boneTextureWidth", { get: function () { return this.boneTexture.size; } });
-        Object.defineProperty(this, "boneTextureHeight", { get: function () { return this.boneTexture.size; } });
-
-        // Trick three.js into thinking our bone texture is a THREE.DataTexture
-        Object.defineProperty(this.boneTexture, "__webglTexture", { get: function () { return this.texture; } });
-        Object.defineProperty(this.boneTexture, "needsUpdate", { get: function () { return false; } });
-        Object.defineProperty(this.boneTexture, "width", { get: function () { return this.size; } });
-        Object.defineProperty(this.boneTexture, "height", { get: function () { return this.size; } });
-        */
     }
 
     update(gl: WebGLRenderingContext) {
@@ -202,7 +225,7 @@ export class BabylonModelInstance {
 */
 export class BabylonModel {
     chunks: BabylonModelChunk[];
-    skeleton: Model.RMXSkeleton | undefined;
+    skeleton: BABYLON.Skeleton | undefined;
     animations: Model.RMXAnimation[];
     static identityMatrix: BABYLON.Matrix = new BABYLON.Matrix();
 
