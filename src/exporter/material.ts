@@ -13,7 +13,10 @@ import * as ConverterMaterial from "../converter/material";
                 name: material.name,
                 diffuse: (material.diffuse !== null) ? (material.diffuse.url) : "",
                 specular: (material.specular !== null) ? (material.specular.url) : "",
-                normal: (material.normal !== null) ? (material.normal.url) : ""
+                normal: (material.normal !== null) ? (material.normal.url) : "",
+                diffuseColor: material.diffuseColor,
+                specularColor: material.specularColor,
+                emissiveColor: material.emissiveColor
             };
         }
     };

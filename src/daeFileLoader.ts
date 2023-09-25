@@ -21,17 +21,39 @@ export class DAEFileLoader implements BABYLON.ISceneLoaderPluginAsync, BABYLON.I
   }
 
   public importMeshAsync(meshesNames: any, scene: BABYLON.Scene, data: any, rootUrl: string): Promise<BABYLON.ISceneLoaderAsyncResult> {
-    return this._parseSolid(meshesNames, scene, data, rootUrl).then((meshes) => {
-      return {
-          meshes: meshes,
-          particleSystems: [],
-          skeletons: [],
-          animationGroups: [],
-          transformNodes: [],
-          geometries: [],
-          lights: [],
-      };
-    });
+    var loader = new Loader.ColladaLoader();
+    var loaderlog = new LogCallback;
+    loaderlog.onmessage = (message: string, level: LogLevel) => { console.log(message); }      
+    loader.log = new LogFilter(loaderlog, LogLevel.Debug);
+    
+    var parser = new DOMParser();
+    var colladaXml = parser.parseFromString(data, "text/xml");
+
+    var colladaDoc = loader.loadFromXML("id", colladaXml);
+
+    var converter = new ColladaConverter();
+    var convertedDoc = converter.convert(colladaDoc);
+
+    var exporter = new ColladaExporter();
+    var exportedDoc = exporter.export(convertedDoc);
+
+    var modelLoader = new RMXModelLoader;
+    var model: RMXModel = modelLoader.loadModel(exportedDoc.json, exportedDoc.data.buffer);
+
+    var loader2 = new BabylonLoader.BabylonModelLoader;
+    var model2 = loader2.createBabylonModel(model, scene);
+
+
+    const result: BABYLON.ISceneLoaderAsyncResult = {
+      meshes: model2.meshes,
+      particleSystems: [],
+      skeletons: [model2.skeleton],
+      animationGroups: [],
+      transformNodes: [],
+      geometries: [],
+      lights: [],
+    };
+    return Promise.resolve(result);
   }  
 
   public loadAsync(scene: BABYLON.Scene, data: string, rootUrl: string): Promise<void> {
@@ -47,7 +69,9 @@ export class DAEFileLoader implements BABYLON.ISceneLoaderPluginAsync, BABYLON.I
 
         return this.importMeshAsync(undefined, scene, data, rootUrl)
             .then((result) => {
-                result.meshes.forEach((mesh) => container.meshes.push(mesh));
+                result.meshes.forEach((mesh) => {
+                  container.meshes.push(mesh)
+                });
                 result.meshes.forEach((mesh) => {
                     const material = mesh.material;
                     if (material) {
@@ -65,6 +89,7 @@ export class DAEFileLoader implements BABYLON.ISceneLoaderPluginAsync, BABYLON.I
                         }
                     }
                 });
+
                 this._assetContainer = null;
                 return container;
             })
@@ -74,36 +99,6 @@ export class DAEFileLoader implements BABYLON.ISceneLoaderPluginAsync, BABYLON.I
             });
     }
 
-    private async _parseSolid(meshesNames: any, scene: BABYLON.Scene, data: string, rootUrl: string): Promise<Array<BABYLON.AbstractMesh>> {
-      const materialToUse = new Array<string>();
-      const babylonMeshesArray: Array<BABYLON.Mesh> = []; //The mesh for babylon
-
-      var loader = new Loader.ColladaLoader();
-      var loaderlog = new LogCallback;
-      //loaderlog.onmessage = (message: string, level: LogLevel) => { console.log(message); }      
-      loader.log = new LogFilter(loaderlog, LogLevel.Debug);
-      
-      var parser = new DOMParser();
-      var colladaXml = parser.parseFromString(data, "text/xml");
-
-      var colladaDoc = loader.loadFromXML("id", colladaXml);
-
-      var converter = new ColladaConverter();
-      var convertedDoc = converter.convert(colladaDoc);
-
-      var exporter = new ColladaExporter();
-      var exportedDoc = exporter.export(convertedDoc);
-
-      var modelLoader = new RMXModelLoader;
-      var model: RMXModel = modelLoader.loadModel(exportedDoc.json, exportedDoc.data.buffer);
-
-      var loader2 = new BabylonLoader.BabylonModelLoader;
-      var model2 = loader2.createModel(model, scene);
-
-
-      //Return an array with all Mesh
-        return model2.meshes;
-  }    
 }
 
 export function Register() {

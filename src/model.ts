@@ -54,11 +54,15 @@ export class RMXMaterial {
     specular: string = "";
     normal: string = "";
 
+    diffuseColor: number[] | undefined;
+    specularColor: number[] | undefined;
+    emissiveColor: number[] | undefined;
+
     constructor() {
     }
 
     hash(): string {
-        return "material|" + (this.diffuse || "") + "|" + (this.specular || "") + "|" + (this.normal || "");
+        return "material|" + (this.diffuse || "") + "|" + (this.specular || "") + "|" + (this.normal || "") + "|" + (this.diffuseColor || "") + "|" + (this.specularColor || "" + "|" + (this.emissiveColor || ""));
     }
 }
 
@@ -85,6 +89,8 @@ export class RMXBone {
     skinned: boolean = false;
     /** Inverse bind matrix */
     inv_bind_mat: Float32Array | undefined;
+
+    matrix: Float32Array | undefined;
     /** Rest pose position (3D vector) */
     pos: BABYLON.Vector3 = new BABYLON.Vector3();
     /** Rest pose rotation (quaternion) */

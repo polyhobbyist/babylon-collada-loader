@@ -97,7 +97,7 @@ import { ConverterContext } from "./context"
             MathUtils.mat4Extract(this.data, 0, this.matrix);
         }
         applyTransformation(mat: BABYLON.Matrix) {
-            this.matrix.multiply(this.matrix);
+            mat.copyFrom(mat.multiply(this.matrix));
         }
         hasTransformType(type: TransformType): boolean {
             return true;
@@ -120,9 +120,8 @@ import { ConverterContext } from "./context"
             this.radians = this.data[3] / 180 * Math.PI;
         }
         applyTransformation(mat: BABYLON.Matrix) {
-            let r = BABYLON.Matrix.RotationAxis(this.axis, this.radians);
-            
-            mat.multiply(r);
+            let t = BABYLON.Matrix.RotationAxis(this.axis, this.radians);
+            mat.copyFrom(mat.multiply(t));
         }
         hasTransformType(type: TransformType): boolean {
             return (type === TransformType.Rotation);
@@ -141,7 +140,7 @@ import { ConverterContext } from "./context"
         }
         applyTransformation(mat: BABYLON.Matrix) {
             let t = BABYLON.Matrix.Translation(this.pos.x, this.pos.y, this.pos.z);
-            mat.multiply(t);
+            mat.copyFrom(mat.multiply(t));
         }
         hasTransformType(type: TransformType): boolean {
             return (type === TransformType.Translation);
@@ -160,7 +159,7 @@ import { ConverterContext } from "./context"
         }
         applyTransformation(mat: BABYLON.Matrix) {
             let t = BABYLON.Matrix.Scaling(this.scl.x, this.scl.y, this.scl.z);
-            mat.multiply(t);
+            mat.copyFrom(mat.multiply(t))
         }
         hasTransformType(type: TransformType): boolean {
             return (type === TransformType.Scale);

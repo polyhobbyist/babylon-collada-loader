@@ -31,7 +31,7 @@ describe("Testing Dae", () => {
       BABYLON.SceneLoader.RegisterPlugin(new DAEFileLoader());
     }
 
-    var filePath = path.join(__dirname, "testdata/monkey.dae");
+    var filePath = path.join(__dirname, "testdata/leo.dae");
     var meshdata = readFileSync(filePath).toString('base64');
       BABYLON.SceneLoader.ImportMesh(null, "", "data:;base64," + meshdata, scene, (mesh) => {
         expect(mesh).toBeDefined();

@@ -48,7 +48,7 @@ import * as BABYLON from 'babylonjs';
         for (var i: number = 0; i < 16; ++i) {
             d[i] = src[srcOff * 16 + i];
         }
-        dest = BABYLON.Matrix.FromArray(d);
+        dest.copyFrom(BABYLON.Matrix.FromArray(d).transpose());
 
         // Collada matrices are row major
         // glMatrix matrices are column major

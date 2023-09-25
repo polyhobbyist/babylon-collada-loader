@@ -87,6 +87,7 @@ export class RMXModelLoader {
         result.parent = json.parent;
         result.skinned = json.skinned;
         result.inv_bind_mat = new Float32Array(json.inv_bind_mat);
+        result.matrix = new Float32Array(json.matrix);
         result.pos.set(json.pos[0], json.pos[1], json.pos[2]);
         result.rot.set(json.rot[0], json.rot[1], json.rot[2], json.rot[3]);
         result.scl.set(json.scl[0], json.scl[1], json.scl[2]);
@@ -138,6 +139,11 @@ export class RMXModelLoader {
         result.diffuse = json.diffuse;
         result.specular = json.specular;
         result.normal = json.normal;
+
+        result.diffuseColor = json.diffuseColor;
+        result.specularColor = json.specularColor;
+        result.emissiveColor = json.emissiveColor;
+        
 
         return result;
     }
