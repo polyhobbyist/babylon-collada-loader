@@ -88,7 +88,11 @@ export class BabylonModelLoader {
             }
 
             if (material.diffuseColor != undefined && material.diffuseColor.length == 4) {
-                result.diffuseColor = result.emissiveColor = new BABYLON.Color3(material.diffuseColor[0], material.diffuseColor[1], material.diffuseColor[2]);
+                result.diffuseColor = new BABYLON.Color3(material.diffuseColor[0], material.diffuseColor[1], material.diffuseColor[2]);
+            }
+
+            if (material.emissiveColor != undefined && material.emissiveColor.length == 4) {
+                result.emissiveColor = new BABYLON.Color3(material.emissiveColor[0], material.emissiveColor[1], material.emissiveColor[2]);
             }
 
             if (material.specularColor != undefined && material.specularColor.length == 4) {
@@ -104,6 +108,9 @@ export class BabylonModelLoader {
         var result = new BabylonModel();
         var skinned = model.skeleton? true : false;
         var bones : BABYLON.Bone[] = [];
+
+        let rootMesh = new BABYLON.Mesh("", scene);
+        result.meshes.push(rootMesh);
 
        // Convert RMX skeleton to BABYLON.Skeleton
         if (model.skeleton) {
@@ -122,6 +129,7 @@ export class BabylonModelLoader {
             }
 
             result.skeleton.bones = bones;
+            result.meshes[0].skeleton = result.skeleton;
         }
 
         // Geometry
@@ -137,6 +145,7 @@ export class BabylonModelLoader {
                 var m = new BABYLON.Mesh("", scene);
                 chunk.geometry.applyToMesh(m);
                 m.material = chunk.material;
+                m.parent = rootMesh;
 
                 // Attach mesh m to bones in the skeleton
                 if (result.skeleton) {
@@ -150,12 +159,11 @@ export class BabylonModelLoader {
                         var bone_weight = bone_weights[j * 4];
                         if (bone_index >= 0 && bone_index < bones.length) {
                             var bbone = bones[bone_index];
-                            m.attachToBone(bbone, bbone.getTransformNode());
+                            //var bt = bbone.getTransformNode();
+                            m.attachToBone(bbone, rootMesh);
                         }
                     }
                 }
-
-                result.meshes.push(m);
             }
         }
 

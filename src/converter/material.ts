@@ -30,12 +30,16 @@ import * as MaterialLoader from "../loader/material"
 
         diffuseColor: number[] | undefined;
         specularColor: number[] | undefined;
+        emissiveColor: number[] | undefined;
 
         constructor() {
             this.name = null;
             this.diffuse = null;
             this.specular = null;
             this.normal = null;
+            this.diffuseColor = null;
+            this.specularColor = null;
+            this.emissiveColor = null;
         }
 
         static createDefaultMaterial(context: ConverterContext): Material {
@@ -87,6 +91,11 @@ import * as MaterialLoader from "../loader/material"
             } else {
                 result.specular = Texture.createTexture(technique.specular, context);
             }
+
+            if (technique.emission != undefined && technique.emission.color != undefined) {
+                result.emissiveColor = Array.prototype.slice.call(technique.emission.color);
+            }
+
 
             result.normal = Texture.createTexture(technique.bump, context);
             context.materials.register(material, result);

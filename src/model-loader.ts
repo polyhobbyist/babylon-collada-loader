@@ -142,6 +142,8 @@ export class RMXModelLoader {
 
         result.diffuseColor = json.diffuseColor;
         result.specularColor = json.specularColor;
+        result.emissiveColor = json.emissiveColor;
+        
 
         return result;
     }

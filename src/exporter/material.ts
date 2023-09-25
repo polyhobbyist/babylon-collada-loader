@@ -15,7 +15,8 @@ import * as ConverterMaterial from "../converter/material";
                 specular: (material.specular !== null) ? (material.specular.url) : "",
                 normal: (material.normal !== null) ? (material.normal.url) : "",
                 diffuseColor: material.diffuseColor,
-                specularColor: material.specularColor
+                specularColor: material.specularColor,
+                emissiveColor: material.emissiveColor
             };
         }
     };

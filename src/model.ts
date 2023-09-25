@@ -56,12 +56,13 @@ export class RMXMaterial {
 
     diffuseColor: number[] | undefined;
     specularColor: number[] | undefined;
+    emissiveColor: number[] | undefined;
 
     constructor() {
     }
 
     hash(): string {
-        return "material|" + (this.diffuse || "") + "|" + (this.specular || "") + "|" + (this.normal || "") + "|" + (this.diffuseColor || "") + "|" + (this.specularColor || "");
+        return "material|" + (this.diffuse || "") + "|" + (this.specular || "") + "|" + (this.normal || "") + "|" + (this.diffuseColor || "") + "|" + (this.specularColor || "" + "|" + (this.emissiveColor || ""));
     }
 }
 

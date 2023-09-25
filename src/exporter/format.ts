@@ -45,6 +45,8 @@
         /** Specular color */
         specularColor: number[];
 
+        /** Emissive color */
+        emissiveColor: number[];
     };
 
     /**
