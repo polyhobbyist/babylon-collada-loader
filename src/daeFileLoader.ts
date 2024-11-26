@@ -52,6 +52,7 @@ export class DAEFileLoader implements BABYLON.ISceneLoaderPluginAsync, BABYLON.I
       transformNodes: [],
       geometries: [],
       lights: [],
+      spriteManagers: [],
     };
     return Promise.resolve(result);
   }  
