@@ -26,6 +26,7 @@ export class BabylonModelLoader {
         if (chunk.data_normal) {
             vertexData.normals = chunk.data_normal;
         }
+
         if (chunk.data_texcoord) {
             vertexData.uvs = chunk.data_texcoord;
         }
@@ -109,8 +110,10 @@ export class BabylonModelLoader {
         var skinned = model.skeleton? true : false;
         var bones : BABYLON.Bone[] = [];
 
-        let rootMesh = new BABYLON.Mesh("", scene);
-        result.meshes.push(rootMesh);
+        //let rootMesh = new BABYLON.Mesh("root", scene);
+        //result.meshes.push(rootMesh);
+
+        let rootMesh = new BABYLON.TransformNode("root", scene);
 
        // Convert RMX skeleton to BABYLON.Skeleton
         if (model.skeleton) {
@@ -129,7 +132,6 @@ export class BabylonModelLoader {
             }
 
             result.skeleton.bones = bones;
-            result.meshes[0].skeleton = result.skeleton;
         }
 
         // Geometry
@@ -142,24 +144,29 @@ export class BabylonModelLoader {
             result.chunks.push(chunk);
 
             if (chunk.geometry) {
-                var m = new BABYLON.Mesh("", scene);
+                var m = new BABYLON.Mesh(rmx_chunk.name, scene, rootMesh);
                 chunk.geometry.applyToMesh(m);
                 m.material = chunk.material;
-                m.parent = rootMesh;
+                m.skeleton = result.skeleton
+                result.meshes.push(m);
+
+                var normals = m.getVerticesData(BABYLON.VertexBuffer.NormalKind);
+                var positions = m.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+
+                console.info(m.name + " Normals: " + normals.length);
+                console.info(m.name + " Positions: " + positions.length);
+
 
                 // Attach mesh m to bones in the skeleton
                 if (result.skeleton) {
                     // for each index in the bone index buffer, find the corresponding bone
                     // and add the mesh to the list of meshes that are influenced by that bone
                     var bone_indices = rmx_chunk.data_boneindex;
-                    var bone_weights = rmx_chunk.data_boneweight;
                     var bone_count = bone_indices.length / 4;
                     for (var j = 0; j < bone_count; ++j) {
                         var bone_index = bone_indices[j * 4];
-                        var bone_weight = bone_weights[j * 4];
                         if (bone_index >= 0 && bone_index < bones.length) {
                             var bbone = bones[bone_index];
-                            //var bt = bbone.getTransformNode();
                             m.attachToBone(bbone, rootMesh);
                         }
                     }

@@ -1,6 +1,8 @@
 *.d.ts
 types/**
 reports/**
+test/*.js*
+dist/
 
 # Logs
 logs
