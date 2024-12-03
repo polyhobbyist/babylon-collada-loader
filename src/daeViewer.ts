@@ -120,14 +120,16 @@ showNormals(mesh, size, color, sc) : BABYLON.LinesMesh{
   sc = sc || this.scene;
   size = size || 1;
 
+  var colors = [];
+
   var lines = [];
   for (let i = 0; i < normals.length; i += 3) {
     var v1 = BABYLON.Vector3.FromArray(positions, i);
     var v2 = v1.add(BABYLON.Vector3.FromArray(normals, i).scaleInPlace(size));
     lines.push([v1.add(mesh.position), v2.add(mesh.position)]);
+    colors.push([new BABYLON.Color4(color.r, color.g, color.b, 1), new BABYLON.Color4(0, 0, color.b, 1)]);
   }
-  var normalLines = BABYLON.MeshBuilder.CreateLineSystem("normalLines", { lines: lines }, sc);
-  normalLines.color = color;
+  var normalLines = BABYLON.MeshBuilder.CreateLineSystem("normalLines", { lines: lines, colors: colors }, sc, );
   return normalLines;
 }
 

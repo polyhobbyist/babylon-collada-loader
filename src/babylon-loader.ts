@@ -153,9 +153,12 @@ export class BabylonModelLoader {
                 var normals = m.getVerticesData(BABYLON.VertexBuffer.NormalKind);
                 var positions = m.getVerticesData(BABYLON.VertexBuffer.PositionKind);
 
-                console.info(m.name + " Normals: " + normals.length);
-                console.info(m.name + " Positions: " + positions.length);
+                BABYLON.VertexData.ComputeNormals(positions, m.getIndices(), normals, { useRightHandedSystem: scene.useRightHandedSystem });
 
+                m.updateVerticesData(BABYLON.VertexBuffer.NormalKind, normals);
+                m.convertToFlatShadedMesh();
+
+                m.sideOrientation = BABYLON.Material.CounterClockWiseSideOrientation;
 
                 // Attach mesh m to bones in the skeleton
                 if (result.skeleton) {
