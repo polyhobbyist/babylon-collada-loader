@@ -127,7 +127,7 @@ export class BabylonModelLoader {
 
                 let boneMatrix = BABYLON.Matrix.FromArray(bone.matrix);
 
-                var babylon_bone = new BABYLON.Bone(bone.name, result.skeleton, parentBone, boneMatrix);
+                var babylon_bone = new BABYLON.Bone(bone.name + "_bone", result.skeleton, parentBone, boneMatrix);
                 bones.push(babylon_bone);
             }
 
@@ -144,7 +144,9 @@ export class BabylonModelLoader {
             result.chunks.push(chunk);
 
             if (chunk.geometry) {
-                var m = new BABYLON.Mesh(rmx_chunk.name, scene, rootMesh);
+                var m = new BABYLON.Mesh(rmx_chunk.name, scene);
+                m.setEnabled(false);
+                //m.parent = rootMesh;
                 chunk.geometry.applyToMesh(m);
                 m.material = chunk.material;
                 m.skeleton = result.skeleton
@@ -170,7 +172,13 @@ export class BabylonModelLoader {
                         var bone_index = bone_indices[j * 4];
                         if (bone_index >= 0 && bone_index < bones.length) {
                             var bbone = bones[bone_index];
-                            m.attachToBone(bbone, rootMesh);
+                            var bt = bbone.getTransformNode();
+                            if (!bt) {
+                                bt = new BABYLON.TransformNode(bbone.name + "_transform", scene);
+                                bbone.linkTransformNode(bt);
+                            }
+
+                            m.attachToBone(bbone, bt);
                         }
                     }
                 }

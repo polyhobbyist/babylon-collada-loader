@@ -26,6 +26,13 @@ export class TestMain {
       //this.transform.scaling = new BABYLON.Vector3(-.01, .01, .01);
 
       this.meshes = this.meshes.concat(meshes);
+      let m = meshes[0];
+
+      m.addRotation(0, 0, Math.PI).addRotation(Math.PI/2, 0, 0);
+      // Invert the left handed mesh to conform to the right handed coodinate system
+      m.scaling = new BABYLON.Vector3(-.01, .01, .01);
+      
+
 
         // find the top level bone in skeletons
         if (skeletons != undefined && skeletons.length > 0) {
@@ -39,11 +46,6 @@ export class TestMain {
         }
         this.meshes.forEach(m => {
             if (this.transform != undefined) {
-                //m.addRotation(0, 0, Math.PI).addRotation(Math.PI/2, 0, 0);
-                // Invert the left handed mesh to conform to the right handed coodinate system
-                //m.parent = this.transform;
-                //m.scaling = new BABYLON.Vector3(-.01, .01, .01);
-                
                 if (this.material != undefined && this.material != undefined) {
                     m.material = this.material;
                 }
@@ -53,6 +55,8 @@ export class TestMain {
             if (normals != undefined) {
               normals.parent = m;
             }
+
+            m.setEnabled(true);
 
             //var v = this.showVerticies(m, .01, BABYLON.Color3.Red());
             //if (v != undefined) {
