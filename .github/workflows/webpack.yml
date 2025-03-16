@@ -31,5 +31,5 @@ jobs:
       with:
         name: dist
         path: dist/
-        if-no-files-found: Dist not found
+        if-no-files-found: error
         retention-days: 14
