@@ -7,7 +7,7 @@
   "description": "Babylon.JS Loader for Collada",
   "version": "0.0.6",
   "main": "dist/dae.js",
-  "types": "types/src/dae.d.ts",
+  "types": "dist/dae.d.ts",
   "exports": {
     ".": [
       "./dist/dae.js"
