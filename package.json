@@ -5,7 +5,7 @@
     "url": "https://github.com/polyhobbyist/babylon-collada-loader.git"
   },
   "description": "Babylon.JS Loader for Collada",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "main": "dist/dae.js",
   "types": "types/src/dae.d.ts",
   "exports": {
