@@ -1,7 +1,5 @@
 const path = require("path");
 
-
-
 /** @type WebpackConfig */
 const webConfig = {
     entry: './src/daeViewer.ts',
@@ -49,7 +47,8 @@ const libConfig = {
         library: {
             name: 'dae_loader',
             type: 'umd'
-        }
+        },
+        umdNamedDefine: true
     },
     resolve: {
         extensions: ['.ts', '.tsx', '.js'],
@@ -63,7 +62,6 @@ const libConfig = {
     },
     devtool: 'source-map',
     plugins: [
-
     ],
     module: {
         rules: [{
@@ -80,7 +78,7 @@ const libConfig = {
             commonjs: 'babylonjs',
             commonjs2: 'babylonjs',
             amd: 'babylonjs',
-            root: '_',
+            root: 'BABYLON',
         },
     }
 }
