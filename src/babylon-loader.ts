@@ -2,8 +2,6 @@ import {Context} from "./context"
 import {LogLevel} from "./log"
 import * as Model from "./model"
 import * as ModelAnimation from "./model-animation"
-
-
 import * as BABYLON from 'babylonjs';
 
 /**
@@ -108,111 +106,120 @@ export class BabylonModelLoader {
     createBabylonModel(model: Model.RMXModel, scene : BABYLON.Scene): BabylonModel {
         var result = new BabylonModel();
         var skinned = model.skeleton? true : false;
-        var bones : BABYLON.Bone[] = [];
 
-        //let rootMesh = new BABYLON.Mesh("root", scene);
-        //result.meshes.push(rootMesh);
-
-        let rootMesh = new BABYLON.TransformNode("root", scene);
-
-       // Convert RMX skeleton to BABYLON.Skeleton
+        // Create root transform node
+        let transformNodes: BABYLON.TransformNode[] = [];
+        
+        // Create transform hierarchy instead of skeleton
         if (model.skeleton) {
-            result.skeleton = new BABYLON.Skeleton("Skeleton", "", scene);
+            
+            // First pass: create all transform nodes
             for (var i = 0; i < model.skeleton.bones.length; ++i) {
                 var bone = model.skeleton.bones[i];
-                var parentBone = undefined;
-                if (bone.parent >= 0 && bone.parent < bones.length) {
-                    parentBone = bones[bone.parent];
-                }
-
                 let boneMatrix = BABYLON.Matrix.FromArray(bone.matrix);
-
-                var babylon_bone = new BABYLON.Bone(bone.name, result.skeleton, parentBone, boneMatrix);
-                bones.push(babylon_bone);
+                
+                let transformNode = new BABYLON.TransformNode(bone.name, scene);
+                transformNode.setPreTransformMatrix(boneMatrix);
+                transformNodes.push(transformNode);
             }
-
-            result.skeleton.bones = bones;
+            
+            // Second pass: set up parent relationships
+            for (var i = 0; i < model.skeleton.bones.length; ++i) {
+                var bone = model.skeleton.bones[i];
+                if (bone.parent >= 0 && bone.parent < transformNodes.length) {
+                    transformNodes[i].parent = transformNodes[bone.parent];
+                }
+            }
         }
+
+        result.transformNodes = transformNodes;
 
         // Geometry
         for (var i = 0; i < model.chunks.length; ++i) {
             var rmx_chunk = model.chunks[i];
-
             var chunk = new BabylonModelChunk;
             chunk.geometry = this.createGeometry(rmx_chunk, scene);
             chunk.material = this.createMaterial(model.materials[rmx_chunk.material_index], skinned, scene);
             result.chunks.push(chunk);
 
             if (chunk.geometry) {
-                var m = new BABYLON.Mesh(rmx_chunk.name, scene, rootMesh);
+                var m = new BABYLON.Mesh(rmx_chunk.name, scene);
                 chunk.geometry.applyToMesh(m);
                 m.material = chunk.material;
-                m.skeleton = result.skeleton
                 result.meshes.push(m);
 
                 var normals = m.getVerticesData(BABYLON.VertexBuffer.NormalKind);
                 var positions = m.getVerticesData(BABYLON.VertexBuffer.PositionKind);
 
                 BABYLON.VertexData.ComputeNormals(positions, m.getIndices(), normals, { useRightHandedSystem: scene.useRightHandedSystem });
-
                 m.updateVerticesData(BABYLON.VertexBuffer.NormalKind, normals);
                 m.convertToFlatShadedMesh();
-
                 m.sideOrientation = BABYLON.Material.CounterClockWiseSideOrientation;
 
-                // Attach mesh m to bones in the skeleton
-                if (result.skeleton) {
-                    // for each index in the bone index buffer, find the corresponding bone
-                    // and add the mesh to the list of meshes that are influenced by that bone
+                // Attach mesh to transform nodes instead of bones
+                if (result.transformNodes) {
                     var bone_indices = rmx_chunk.data_boneindex;
-                    var bone_count = bone_indices.length / 4;
-                    for (var j = 0; j < bone_count; ++j) {
-                        var bone_index = bone_indices[j * 4];
-                        if (bone_index >= 0 && bone_index < bones.length) {
-                            var bbone = bones[bone_index];
-                            m.attachToBone(bbone, rootMesh);
+                    if (bone_indices) {
+                        var bone_count = bone_indices.length / 4;
+                        for (var j = 0; j < bone_count; ++j) {
+                            var bone_index = bone_indices[j * 4];
+                            if (bone_index >= 0 && bone_index < result.transformNodes.length) {
+                                m.parent = result.transformNodes[bone_index];
+                            }
                         }
                     }
                 }
             }
         }
 
-        result.skeleton.prepare();
-        result.skeleton.returnToRest();
-        
-
-        // Animation - use custom object
+        // Animation - store for later use
         result.animations = model.animations;
-
         return result;
     }
 }
 
 /**
-* A custom class that replaces THREE.Skeleton
+* A custom class that replaces THREE.Skeleton with transforms
 */
 export class BabylonSkeleton {
     boneTexture: ModelAnimation.RMXBoneMatrixTexture;
     skeleton: Model.RMXSkeleton;
     pose: ModelAnimation.RMXPose;
+    transformNodes: BABYLON.TransformNode[];
 
-    constructor(skeleton: Model.RMXSkeleton) {
-        // The skeleton stores information about the hiearchy of the bones
+    constructor(skeleton: Model.RMXSkeleton, transformNodes: BABYLON.TransformNode[]) {
         this.skeleton = skeleton;
-
-        // The pose stores information about the current bone transformations
+        this.transformNodes = transformNodes;
         this.pose = new ModelAnimation.RMXPose(skeleton.bones.length);
         ModelAnimation.RMXSkeletalAnimation.resetPose(this.skeleton, this.pose);
-
-        // The bone texture stores the bone matrices for the use on the GPU
         this.boneTexture = new ModelAnimation.RMXBoneMatrixTexture(skeleton.bones.length);
     }
 
     update(gl: WebGLRenderingContext) {
-        // Compute the bone matrices
         ModelAnimation.RMXSkeletalAnimation.exportPose(this.skeleton, this.pose, this.boneTexture.data);
-
-        // Upload the bone matrices to the bone texture
+        // Update transform nodes based on pose
+        for (let i = 0; i < this.transformNodes.length; i++) {
+            const pos = new BABYLON.Vector3(
+                this.pose.pos[i * 3],
+                this.pose.pos[i * 3 + 1],
+                this.pose.pos[i * 3 + 2]
+            );
+            const rot = new BABYLON.Quaternion(
+                this.pose.rot[i * 4],
+                this.pose.rot[i * 4 + 1],
+                this.pose.rot[i * 4 + 2],
+                this.pose.rot[i * 4 + 3]
+            );
+            const scl = new BABYLON.Vector3(
+                this.pose.scl[i * 3],
+                this.pose.scl[i * 3 + 1],
+                this.pose.scl[i * 3 + 2]
+            );
+            
+            this.transformNodes[i].position = pos;
+            this.transformNodes[i].rotationQuaternion = rot;
+            this.transformNodes[i].scaling = scl;
+        }
         this.boneTexture.update(gl);
     }
 }
@@ -239,20 +246,19 @@ export class BabylonModelInstance {
 }
 
 /**
-* A factory for producing objects that behave like THREE.SkinnedMesh
+* A factory for producing models using transform nodes instead of skeletons
 */
 export class BabylonModel {
     chunks: BabylonModelChunk[];
-    skeleton: BABYLON.Skeleton | undefined;
+    transformNodes: BABYLON.TransformNode[] | undefined;
+    rootNode: BABYLON.TransformNode;
     animations: Model.RMXAnimation[];
     static identityMatrix: BABYLON.Matrix = new BABYLON.Matrix();
-
-
     meshes: BABYLON.AbstractMesh[] = [];
 
     constructor() {
         this.chunks = [];
-        this.skeleton = undefined;
+        this.transformNodes = undefined;
         this.animations = [];
     }
 }

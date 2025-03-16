@@ -47,9 +47,9 @@ export class DAEFileLoader implements BABYLON.ISceneLoaderPluginAsync, BABYLON.I
     const result: BABYLON.ISceneLoaderAsyncResult = {
       meshes: model2.meshes,
       particleSystems: [],
-      skeletons: [model2.skeleton],
+      skeletons: [],
       animationGroups: [],
-      transformNodes: [],
+      transformNodes: model2.transformNodes || [],
       geometries: [],
       lights: [],
       spriteManagers: [],

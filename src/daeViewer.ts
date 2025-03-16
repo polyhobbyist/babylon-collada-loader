@@ -12,7 +12,6 @@ export class TestMain {
 
   private transform: BABYLON.TransformNode | undefined;
   private meshes: BABYLON.AbstractMesh[] = [];
-  private skeletons: BABYLON.Skeleton[] = [];
   private material: BABYLON.Material | undefined
 
 
@@ -20,49 +19,38 @@ export class TestMain {
     this.uri = uri;
   }
 
-  private meshCallback(scene: BABYLON.Scene, meshes : BABYLON.AbstractMesh[], particleSystems : BABYLON.IParticleSystem[] | undefined, skeletons : BABYLON.Skeleton[] | undefined) {
+  private meshCallback(scene: BABYLON.Scene, meshes : BABYLON.AbstractMesh[], particleSystems : BABYLON.IParticleSystem[] | undefined, skeletons : BABYLON.Skeleton[] | undefined, animationGroups: BABYLON.AnimationGroup[], transformNodes: BABYLON.TransformNode[], geometries: BABYLON.Geometry[], lights: BABYLON.Light[], spriteManagers: BABYLON.ISpriteManager[]) {
     // Get a pointer to the mesh
     if (meshes.length > 0 && this.transform != undefined) {
-      //this.transform.scaling = new BABYLON.Vector3(-.01, .01, .01);
+
+      if (this.transform != undefined) {
+        const transformNode = transformNodes.find(tn => !tn.parent);
+        if (transformNode) {
+          transformNode.addRotation(0, 0, Math.PI).addRotation(Math.PI/2, 0, 0);
+          transformNode.scaling = new BABYLON.Vector3(transformNode.scaling.x * -1, transformNode.scaling.y, transformNode.scaling.z);
+          transformNode.parent = this.transform;
+        }
+      }
 
       this.meshes = this.meshes.concat(meshes);
 
-        // find the top level bone in skeletons
-        if (skeletons != undefined && skeletons.length > 0) {
-          this.skeletons = skeletons;
-
-          let rootBone = skeletons[0].bones.find(b => b.getParent() == undefined);
-          if (rootBone != undefined) {
-            //rootBone.getTransformNode().paren t = this.transform;
-            rootBone.returnToRest();
-          }
+      this.meshes.forEach(m => {
+        if (this.material != undefined && this.material != undefined) {
+          m.material = this.material;
         }
-        this.meshes.forEach(m => {
-            if (this.transform != undefined) {
-                //m.addRotation(0, 0, Math.PI).addRotation(Math.PI/2, 0, 0);
-                // Invert the left handed mesh to conform to the right handed coodinate system
-                //m.parent = this.transform;
-                //m.scaling = new BABYLON.Vector3(-.01, .01, .01);
-                
-                if (this.material != undefined && this.material != undefined) {
-                    m.material = this.material;
-                }
-            }
 
-            var normals = this.showNormals(m, .1, BABYLON.Color3.Red(), this.scene);
-            if (normals != undefined) {
-              normals.parent = m;
-            }
+          var normals = this.showNormals(m, .1, BABYLON.Color3.Red(), this.scene);
+          if (normals != undefined) {
+            normals.parent = m;
+          }
 
-            //var v = this.showVerticies(m, .01, BABYLON.Color3.Red());
-            //if (v != undefined) {
-              //v.parent = this.transform;
-            //}
-        });
-
+          //var v = this.showVerticies(m, .01, BABYLON.Color3.Red());
+          //if (v != undefined) {
+            //v.parent = this.transform;
+          //}
+      });
     }
-
-}
+  }
 
 showVerticies(mesh: BABYLON.AbstractMesh, size: number, color: BABYLON.Color3) : BABYLON.Mesh {
   var positions = mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
@@ -191,7 +179,7 @@ showNormals(mesh, size, color, sc) : BABYLON.LinesMesh{
     let filename = this.uri.substring(this.uri.lastIndexOf('/') + 1);
     if (filename) {
         let base = this.uri.substring(0, this.uri.lastIndexOf('/') + 1);
-        BABYLON.SceneLoader.ImportMesh(null, base, filename, this.scene, (mesh, ps, sk) => {this.meshCallback(this.scene, mesh, ps, sk)});
+        BABYLON.SceneLoader.ImportMesh(null, base, filename, this.scene, (mesh, ps, sk, ag, tn, g, l, sm) => {this.meshCallback(this.scene, mesh, ps, sk, ag, tn, g, l,sm)});
     }
   }
 }
