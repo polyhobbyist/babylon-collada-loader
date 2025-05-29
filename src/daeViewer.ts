@@ -39,7 +39,7 @@ export class TestMain {
           m.material = this.material;
         }
 
-          var normals = this.showNormals(m, .1, BABYLON.Color3.Red(), this.scene);
+          var normals = this.showNormals(m, .001, BABYLON.Color3.Red(), this.scene);
           if (normals != undefined) {
             normals.parent = m;
           }
@@ -146,7 +146,7 @@ showNormals(mesh, size, color, sc) : BABYLON.LinesMesh{
       groundMirrorSizeRatio: 0.15
     });
 
-    //this.scene.useRightHandedSystem = true;
+    this.scene.useRightHandedSystem = true;
     this.scene.clearColor = BABYLON.Color4.FromColor3(BABYLON.Color3.Gray());
 
     this.scene.debugLayer.show();
@@ -189,18 +189,19 @@ let test : TestMain | undefined = undefined;
 export async function RenderTestMain() {
 
   if (test === undefined) {
-    test = new TestMain("https://raw.githubusercontent.com/LeoRover/leo_common-ros2/humble/leo_description/models/Chassis.dae");
+    //test = new TestMain("https://raw.githubusercontent.com/idra-lab/z1_ros2/refs/heads/main/z1_description/meshes/visual/z1_Link00.dae");
+    //test = new TestMain("https://raw.githubusercontent.com/LeoRover/leo_common-ros2/humble/leo_description/models/Chassis.dae");
     //test = new TestMain("https://raw.githubusercontent.com/assimp/assimp/refs/heads/master/test/models/Collada/cube_triangulate.dae");
-    //test = new TestMain("https://raw.githubusercontent.com/LeoRover/leo_common-ros2/humble/leo_description/models/Rocker.dae");
+    test = new TestMain("https://raw.githubusercontent.com/LeoRover/leo_common-ros2/humble/leo_description/models/Rocker.dae");
     
     test.createScene();
     test.engine.runRenderLoop(() => {
-      test.scene.render();
+      test?.scene.render();
     });
 
     // Resize
     window.addEventListener("resize", () => {
-      test.engine.resize();
+      test?.engine.resize();
     });
   }
 }

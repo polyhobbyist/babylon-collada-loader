@@ -77,6 +77,8 @@ export class BabylonModelLoader {
             return cached_material;
         } else {
             var result = new BABYLON.StandardMaterial(hash, scene);
+            result.backFaceCulling = false;
+            
             //result.skinning = skinned;
             if (material.diffuse) {
                 result.diffuseTexture = this.createTexture(material.diffuse, scene);
@@ -96,6 +98,8 @@ export class BabylonModelLoader {
 
             if (material.specularColor != undefined && material.specularColor.length == 4) {
                 result.specularColor = new BABYLON.Color3(material.specularColor[0], material.specularColor[1], material.specularColor[2])
+            } else {
+                result.specularColor = new BABYLON.Color3(0.5, 0.5, 0.5);
             }
 
             this.materialCache[hash] = result;
