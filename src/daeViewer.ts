@@ -2,6 +2,7 @@ import * as BABYLON from 'babylonjs';
 import * as Materials from 'babylonjs-materials';
 
 import { DAEFileLoader } from './daeFileLoader';
+import { convertColladaToGLTFString } from './collada2gltf';
 
 export class TestMain {
   public engine: BABYLON.Engine;
@@ -15,7 +16,7 @@ export class TestMain {
   private material: BABYLON.Material | undefined
 
 
-  public constructor(uri: string) {
+  public constructor(uri: string, private useGltfConversion: boolean = false) {
     this.uri = uri;
   }
 
@@ -178,21 +179,74 @@ showNormals(mesh, size, color, sc) : BABYLON.LinesMesh{
 
     let filename = this.uri.substring(this.uri.lastIndexOf('/') + 1);
     if (filename) {
-        let base = this.uri.substring(0, this.uri.lastIndexOf('/') + 1);
-        BABYLON.SceneLoader.ImportMesh(null, base, filename, this.scene, (mesh, ps, sk, ag, tn, g, l, sm) => {this.meshCallback(this.scene, mesh, ps, sk, ag, tn, g, l,sm)});
+        if (this.useGltfConversion) {
+            // New path: Load Collada and convert to glTF
+            this.loadViaGltfConversion(this.uri);
+        } else {
+            // Old path: Use direct Babylon loader
+            let base = this.uri.substring(0, this.uri.lastIndexOf('/') + 1);
+            BABYLON.SceneLoader.ImportMesh(null, base, filename, this.scene, (mesh, ps, sk, ag, tn, g, l, sm) => {this.meshCallback(this.scene, mesh, ps, sk, ag, tn, g, l,sm)});
+        }
+    }
+  }
+
+  private async loadViaGltfConversion(uri: string) {
+    try {
+      console.log('Loading Collada file via glTF conversion:', uri);
+      
+      // Fetch the Collada file
+      const response = await fetch(uri);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch ${uri}: ${response.statusText}`);
+      }
+      const colladaXml = await response.text();
+      
+      console.log('Converting Collada to glTF...');
+      const gltfJson = convertColladaToGLTFString(colladaXml);
+      
+      console.log('glTF conversion complete, size:', gltfJson.length, 'bytes');
+      
+      // Create a blob URL for the glTF data
+      const blob = new Blob([gltfJson], { type: 'application/json' });
+      const gltfUrl = URL.createObjectURL(blob);
+      
+      console.log('Loading glTF into scene...');
+      
+      // Load using Babylon's built-in glTF loader
+      BABYLON.SceneLoader.ImportMesh(
+        "",
+        gltfUrl,
+        "",
+        this.scene,
+        (meshes, particleSystems, skeletons, animationGroups, transformNodes, geometries, lights, spriteManagers) => {
+          console.log('glTF loaded successfully, meshes:', meshes.length);
+          this.meshCallback(this.scene, meshes, particleSystems, skeletons, animationGroups, transformNodes, geometries, lights, spriteManagers);
+          URL.revokeObjectURL(gltfUrl);
+        },
+        null,
+        (scene, message, exception) => {
+          console.error('Error loading glTF:', message, exception);
+          URL.revokeObjectURL(gltfUrl);
+        }
+      );
+    } catch (error) {
+      console.error('Error in glTF conversion path:', error);
     }
   }
 }
 
 let test : TestMain | undefined = undefined;
 
-export async function RenderTestMain() {
+export async function RenderTestMain(useGltfConversion: boolean = false) {
 
   if (test === undefined) {
-    //test = new TestMain("https://raw.githubusercontent.com/idra-lab/z1_ros2/refs/heads/main/z1_description/meshes/visual/z1_Link00.dae");
-    //test = new TestMain("https://raw.githubusercontent.com/LeoRover/leo_common-ros2/humble/leo_description/models/Chassis.dae");
-    //test = new TestMain("https://raw.githubusercontent.com/assimp/assimp/refs/heads/master/test/models/Collada/cube_triangulate.dae");
-    test = new TestMain("https://raw.githubusercontent.com/LeoRover/leo_common-ros2/humble/leo_description/models/Rocker.dae");
+    const conversionMode = useGltfConversion ? 'glTF Conversion' : 'Direct Babylon Loader';
+    console.log(`Starting test with ${conversionMode} mode`);
+    
+    //test = new TestMain("https://raw.githubusercontent.com/idra-lab/z1_ros2/refs/heads/main/z1_description/meshes/visual/z1_Link00.dae", useGltfConversion);
+    //test = new TestMain("https://raw.githubusercontent.com/LeoRover/leo_common-ros2/humble/leo_description/models/Chassis.dae", useGltfConversion);
+    //test = new TestMain("https://raw.githubusercontent.com/assimp/assimp/refs/heads/master/test/models/Collada/cube_triangulate.dae", useGltfConversion);
+    test = new TestMain("https://raw.githubusercontent.com/LeoRover/leo_common-ros2/humble/leo_description/models/Rocker.dae", useGltfConversion);
     
     test.createScene();
     test.engine.runRenderLoop(() => {
@@ -204,5 +258,56 @@ export async function RenderTestMain() {
       test?.engine.resize();
     });
   }
+}
+
+/**
+ * Test both old and new loading paths
+ */
+export async function runComparisonTest() {
+  console.log('=== Running Comparison Test ===');
+  
+  const testUrls = [
+    "https://raw.githubusercontent.com/assimp/assimp/refs/heads/master/test/models/Collada/cube_triangulate.dae",
+    "https://raw.githubusercontent.com/LeoRover/leo_common-ros2/humble/leo_description/models/Rocker.dae"
+  ];
+  
+  for (const url of testUrls) {
+    console.log(`\n--- Testing: ${url} ---`);
+    
+    try {
+      // Test glTF conversion path
+      console.log('Testing glTF conversion path...');
+      const response = await fetch(url);
+      const colladaXml = await response.text();
+      
+      const startTime = performance.now();
+      const gltfJson = convertColladaToGLTFString(colladaXml);
+      const conversionTime = performance.now() - startTime;
+      
+      const gltf = JSON.parse(gltfJson);
+      
+      console.log('✓ glTF Conversion Results:');
+      console.log(`  - Conversion time: ${conversionTime.toFixed(2)}ms`);
+      console.log(`  - glTF size: ${gltfJson.length} bytes`);
+      console.log(`  - Nodes: ${gltf.nodes?.length || 0}`);
+      console.log(`  - Meshes: ${gltf.meshes?.length || 0}`);
+      console.log(`  - Materials: ${gltf.materials?.length || 0}`);
+      console.log(`  - Accessors: ${gltf.accessors?.length || 0}`);
+      console.log(`  - BufferViews: ${gltf.bufferViews?.length || 0}`);
+      
+      // Validate glTF structure
+      if (!gltf.asset || gltf.asset.version !== '2.0') {
+        console.error('  ✗ Invalid glTF: Missing or incorrect asset version');
+      }
+      if (!gltf.scenes || gltf.scenes.length === 0) {
+        console.warn('  ⚠ Warning: No scenes in glTF');
+      }
+      
+    } catch (error) {
+      console.error(`✗ Error testing ${url}:`, error);
+    }
+  }
+  
+  console.log('\n=== Comparison Test Complete ===');
 }
 

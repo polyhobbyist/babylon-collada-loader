@@ -1,3 +1,10 @@
 {
-  "typescript.tsdk": "node_modules\\typescript\\lib"
+  "typescript.tsdk": "node_modules\\typescript\\lib",
+  "github.copilot.chat.codeGeneration.useInstructionFiles": true,
+  "python.autoComplete.extraPaths": [
+    "C:\\pixi_ws\\ros2-windows\\Lib\\site-packages"
+  ],
+  "python.analysis.extraPaths": [
+    "C:\\pixi_ws\\ros2-windows\\Lib\\site-packages"
+  ]
 }

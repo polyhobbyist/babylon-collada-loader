@@ -1,0 +1,15 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${workspaceFolder}/.vscode/browse.vc.db",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "C:\\pixi_ws\\ros2-windows\\include\\**"
+      ],
+      "name": "ros2"
+    }
+  ],
+  "version": 4
+}

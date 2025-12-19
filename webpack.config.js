@@ -39,13 +39,13 @@ const webConfig = {
 }
 
 const libConfig = {
-    entry: './src/dae.ts',
+    entry: './src/collada2gltf.ts',
     output: {
         path: path.resolve(__dirname, 'dist'),
-        filename: 'dae.js',
+        filename: 'collada2gltf.js',
         globalObject: 'this',
         library: {
-            name: 'dae_loader',
+            name: 'collada2gltf',
             type: 'umd'
         },
         umdNamedDefine: true
@@ -72,14 +72,6 @@ const libConfig = {
             }]
     
         }]
-    },
-    externals: {
-        babylonjs: {
-            commonjs: 'babylonjs',
-            commonjs2: 'babylonjs',
-            amd: 'babylonjs',
-            root: 'BABYLON',
-        },
     }
 }
 
